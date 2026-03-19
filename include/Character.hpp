@@ -14,10 +14,12 @@ public:
 
     Character(float x, float y);
 
-    void Update();
+    //void Update();
+    glm::vec2 Update();
 
 private:
-    void HandleInput();
+    //void HandleInput();
+    glm::vec2 HandleInput();
     void LoadSprites();
     void UpdateSprite();
 

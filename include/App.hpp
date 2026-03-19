@@ -3,6 +3,7 @@
 
 #include "pch.hpp"
 #include "Character.hpp"
+#include "Map.hpp"
 
 class App {
 public:
@@ -22,6 +23,7 @@ private:
     void ValidTask();
 
 private:
+    std::shared_ptr<Map> m_Map;
     State m_CurrentState = State::START;
     Character m_Character{0.0f, 0.0f};
 };

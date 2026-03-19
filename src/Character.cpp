@@ -33,26 +33,29 @@ void Character::LoadSprites() {
     m_Drawable = m_CurrentAnimation;
 }
 
-void Character::HandleInput() {
+glm::vec2 Character::HandleInput() {
     m_State = State::IDLE;
+    glm::vec2 movement = {0.0f, 0.0f}; // Start with zero movement
 
     if (Util::Input::IsKeyPressed(Util::Keycode::DOWN) || Util::Input::IsKeyPressed(Util::Keycode::S)) {
-        m_Transform.translation.y -= m_Speed;
+        movement.y = -m_Speed;  // Map will move down
         m_Direction = Direction::DOWN;
         m_State = State::MOVING;
     } else if (Util::Input::IsKeyPressed(Util::Keycode::UP) || Util::Input::IsKeyPressed(Util::Keycode::W)) {
-        m_Transform.translation.y += m_Speed;
+        movement.y = m_Speed;   // Map will move up
         m_Direction = Direction::UP;
         m_State = State::MOVING;
     } else if (Util::Input::IsKeyPressed(Util::Keycode::LEFT) || Util::Input::IsKeyPressed(Util::Keycode::A)) {
-        m_Transform.translation.x -= m_Speed;
+        movement.x = -m_Speed;  // Map will move left
         m_Direction = Direction::LEFT;
         m_State = State::MOVING;
     } else if (Util::Input::IsKeyPressed(Util::Keycode::RIGHT) || Util::Input::IsKeyPressed(Util::Keycode::D)) {
-        m_Transform.translation.x += m_Speed;
+        movement.x = m_Speed;   // Map will move right
         m_Direction = Direction::RIGHT;
         m_State = State::MOVING;
     }
+    
+    return movement; // Return the intended movement direction!
 }
 
 void Character::UpdateSprite() {
@@ -76,9 +79,10 @@ void Character::UpdateSprite() {
     }
 }
 
-void Character::Update() {
-    // Notice how clean this is now! No more AdvanceFrame().
-    HandleInput();
+glm::vec2 Character::Update() {
+    glm::vec2 movement = HandleInput(); 
     UpdateSprite();
     Draw(); 
+    
+    return movement; // Pass the movement vector out to the game loop!
 }
