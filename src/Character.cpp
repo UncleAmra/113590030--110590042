@@ -1,9 +1,10 @@
 #include "Character.hpp"
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
+#include "Map.hpp"
 
 Character::Character(float x, float y) {
-    m_Transform.translation = {x, y};
+    m_Transform.translation = {x, y + 24.0f};
     m_ZIndex = 1.0f;
     m_Visible = true;
     m_State = State::IDLE;
@@ -33,30 +34,6 @@ void Character::LoadSprites() {
     m_Drawable = m_CurrentAnimation;
 }
 
-glm::vec2 Character::HandleInput() {
-    m_State = State::IDLE;
-    glm::vec2 movement = {0.0f, 0.0f}; // Start with zero movement
-
-    if (Util::Input::IsKeyPressed(Util::Keycode::DOWN) || Util::Input::IsKeyPressed(Util::Keycode::S)) {
-        movement.y = -m_Speed;  // Map will move down
-        m_Direction = Direction::DOWN;
-        m_State = State::MOVING;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::UP) || Util::Input::IsKeyPressed(Util::Keycode::W)) {
-        movement.y = m_Speed;   // Map will move up
-        m_Direction = Direction::UP;
-        m_State = State::MOVING;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::LEFT) || Util::Input::IsKeyPressed(Util::Keycode::A)) {
-        movement.x = -m_Speed;  // Map will move left
-        m_Direction = Direction::LEFT;
-        m_State = State::MOVING;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::RIGHT) || Util::Input::IsKeyPressed(Util::Keycode::D)) {
-        movement.x = m_Speed;   // Map will move right
-        m_Direction = Direction::RIGHT;
-        m_State = State::MOVING;
-    }
-    
-    return movement; // Return the intended movement direction!
-}
 
 void Character::UpdateSprite() {
     // 1. Pick the animation based on the LAST KNOWN direction
@@ -79,10 +56,67 @@ void Character::UpdateSprite() {
     }
 }
 
-glm::vec2 Character::Update() {
-    glm::vec2 movement = HandleInput(); 
+glm::vec2 Character::Update(std::shared_ptr<Map> map) {
+    glm::vec2 movement = {0.0f, 0.0f};
+
+    if (!m_IsMoving) {
+        int targetX = m_GridX;
+        int targetY = m_GridY;
+        bool attemptMove = false;
+
+        if (Util::Input::IsKeyPressed(Util::Keycode::UP) || Util::Input::IsKeyPressed(Util::Keycode::W)) {
+            targetY -= 1; // Moving UP physically means moving UP the array (towards 0)
+            m_CurrentDirection = {0.0f, 1.0f};
+            m_Direction = Direction::UP;
+            attemptMove = true;
+        } else if (Util::Input::IsKeyPressed(Util::Keycode::DOWN) || Util::Input::IsKeyPressed(Util::Keycode::S)) {
+            targetY += 1;
+            m_CurrentDirection = {0.0f, -1.0f};
+            m_Direction = Direction::DOWN;
+            attemptMove = true;
+        } else if (Util::Input::IsKeyPressed(Util::Keycode::LEFT) || Util::Input::IsKeyPressed(Util::Keycode::A)) {
+            targetX -= 1;
+            m_CurrentDirection = {-1.0f, 0.0f};
+            m_Direction = Direction::LEFT;
+            attemptMove = true;
+        } else if (Util::Input::IsKeyPressed(Util::Keycode::RIGHT) || Util::Input::IsKeyPressed(Util::Keycode::D)) {
+            targetX += 1;
+            m_CurrentDirection = {1.0f, 0.0f};
+            m_Direction = Direction::RIGHT;
+            attemptMove = true;
+        }
+
+        if (attemptMove) {
+            // Ask the map: Is this tile grass?
+            if (map->IsWalkable(targetX, targetY)) {
+                m_GridX = targetX;
+                m_GridY = targetY;
+                m_State = State::MOVING;
+                m_IsMoving = true;
+            } else {
+                // It's water! Turn to face it, but don't walk. (Classic Pokemon style!)
+                m_State = State::IDLE;
+                m_CurrentDirection = {0.0f, 0.0f};
+            }
+        }
+    }
+
+    // ... (Keep your existing Part 2 movement math and Draw calls down here exactly as they were!)
+    if (m_IsMoving) {
+        float step = m_Speed;
+        if (m_PixelsMoved + step > m_TileSize) { step = m_TileSize - m_PixelsMoved; }
+        m_PixelsMoved += step;
+        movement = {m_CurrentDirection.x * step, m_CurrentDirection.y * step};
+
+        if (m_PixelsMoved >= m_TileSize) {
+            m_IsMoving = false;
+            m_PixelsMoved = 0.0f;
+            m_CurrentDirection = {0.0f, 0.0f};
+            m_State = State::IDLE; 
+        }
+    }
+
     UpdateSprite();
     Draw(); 
-    
-    return movement; // Pass the movement vector out to the game loop!
+    return movement; 
 }

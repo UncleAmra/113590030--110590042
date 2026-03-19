@@ -5,17 +5,19 @@
 
 void App::Start() {
     LOG_TRACE("Start");
-    m_Map = std::make_shared<Map>(RESOURCE_DIR "/GrassField.png");
-    m_CurrentState = State::UPDATE;
     
+    m_Map = std::make_shared<Map>(); 
+    
+    m_CurrentState = State::UPDATE;
 }
 
 void App::Update() {
     m_Map->Draw();
     //m_Character.Update();
  
-    glm::vec2 playerMovement = m_Character.Update();
-    m_Map->Move(-playerMovement.x, -playerMovement.y);
+    glm::vec2 movement = m_Character.Update(m_Map);
+    //glm::vec2 playerMovement = m_Character.Update();
+    m_Map->Move(-movement.x, -movement.y);
     
     // 4. Handle quitting
     if (Util::Input::IsKeyUp(Util::Keycode::ESCAPE) ||
