@@ -46,9 +46,14 @@ if (m_LevelData.empty()) {
 for (size_t y = 0; y < m_LevelData.size(); y++) {
     for (size_t x = 0; x < m_LevelData[y].size(); x++) {
         auto newTile = std::make_shared<Util::GameObject>();
-        
+
         // Default Z-Index for everything
         float zIndex = 0.0f;
+
+        // Base tile transform and scale
+        newTile->m_Transform.scale = {scale, scale};
+        newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
+        newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
 
         if (m_LevelData[y][x] == 0) {
             newTile->SetDrawable(m_GrassImage);
@@ -73,9 +78,6 @@ for (size_t y = 0; y < m_LevelData.size(); y++) {
         }
 
         newTile->SetZIndex(zIndex); // Set it ONCE here
-        newTile->m_Transform.scale = {scale, scale};
-        newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
-        newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
 
         m_Tiles.push_back(newTile);
     }
