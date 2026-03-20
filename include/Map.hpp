@@ -22,6 +22,8 @@ private:
     std::shared_ptr<Util::Image> m_WaterImage;
     std::shared_ptr<Util::Image> m_DirtImage;
     std::shared_ptr<Util::Image> m_PokeCentreImage;
+    std::shared_ptr<Util::Image> m_ChurchImage;  
+    
     void LoadMapFromFile(const std::string& filepath);
     
 };

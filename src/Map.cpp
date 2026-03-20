@@ -8,6 +8,7 @@ Map::Map() {
     m_WaterImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png");
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
+    m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
     LoadMapFromFile(RESOURCE_DIR "/level.csv");
  
 
@@ -65,6 +66,10 @@ for (size_t y = 0; y < m_LevelData.size(); y++) {
         newTile->m_Transform.translation.y += 24.0f;
         } else if (m_LevelData[y][x] == 4) {
             newTile->SetDrawable(m_GrassImage); 
+        }
+        else if (m_LevelData[y][x] == 5) {
+            newTile->SetDrawable(m_ChurchImage);
+            zIndex = 0.5f; // Keep it on top of the grass!
         }
 
         newTile->SetZIndex(zIndex); // Set it ONCE here
