@@ -8,6 +8,8 @@ Map::Map() {
     m_WaterImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png");
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
+    m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
+
     LoadMapFromFile(RESOURCE_DIR "/level.csv");
  
 
@@ -45,9 +47,14 @@ if (m_LevelData.empty()) {
 for (size_t y = 0; y < m_LevelData.size(); y++) {
     for (size_t x = 0; x < m_LevelData[y].size(); x++) {
         auto newTile = std::make_shared<Util::GameObject>();
-        
+
         // Default Z-Index for everything
         float zIndex = 0.0f;
+
+        // Base tile transform and scale
+        newTile->m_Transform.scale = {scale, scale};
+        newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
+        newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
 
         if (m_LevelData[y][x] == 0) {
             newTile->SetDrawable(m_GrassImage);
@@ -56,21 +63,20 @@ for (size_t y = 0; y < m_LevelData.size(); y++) {
         } else if (m_LevelData[y][x] == 2) {
             newTile->SetDrawable(m_DirtImage);
         } else if (m_LevelData[y][x] == 3) {
+            newTile->SetDrawable(m_PokeCentreImage);
+            zIndex = 0.5f; // Keep it on top of the grass
+            newTile->m_Transform.translation.x += (scaledTileSize * 2.0f);
+            newTile->m_Transform.translation.y += (scaledTileSize * 2.0f) + 24.0f;
+        } else if (m_LevelData[y][x] == 4) {
+            newTile->SetDrawable(m_GrassImage);
+        } else if (m_LevelData[y][x] == 5) {
+            newTile->SetDrawable(m_ChurchImage);
+            zIndex = 0.5f;
             newTile->m_Transform.translation.x += (scaledTileSize * 2.0f);
             newTile->m_Transform.translation.y += (scaledTileSize * 2.0f);
-            newTile->SetDrawable(m_PokeCentreImage); 
-        zIndex = 0.5f; // Keep it on top of the grass!
-    
-        // Nudge the image up slightly so it sits neatly on the "4" tiles
-        newTile->m_Transform.translation.y += 24.0f;
-        } else if (m_LevelData[y][x] == 4) {
-            newTile->SetDrawable(m_GrassImage); 
         }
 
         newTile->SetZIndex(zIndex); // Set it ONCE here
-        newTile->m_Transform.scale = {scale, scale};
-        newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
-        newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
 
         m_Tiles.push_back(newTile);
     }

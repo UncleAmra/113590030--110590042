@@ -15,13 +15,13 @@ public:
     bool IsWalkable(int x, int y);
 
 private:
-    // Now we just hold a list of GameObjects!
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
     std::vector<std::vector<int>> m_LevelData;
     std::shared_ptr<Util::Image> m_GrassImage;
     std::shared_ptr<Util::Image> m_WaterImage;
     std::shared_ptr<Util::Image> m_DirtImage;
     std::shared_ptr<Util::Image> m_PokeCentreImage;
+    std::shared_ptr<Util::Image> m_ChurchImage;      // add this
     void LoadMapFromFile(const std::string& filepath);
     
 };
