@@ -2,6 +2,7 @@
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
 #include "Map.hpp"
+#include "stdio.h"
 
 Character::Character(float x, float y) {
     m_Transform.translation = {x, y + 24.0f};
@@ -97,6 +98,12 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
                 // It's water! Turn to face it, but don't walk. (Classic Pokemon style!)
                 m_State = State::IDLE;
                 m_CurrentDirection = {0.0f, 0.0f};
+                int hitTile = map->GetTileType(targetX, targetY);
+                if (hitTile == 6 || hitTile == 7) {
+                    m_HitDoor = true; // We bumped the door!
+                } else {
+                    m_HitDoor = false; // We bumped normal water/wall
+                }
             }
         }
     }

@@ -26,6 +26,7 @@ private:
     std::shared_ptr<Map> m_Map;
     State m_CurrentState = State::START;
     Character m_Character{0.0f, 0.0f};
+    bool m_IsIndoors = false;
 };
 
 #endif

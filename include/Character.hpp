@@ -11,18 +11,25 @@ class Map;
 
 class Character : public Util::GameObject {
 public:
+
     enum class Direction { DOWN, UP, LEFT, RIGHT };
     enum class State { IDLE, MOVING };
+    bool HasHitDoor() const { return m_HitDoor; }
 
     Character(float x, float y);
 
     //void Update();
-    
+    int GetGridX() const { return m_GridX; }
+    int GetGridY() const { return m_GridY; }
+    bool IsMoving() const { return m_IsMoving; }
+    void ClearDoorFlag() { m_HitDoor = false; }
+    void SetGridPosition(int x, int y) { m_GridX = x; m_GridY = y; }
     glm::vec2 Update(std::shared_ptr<Map> map);
 
 private:
     //void HandleInput();
     glm::vec2 HandleInput();
+    bool m_HitDoor = false;
     void LoadSprites();
     void UpdateSprite();
 

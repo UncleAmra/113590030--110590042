@@ -1,92 +1,86 @@
 #include "Map.hpp"
-#include <fstream>  // For reading files
-#include <sstream>  // For breaking strings apart at the commas
-#include <iostream> // For printing error messages
+#include <fstream>  
+#include <sstream>  
+#include <iostream> 
 
 Map::Map() {
+    // 1. LOAD IMAGES ONLY ONCE
     m_GrassImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Grass1.png");
-    m_WaterImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png");
+    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png"));
+    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
+    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
+
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
+    m_PCDoorImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PC_doormat.png");
     m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
-    LoadMapFromFile(RESOURCE_DIR "/level.csv");
- 
 
-// DEBUG CHECK:
-if (m_LevelData.empty()) {
-    std::cout << "Map is EMPTY! Check your file path." << std::endl;
-} else {
-    std::cout << "Map Loaded! Rows: " << m_LevelData.size() << " Columns: " << m_LevelData[0].size() << std::endl;
+    // 2. BUILD THE FIRST MAP
+    LoadLevel(RESOURCE_DIR "/level.csv");
 }
 
-    /*
-    m_LevelData = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1},
-        {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 1, 1, 1, 1, 0, 0, 2, 0, 1, 0, 1},
-        {1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1},
-        {1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1},
-        {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-    };
-    */
+void Map::LoadLevel(const std::string& filepath) {
+    // 1. Erase whatever map was here before
+    ClearMap(); 
+    
+    // 2. Read the new CSV
+    LoadMapFromFile(filepath);
 
+    if (m_LevelData.empty()) {
+        std::cout << "Map is EMPTY! Check your file path: " << filepath << std::endl;
+        return;
+    } else {
+        std::cout << "Map Loaded! Rows: " << m_LevelData.size() << " Columns: " << m_LevelData[0].size() << std::endl;
+    }
 
+    // 3. Build the tiles! (Moved here from the constructor)
     float tileSize = 16.0f; 
     float scale = 3.0f;     
     float scaledTileSize = tileSize * scale; 
-
     float startX = -288.0f; 
     float startY = 288.0f;
 
-for (size_t y = 0; y < m_LevelData.size(); y++) {
-    for (size_t x = 0; x < m_LevelData[y].size(); x++) {
-        auto newTile = std::make_shared<Util::GameObject>();
+    for (size_t y = 0; y < m_LevelData.size(); y++) {
+        for (size_t x = 0; x < m_LevelData[y].size(); x++) {
+            auto newTile = std::make_shared<Util::GameObject>();
+            float zIndex = 0.0f;
 
-        // Default Z-Index for everything
-        float zIndex = 0.0f;
+            newTile->m_Transform.scale = {scale, scale};
+            newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
+            newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
 
-        // Base tile transform and scale
-        newTile->m_Transform.scale = {scale, scale};
-        newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
-        newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
+            if (m_LevelData[y][x] == 0) {
+                newTile->SetDrawable(m_GrassImage);
+            } else if (m_LevelData[y][x] == 1) {
+                newTile->SetDrawable(m_WaterFrames[0]);
+                m_WaterTiles.push_back(newTile);
+            } else if (m_LevelData[y][x] == 2) {
+                newTile->SetDrawable(m_DirtImage);
+            } else if (m_LevelData[y][x] == 3) {
+                newTile->SetDrawable(m_PokeCentreImage); 
+                zIndex = 0.3f; 
+                newTile->m_Transform.translation.y += 24.0f;
+            } else if (m_LevelData[y][x] == 4) {
+                newTile->SetDrawable(m_GrassImage); 
+            } else if (m_LevelData[y][x] == 5) {
+                newTile->SetDrawable(m_ChurchImage);
+                zIndex = 0.5f; 
+            } else if (m_LevelData[y][x] == 6) {
+                newTile->SetDrawable(m_DirtImage); // THE DOOR!
+            } else if (m_LevelData[y][x] == 7) {
+                
+                newTile->SetDrawable(m_PCDoorImage); // INSIDE EXIT MAT
+                zIndex = 0.5f; 
+            }
 
-        if (m_LevelData[y][x] == 0) {
-            newTile->SetDrawable(m_GrassImage);
-        } else if (m_LevelData[y][x] == 1) {
-            newTile->SetDrawable(m_WaterImage);
-        } else if (m_LevelData[y][x] == 2) {
-            newTile->SetDrawable(m_DirtImage);
-        } else if (m_LevelData[y][x] == 3) {
-            newTile->m_Transform.translation.x += (scaledTileSize * 2.0f);
-            newTile->m_Transform.translation.y += (scaledTileSize * 2.0f);
-            newTile->SetDrawable(m_PokeCentreImage); 
-        zIndex = 0.5f; // Keep it on top of the grass!
-    
-        // Nudge the image up slightly so it sits neatly on the "4" tiles
-        newTile->m_Transform.translation.y += 24.0f;
-        } else if (m_LevelData[y][x] == 4) {
-            newTile->SetDrawable(m_GrassImage); 
+            newTile->SetZIndex(zIndex); 
+            m_Tiles.push_back(newTile);
         }
-        else if (m_LevelData[y][x] == 5) {
-            newTile->SetDrawable(m_ChurchImage);
-            zIndex = 0.5f; // Keep it on top of the grass!
-        }
-
-        newTile->SetZIndex(zIndex); // Set it ONCE here
-
-        m_Tiles.push_back(newTile);
     }
-}
 }
 
 void Map::Move(float dx, float dy) {
     for (auto& tile : m_Tiles) {
-        // Access the built-in transform
         tile->m_Transform.translation.x += dx;
         tile->m_Transform.translation.y += dy;
     }
@@ -94,55 +88,67 @@ void Map::Move(float dx, float dy) {
 
 void Map::Draw() {
     for (auto& tile : m_Tiles) {
-        // Now we can just use the GameObject's built-in Draw method!
         tile->Draw();
     }
 }
+
 bool Map::IsWalkable(int x, int y) {
-    // 1. BOUNDARY CHECK: Use .size() so it automatically adapts to your CSV size
     if (y < 0 || y >= static_cast<int>(m_LevelData.size()) || 
         x < 0 || x >= static_cast<int>(m_LevelData[0].size())) {
         return false; 
     }
     
-    // 2. GET TILE TYPE
     int tileType = m_LevelData[y][x];
     
-    // 3. DEFINE WALKABLE TILES
     // 0 = Grass, 2 = Dirt. 
-    // 1 (Water), 3 (PokeCentre Anchor), and 4 (PokeCentre Walls) should BLOCK.
+    // Notice 6 is NOT here! It acts like a wall so Red bumps it.
     if (tileType == 0 || tileType == 2) {
         return true;
     }
-
-    return false; // Everything else is a wall
+    return false; 
 }
 
 void Map::LoadMapFromFile(const std::string& filepath) {
     std::ifstream file(filepath);
-    
-    // Safety check: Did the file actually open?
     if (!file.is_open()) {
         std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
         return;
     }
-
-    m_LevelData.clear(); // Empty out whatever was in there before
+    m_LevelData.clear(); 
     std::string line;
-
-    // Read the file line by line
     while (std::getline(file, line)) {
         std::vector<int> row;
         std::stringstream ss(line);
         std::string cell;
-
-        // Break the line apart wherever there is a comma
         while (std::getline(ss, cell, ',')) {
-            row.push_back(std::stoi(cell)); // Convert the text "0" into the integer 0
+            row.push_back(std::stoi(cell)); 
         }
-        
         m_LevelData.push_back(row);
     }
-    
     file.close();
+}
+
+void Map::Update(float deltaTime) {
+    m_WaterTimer += deltaTime;
+    if (m_WaterTimer >= 0.5f) {
+        m_WaterTimer = 0.0f; 
+        m_CurrentWaterFrame = (m_CurrentWaterFrame + 1) % m_WaterFrames.size();
+        for (auto& waterTile : m_WaterTiles) {
+            waterTile->SetDrawable(m_WaterFrames[m_CurrentWaterFrame]);
+        }
+    }
+}
+
+int Map::GetTileType(int gridX, int gridY) {
+    if (gridY < 0 || gridY >= static_cast<int>(m_LevelData.size()) || 
+        gridX < 0 || gridX >= static_cast<int>(m_LevelData[0].size())) {
+        return -1; 
+    }
+    return m_LevelData[gridY][gridX];
+}
+
+void Map::ClearMap() {
+    m_Tiles.clear();
+    m_WaterTiles.clear();
+    m_LevelData.clear();
 }
