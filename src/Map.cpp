@@ -9,72 +9,88 @@ Map::Map() {
     m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png"));
     m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
     m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
+    
 
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
+    m_PokeCentreInsideImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentreInside.png");
+    
+    m_PCDesk = std::make_shared<Util::Image>(RESOURCE_DIR "/PCDesk.png");
+    m_PCWall1 = std::make_shared<Util::Image>(RESOURCE_DIR "/PCWall1.png");
+    m_PCWall2 = std::make_shared<Util::Image>(RESOURCE_DIR "/PCWall2.png");
+    m_PCWall3 = std::make_shared<Util::Image>(RESOURCE_DIR "/PCWall3.png");
     m_PCDoorImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PC_doormat.png");
+    m_PCfloorTile = std::make_shared<Util::Image>(RESOURCE_DIR "/PCFloorTile.png");
     m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
 
-    // 2. BUILD THE FIRST MAP
+    // 2. SETUP THE DICTIONARY
+    InitTileRegistry();
+
+    // 3. BUILD THE FIRST MAP
     LoadLevel(RESOURCE_DIR "/level.csv");
 }
 
+void Map::InitTileRegistry() {
+    // ID = { texture, zIndex, yOffset, isWalkable }
+    m_TileRegistry[0] = { m_GrassImage, 0.0f, 0.0f, true };
+    m_TileRegistry[1] = { m_WaterFrames[0], 0.0f, 0.0f, false };
+    m_TileRegistry[2] = { m_DirtImage, 0.0f, 0.0f, true };
+    m_TileRegistry[3] = { m_PokeCentreImage, 0.1f, 24.0f, false };
+    m_TileRegistry[4] = { m_GrassImage, 0.0f, 0.0f, false }; 
+    m_TileRegistry[41] = { m_DirtImage, 0.0f, 0.0f, false }; 
+    m_TileRegistry[5] = { m_ChurchImage, 0.5f, 0.0f, false };
+    m_TileRegistry[6] = { m_DirtImage, 0.0f, 0.0f, false }; // Door (acts as wall)
+    m_TileRegistry[7] = { m_PCDoorImage, 0.5f, 0.0f, false }; // Inside mat (acts as wall)
+    m_TileRegistry[8] = { m_PokeCentreInsideImage, 0.3f, 0.0f, true }; // Inside floor
+    m_TileRegistry[9] = { m_PCfloorTile, 0.0f, 0.0f, true }; //  PokeCentre floor tile
+    m_TileRegistry[10] = { m_PCDesk, 0.3f, 0.0f, true };  
+    m_TileRegistry[11] = { m_PCWall1, 0.0f, 0.0f, false }; 
+    m_TileRegistry[12] = { m_PCWall2, 0.1f, 0.0f, false }; //  PokeCentre floor tile
+    m_TileRegistry[13] = { m_PCWall3, 0.1f, 0.0f, false }; //  PokeCentre floor tile
+
+
+
+
+}
+
 void Map::LoadLevel(const std::string& filepath) {
-    // 1. Erase whatever map was here before
     ClearMap(); 
-    
-    // 2. Read the new CSV
     LoadMapFromFile(filepath);
 
     if (m_LevelData.empty()) {
         std::cout << "Map is EMPTY! Check your file path: " << filepath << std::endl;
         return;
-    } else {
-        std::cout << "Map Loaded! Rows: " << m_LevelData.size() << " Columns: " << m_LevelData[0].size() << std::endl;
     }
 
-    // 3. Build the tiles! (Moved here from the constructor)
     float tileSize = 16.0f; 
     float scale = 3.0f;     
-    float scaledTileSize = tileSize * scale; 
+    float scaledTileSize = (tileSize * scale)-0.1f; 
     float startX = -288.0f; 
     float startY = 288.0f;
 
+    // THE BEAUTIFUL NEW DOUBLE LOOP
     for (size_t y = 0; y < m_LevelData.size(); y++) {
         for (size_t x = 0; x < m_LevelData[y].size(); x++) {
-            auto newTile = std::make_shared<Util::GameObject>();
-            float zIndex = 0.0f;
+            
+            int tileID = m_LevelData[y][x];
 
-            newTile->m_Transform.scale = {scale, scale};
-            newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
-            newTile->m_Transform.translation.y = startY - (y * scaledTileSize);
+            // If the ID exists in our dictionary, build it!
+            if (m_TileRegistry.count(tileID) > 0) {
+                auto newTile = std::make_shared<Util::GameObject>();
+                const TileProperties& props = m_TileRegistry[tileID];
 
-            if (m_LevelData[y][x] == 0) {
-                newTile->SetDrawable(m_GrassImage);
-            } else if (m_LevelData[y][x] == 1) {
-                newTile->SetDrawable(m_WaterFrames[0]);
-                m_WaterTiles.push_back(newTile);
-            } else if (m_LevelData[y][x] == 2) {
-                newTile->SetDrawable(m_DirtImage);
-            } else if (m_LevelData[y][x] == 3) {
-                newTile->SetDrawable(m_PokeCentreImage); 
-                zIndex = 0.3f; 
-                newTile->m_Transform.translation.y += 24.0f;
-            } else if (m_LevelData[y][x] == 4) {
-                newTile->SetDrawable(m_GrassImage); 
-            } else if (m_LevelData[y][x] == 5) {
-                newTile->SetDrawable(m_ChurchImage);
-                zIndex = 0.5f; 
-            } else if (m_LevelData[y][x] == 6) {
-                newTile->SetDrawable(m_DirtImage); // THE DOOR!
-            } else if (m_LevelData[y][x] == 7) {
+                newTile->m_Transform.scale = {scale, scale};
+                newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
+                newTile->m_Transform.translation.y = startY - (y * scaledTileSize) + props.yOffset;
+
+                newTile->SetDrawable(props.texture);
+                newTile->SetZIndex(props.zIndex);
                 
-                newTile->SetDrawable(m_PCDoorImage); // INSIDE EXIT MAT
-                zIndex = 0.5f; 
-            }
+                // Track water for animation
+                if (tileID == 1) { m_WaterTiles.push_back(newTile); }
 
-            newTile->SetZIndex(zIndex); 
-            m_Tiles.push_back(newTile);
+                m_Tiles.push_back(newTile);
+            }
         }
     }
 }
@@ -93,6 +109,7 @@ void Map::Draw() {
 }
 
 bool Map::IsWalkable(int x, int y) {
+    // Bounds check
     if (y < 0 || y >= static_cast<int>(m_LevelData.size()) || 
         x < 0 || x >= static_cast<int>(m_LevelData[0].size())) {
         return false; 
@@ -100,11 +117,11 @@ bool Map::IsWalkable(int x, int y) {
     
     int tileType = m_LevelData[y][x];
     
-    // 0 = Grass, 2 = Dirt. 
-    // Notice 6 is NOT here! It acts like a wall so Red bumps it.
-    if (tileType == 0 || tileType == 2) {
-        return true;
+    // Look up the boolean directly from our dictionary!
+    if (m_TileRegistry.count(tileType) > 0) {
+        return m_TileRegistry[tileType].isWalkable;
     }
+    
     return false; 
 }
 

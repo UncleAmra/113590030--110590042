@@ -38,7 +38,7 @@ void App::Update() {
             
             // 1. TELEPORT RED TO INDOOR SPAWN
             // Change these to the tile right above your exit mat in inside.csv
-            int indoorSpawnX = 5; 
+            int indoorSpawnX = 7; 
             int indoorSpawnY = 8; 
             m_Character.SetGridPosition(indoorSpawnX, indoorSpawnY);
             
@@ -56,8 +56,8 @@ void App::Update() {
             
             // 1. TELEPORT RED TO OUTDOOR SPAWN
             // Change these to the dirt tile right below your door in level.csv
-            int outdoorSpawnX = 10;
-            int outdoorSpawnY = 11;
+            int outdoorSpawnX = 15;
+            int outdoorSpawnY = 6;
             m_Character.SetGridPosition(outdoorSpawnX, outdoorSpawnY);
             
             // 2. SHIFT CAMERA TO NEW COORDINATES
