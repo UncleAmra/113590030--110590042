@@ -34,7 +34,7 @@ void App::Update() {
         // Are we outside trying to go IN?
         if (!m_IsIndoors) {
             LOG_TRACE("Warping Inside!");
-            m_Map->LoadLevel(RESOURCE_DIR "/inside.csv");
+            m_Map->LoadLevel(RESOURCE_DIR "/inside");
             
             // 1. TELEPORT RED TO INDOOR SPAWN
             // Change these to the tile right above your exit mat in inside.csv
@@ -52,7 +52,7 @@ void App::Update() {
         // Or are we inside trying to go OUT?
         else {
             LOG_TRACE("Warping Outside!");
-            m_Map->LoadLevel(RESOURCE_DIR "/level.csv");
+            m_Map->LoadLevel(RESOURCE_DIR "/level");
             
             // 1. TELEPORT RED TO OUTDOOR SPAWN
             // Change these to the dirt tile right below your door in level.csv

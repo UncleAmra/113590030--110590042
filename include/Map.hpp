@@ -16,6 +16,9 @@ struct TileProperties {
     bool isWalkable = false; // We can handle walkability here now!
 };
 
+
+class Prop;
+
 class Map : public Util::GameObject {
 public:
     Map(); 
@@ -33,7 +36,9 @@ public:
     void LoadLevel(const std::string& filepath);
 
 private:
+    std::vector<std::vector<int>> m_PropData;
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
+    std::vector<std::shared_ptr<Prop>> m_Props;
     std::vector<std::vector<int>> m_LevelData;
     
     std::shared_ptr<Util::Image> m_GrassImage;
@@ -56,7 +61,8 @@ private:
     std::unordered_map<int, TileProperties> m_TileRegistry;
 
     void InitTileRegistry(); // ADDED: Helper function to set up rules
-    void LoadMapFromFile(const std::string& filepath);
+    std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
+    //void LoadMapFromFile(const std::string& filepath);
     void ClearMap();
 
     std::vector<std::shared_ptr<Util::GameObject>> m_WaterTiles;

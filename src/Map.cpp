@@ -1,4 +1,5 @@
 #include "Map.hpp"
+#include "Prop.hpp"
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
@@ -10,7 +11,7 @@ Map::Map() {
     m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
     m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
     
-
+    
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
     m_PokeCentreInsideImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentreInside.png");
@@ -23,11 +24,12 @@ Map::Map() {
     m_PCfloorTile = std::make_shared<Util::Image>(RESOURCE_DIR "/PCFloorTile.png");
     m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
 
+    
     // 2. SETUP THE DICTIONARY
     InitTileRegistry();
 
     // 3. BUILD THE FIRST MAP
-    LoadLevel(RESOURCE_DIR "/level.csv");
+    LoadLevel(RESOURCE_DIR "/level");
 }
 
 void Map::InitTileRegistry() {
@@ -36,7 +38,7 @@ void Map::InitTileRegistry() {
     m_TileRegistry[1] = { m_WaterFrames[0], 0.0f, 0.0f, false };
     m_TileRegistry[2] = { m_DirtImage, 0.0f, 0.0f, true };
     m_TileRegistry[3] = { m_PokeCentreImage, 0.1f, 24.0f, false };
-    m_TileRegistry[4] = { m_GrassImage, 0.0f, 0.0f, false }; 
+    m_TileRegistry[4] = { m_GrassImage, -0.1f, 0.0f, false }; 
     m_TileRegistry[41] = { m_DirtImage, 0.0f, 0.0f, false }; 
     m_TileRegistry[5] = { m_ChurchImage, 0.5f, 0.0f, false };
     m_TileRegistry[6] = { m_DirtImage, 0.0f, 0.0f, false }; // Door (acts as wall)
@@ -45,36 +47,58 @@ void Map::InitTileRegistry() {
     m_TileRegistry[9] = { m_PCfloorTile, 0.0f, 0.0f, true }; //  PokeCentre floor tile
     m_TileRegistry[10] = { m_PCDesk, 0.3f, 0.0f, true };  
     m_TileRegistry[11] = { m_PCWall1, 0.0f, 0.0f, false }; 
-    m_TileRegistry[12] = { m_PCWall2, 0.1f, 0.0f, false }; //  PokeCentre floor tile
-    m_TileRegistry[13] = { m_PCWall3, 0.1f, 0.0f, false }; //  PokeCentre floor tile
+    m_TileRegistry[12] = { m_PCWall2, 0.0f, 0.0f, false }; //  PokeCentre floor tile
+    m_TileRegistry[13] = { m_PCWall3, 0.0f, 0.0f, false }; //  PokeCentre floor tile
 
 
 
 
 }
+std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
+    std::vector<std::vector<int>> data;
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
+        return data; // Return empty data if it fails
+    }
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        std::vector<int> row;
+        std::stringstream ss(line);
+        std::string cell;
+        while (std::getline(ss, cell, ',')) {
+            row.push_back(std::stoi(cell)); 
+        }
+        data.push_back(row);
+    }
+    return data;
+}
 
-void Map::LoadLevel(const std::string& filepath) {
+void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
-    LoadMapFromFile(filepath);
+    
+    // 1. Load the two layers using our new helper function!
+    // Example: If mapName is "RESOURCE_DIR/level", it loads "RESOURCE_DIR/level_ground.csv"
+    m_LevelData = LoadCSV(mapName + "_ground.csv");
+    m_PropData = LoadCSV(mapName + "_props.csv");
 
     if (m_LevelData.empty()) {
-        std::cout << "Map is EMPTY! Check your file path: " << filepath << std::endl;
+        std::cout << "Map Ground is EMPTY!" << std::endl;
         return;
     }
 
     float tileSize = 16.0f; 
     float scale = 3.0f;     
-    float scaledTileSize = (tileSize * scale)-0.1f; 
+    float scaledTileSize = (tileSize * scale) - 0.1f; 
     float startX = -288.0f; 
     float startY = 288.0f;
 
-    // THE BEAUTIFUL NEW DOUBLE LOOP
+    // 2. PHASE 1: Build the Ground Tiles
     for (size_t y = 0; y < m_LevelData.size(); y++) {
         for (size_t x = 0; x < m_LevelData[y].size(); x++) {
-            
             int tileID = m_LevelData[y][x];
-
-            // If the ID exists in our dictionary, build it!
+            
             if (m_TileRegistry.count(tileID) > 0) {
                 auto newTile = std::make_shared<Util::GameObject>();
                 const TileProperties& props = m_TileRegistry[tileID];
@@ -82,29 +106,58 @@ void Map::LoadLevel(const std::string& filepath) {
                 newTile->m_Transform.scale = {scale, scale};
                 newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
                 newTile->m_Transform.translation.y = startY - (y * scaledTileSize) + props.yOffset;
-
                 newTile->SetDrawable(props.texture);
                 newTile->SetZIndex(props.zIndex);
                 
-                // Track water for animation
                 if (tileID == 1) { m_WaterTiles.push_back(newTile); }
-
                 m_Tiles.push_back(newTile);
             }
         }
     }
+
+    // 3. PHASE 2: Spawn the Props!
+    // We check the second grid to see if any props go on top of the ground
+    if (!m_PropData.empty()) {
+        for (size_t y = 0; y < m_PropData.size(); y++) {
+            for (size_t x = 0; x < m_PropData[y].size(); x++) {
+                int propID = m_PropData[y][x];
+                
+                // Calculate exactly where this is in the world
+                float worldX = startX + (x * scaledTileSize);
+                float worldY = startY - (y * scaledTileSize);
+
+                if (propID == 3) { // 3 = PokeCenter
+                    auto pc = std::make_shared<Prop>(RESOURCE_DIR "/PokeCentre.png", glm::vec2(worldX, worldY));
+                    m_Props.push_back(pc);
+                }
+                else if (propID == 5) { // 5 = Church
+                    auto church = std::make_shared<Prop>(RESOURCE_DIR "/Church.png", glm::vec2(worldX, worldY));
+                    m_Props.push_back(church);
+                }
+            }
+        }
+    }
 }
+
+
 
 void Map::Move(float dx, float dy) {
     for (auto& tile : m_Tiles) {
         tile->m_Transform.translation.x += dx;
         tile->m_Transform.translation.y += dy;
     }
+    for (auto& prop : m_Props) {
+        prop->m_Transform.translation.x += dx;
+        prop->m_Transform.translation.y += dy;
+    }
 }
 
 void Map::Draw() {
     for (auto& tile : m_Tiles) {
         tile->Draw();
+    }
+    for (auto& prop : m_Props) {
+        prop->Draw(); 
     }
 }
 
@@ -125,25 +178,6 @@ bool Map::IsWalkable(int x, int y) {
     return false; 
 }
 
-void Map::LoadMapFromFile(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
-        std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
-        return;
-    }
-    m_LevelData.clear(); 
-    std::string line;
-    while (std::getline(file, line)) {
-        std::vector<int> row;
-        std::stringstream ss(line);
-        std::string cell;
-        while (std::getline(ss, cell, ',')) {
-            row.push_back(std::stoi(cell)); 
-        }
-        m_LevelData.push_back(row);
-    }
-    file.close();
-}
 
 void Map::Update(float deltaTime) {
     m_WaterTimer += deltaTime;
@@ -153,6 +187,9 @@ void Map::Update(float deltaTime) {
         for (auto& waterTile : m_WaterTiles) {
             waterTile->SetDrawable(m_WaterFrames[m_CurrentWaterFrame]);
         }
+    }
+    for (auto& prop : m_Props) {
+        prop->Update();
     }
 }
 
@@ -168,4 +205,5 @@ void Map::ClearMap() {
     m_Tiles.clear();
     m_WaterTiles.clear();
     m_LevelData.clear();
+    m_Props.clear();
 }

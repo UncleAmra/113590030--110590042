@@ -59,7 +59,8 @@ void Character::UpdateSprite() {
 
 glm::vec2 Character::Update(std::shared_ptr<Map> map) {
     glm::vec2 movement = {0.0f, 0.0f};
-
+    float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
+    SetZIndex(dynamicZ);
     if (!m_IsMoving) {
         int targetX = m_GridX;
         int targetY = m_GridY;
