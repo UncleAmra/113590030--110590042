@@ -4,7 +4,10 @@
 #include "pch.hpp"
 #include "Util/GameObject.hpp"
 #include "Util/Image.hpp"
+#include "Util/Time.hpp"
+#include "Util/Animation.hpp"
 #include <vector>
+#include <string>
 #include <memory>
 #include <unordered_map> // ADDED FOR OUR DICTIONARY
 
@@ -22,16 +25,18 @@ class Prop;
 class Map : public Util::GameObject {
 public:
     Map(); 
-    
+    int GetPropType(int gridX, int gridY);
     void Move(float dx, float dy);
     void Draw(); 
     bool IsWalkable(int x, int y);
+    
+    //std::shared_ptr<Util::Animation> m_MasterWaterAnim;
     
     float m_WaterTimer = 0.0f;
     bool m_IsWaterFrameOne = true;
     int m_CurrentWaterFrame = 0;
     
-    void Update(float deltaTime);
+    void Update();
     int GetTileType(int gridX, int gridY);
     void LoadLevel(const std::string& filepath);
 
@@ -41,6 +46,11 @@ private:
     std::vector<std::shared_ptr<Prop>> m_Props;
     std::vector<std::vector<int>> m_LevelData;
     
+    //water animation
+    std::shared_ptr<Util::Animation> m_LeaderWater;
+    std::shared_ptr<Util::Animation> m_FollowerWater;
+
+    //tile images
     std::shared_ptr<Util::Image> m_GrassImage;
     std::shared_ptr<Util::Image> m_PCfloorTile;
     std::shared_ptr<Util::Image> m_WaterImage;

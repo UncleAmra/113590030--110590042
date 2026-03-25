@@ -15,8 +15,7 @@ void App::Start() {
 }
 
 void App::Update() {
-    m_Map->Draw();
-    m_Map->Update(0.016f);
+    m_Map->Update();
     //m_Character.Update();
     
     // 4. Handle quitting
@@ -39,14 +38,14 @@ void App::Update() {
             // 1. TELEPORT RED TO INDOOR SPAWN
             // Change these to the tile right above your exit mat in inside.csv
             int indoorSpawnX = 7; 
-            int indoorSpawnY = 8; 
+            int indoorSpawnY = 9; 
             m_Character.SetGridPosition(indoorSpawnX, indoorSpawnY);
             
             // 2. SHIFT CAMERA TO NEW COORDINATES
             float shiftX = -288.0f + (indoorSpawnX * 48.0f);
             float shiftY = 288.0f - (indoorSpawnY * 48.0f);
             m_Map->Move(-shiftX, -shiftY);
-            
+            m_Character.StopMoving();
             m_IsIndoors = true; 
         } 
         // Or are we inside trying to go OUT?
@@ -57,20 +56,22 @@ void App::Update() {
             // 1. TELEPORT RED TO OUTDOOR SPAWN
             // Change these to the dirt tile right below your door in level.csv
             int outdoorSpawnX = 15;
-            int outdoorSpawnY = 6;
+            int outdoorSpawnY = 7;
             m_Character.SetGridPosition(outdoorSpawnX, outdoorSpawnY);
             
             // 2. SHIFT CAMERA TO NEW COORDINATES
             float shiftX = -288.0f + (outdoorSpawnX * 48.0f);
             float shiftY = 288.0f - (outdoorSpawnY * 48.0f);
             m_Map->Move(-shiftX, -shiftY);
-            
+            m_Character.StopMoving();
             m_IsIndoors = false;
         }
 
         // FORCE THE LOOP TO STOP!
         m_Character.ClearDoorFlag(); 
     }
+    m_Map->Draw();
+    m_Character.Draw();
 }
 
 void App::End() {

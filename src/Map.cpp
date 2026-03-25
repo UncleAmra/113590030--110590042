@@ -7,10 +7,9 @@
 Map::Map() {
     // 1. LOAD IMAGES ONLY ONCE
     m_GrassImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Grass1.png");
-    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png"));
-    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
-    m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
-    
+    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png"));
+    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
+    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
     
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
@@ -35,14 +34,14 @@ Map::Map() {
 void Map::InitTileRegistry() {
     // ID = { texture, zIndex, yOffset, isWalkable }
     m_TileRegistry[0] = { m_GrassImage, 0.0f, 0.0f, true };
-    m_TileRegistry[1] = { m_WaterFrames[0], 0.0f, 0.0f, false };
+    m_TileRegistry[1] = { nullptr, 0.0f, 0.0f, false };
     m_TileRegistry[2] = { m_DirtImage, 0.0f, 0.0f, true };
     m_TileRegistry[3] = { m_PokeCentreImage, 0.1f, 24.0f, false };
     m_TileRegistry[4] = { m_GrassImage, -0.1f, 0.0f, false }; 
     m_TileRegistry[41] = { m_DirtImage, 0.0f, 0.0f, false }; 
     m_TileRegistry[5] = { m_ChurchImage, 0.5f, 0.0f, false };
     m_TileRegistry[6] = { m_DirtImage, 0.0f, 0.0f, false }; // Door (acts as wall)
-    m_TileRegistry[7] = { m_PCDoorImage, 0.5f, 0.0f, false }; // Inside mat (acts as wall)
+    m_TileRegistry[7] = { m_PCDoorImage, 0.1f, 0.0f, false }; // Inside mat (acts as wall)
     m_TileRegistry[8] = { m_PokeCentreInsideImage, 0.3f, 0.0f, true }; // Inside floor
     m_TileRegistry[9] = { m_PCfloorTile, 0.0f, 0.0f, true }; //  PokeCentre floor tile
     m_TileRegistry[10] = { m_PCDesk, 0.3f, 0.0f, true };  
@@ -93,7 +92,11 @@ void Map::LoadLevel(const std::string& mapName) {
     float scaledTileSize = (tileSize * scale) - 0.1f; 
     float startX = -288.0f; 
     float startY = 288.0f;
-
+    std::vector<std::string> waterPaths = {RESOURCE_DIR "/Water1.png", RESOURCE_DIR "/Water2.png", RESOURCE_DIR "/Water3.png"};
+    //auto masterWaterAnim = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
+    m_LeaderWater = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
+    m_FollowerWater = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
+    bool leaderAssigned = false;
     // 2. PHASE 1: Build the Ground Tiles
     for (size_t y = 0; y < m_LevelData.size(); y++) {
         for (size_t x = 0; x < m_LevelData[y].size(); x++) {
@@ -106,14 +109,28 @@ void Map::LoadLevel(const std::string& mapName) {
                 newTile->m_Transform.scale = {scale, scale};
                 newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
                 newTile->m_Transform.translation.y = startY - (y * scaledTileSize) + props.yOffset;
-                newTile->SetDrawable(props.texture);
                 newTile->SetZIndex(props.zIndex);
                 
-                if (tileID == 1) { m_WaterTiles.push_back(newTile); }
+                // Assign the correct image/animation
+                if (tileID == 1) { 
+                    if (!leaderAssigned) {
+                        newTile->SetDrawable(m_LeaderWater); // First tile gets the Leader
+                        leaderAssigned = true;
+                    } else {
+                        newTile->SetDrawable(m_FollowerWater); // The rest follow
+                    }
+                } else {
+                    newTile->SetDrawable(props.texture); // Normal ground tiles
+                }
+
+                // CRITICAL: Don't forget to save the tile!
                 m_Tiles.push_back(newTile);
+            
             }
         }
     }
+  
+
 
     // 3. PHASE 2: Spawn the Props!
     // We check the second grid to see if any props go on top of the ground
@@ -133,6 +150,12 @@ void Map::LoadLevel(const std::string& mapName) {
                 else if (propID == 5) { // 5 = Church
                     auto church = std::make_shared<Prop>(RESOURCE_DIR "/Church.png", glm::vec2(worldX, worldY));
                     m_Props.push_back(church);
+                }
+                else if (propID == 7) { // 7 = PC doormat
+                    auto exitDoor = std::make_shared<Prop>(RESOURCE_DIR "/PC_doormat.png", glm::vec2(worldX, worldY));
+                    exitDoor->SetZIndex(0.1f);
+                    exitDoor->m_UseDynamicZ = false;
+                    m_Props.push_back(exitDoor);
                 }
             }
         }
@@ -179,15 +202,13 @@ bool Map::IsWalkable(int x, int y) {
 }
 
 
-void Map::Update(float deltaTime) {
-    m_WaterTimer += deltaTime;
-    if (m_WaterTimer >= 0.5f) {
-        m_WaterTimer = 0.0f; 
-        m_CurrentWaterFrame = (m_CurrentWaterFrame + 1) % m_WaterFrames.size();
-        for (auto& waterTile : m_WaterTiles) {
-            waterTile->SetDrawable(m_WaterFrames[m_CurrentWaterFrame]);
-        }
+void Map::Update() {
+    // 1. Tell the Follower to copy the Leader's exact page number!
+    if (m_LeaderWater && m_FollowerWater) {
+        m_FollowerWater->SetCurrentFrame(m_LeaderWater->GetCurrentFrameIndex());
     }
+
+    // 2. Update props
     for (auto& prop : m_Props) {
         prop->Update();
     }
@@ -206,4 +227,14 @@ void Map::ClearMap() {
     m_WaterTiles.clear();
     m_LevelData.clear();
     m_Props.clear();
+}
+
+int Map::GetPropType(int gridX, int gridY) {
+    // Bounds check to prevent crashes
+    if (gridY < 0 || gridY >= static_cast<int>(m_PropData.size()) || 
+        gridX < 0 || gridX >= static_cast<int>(m_PropData[0].size())) {
+        return 0; // 0 means "no prop here"
+    }
+    
+    return m_PropData[gridY][gridX];
 }

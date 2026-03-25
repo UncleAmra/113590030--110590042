@@ -12,7 +12,8 @@ void Prop::Update() {
     // Y-Sorting Magic!
     // We start at a base of 0.5f (above the ground tiles at 0.0f).
     // We divide Y by 1000.0f to keep the number small enough that it doesn't break the engine.
-    float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
-    
-    SetZIndex(dynamicZ);
+    if (m_UseDynamicZ) {
+        float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
+        SetZIndex(dynamicZ);
+    }
 }

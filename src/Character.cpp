@@ -19,10 +19,12 @@ Character::Character(float x, float y) {
 void Character::LoadSprites() {
     // Define the sequences using your 12 new files
     // The pattern is: Left foot (0), Stand (1), Right foot (2), Stand (1)
-    std::vector<std::string> downFrames  = {RESOURCE_DIR "/character_000.png",  RESOURCE_DIR "/character_001.png",  RESOURCE_DIR "/character_002.png",  RESOURCE_DIR "/character_000.png"};
-    std::vector<std::string> upFrames    = {RESOURCE_DIR "/character_003.png",    RESOURCE_DIR "/character_004.png",    RESOURCE_DIR "/character_005.png",    RESOURCE_DIR "/character_003.png"};
-    std::vector<std::string> leftFrames  = {RESOURCE_DIR "/character_006.png",  RESOURCE_DIR "/character_007.png",  RESOURCE_DIR "/character_008.png",  RESOURCE_DIR "/character_006.png"};
-    std::vector<std::string> rightFrames = {RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_010.png", RESOURCE_DIR "/character_011.png", RESOURCE_DIR "/character_009.png"};
+    // Change the last string in each vector to be the "Standing" sprite!
+// Pattern: Stand, Foot 1, Stand, Foot 2
+std::vector<std::string> downFrames  = {RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_001.png", RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_002.png"};
+std::vector<std::string> upFrames    = {RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_004.png", RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_005.png"};
+std::vector<std::string> leftFrames  = {RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_007.png", RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_008.png"};
+std::vector<std::string> rightFrames = {RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_010.png", RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_011.png"};
 
     // Initialize the animations (Paths, Play=false, Interval=150ms, Looping=true, Cooldown=0)
     m_AnimDown  = std::make_shared<Util::Animation>(downFrames, false, 150, true, 0);
@@ -87,25 +89,40 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
             m_Direction = Direction::RIGHT;
             attemptMove = true;
         }
-
-        if (attemptMove) {
-            // Ask the map: Is this tile grass?
+        
+if (attemptMove) {
+            // 1. Check the ground layer for the outside door (ID 6)
+            int groundTile = map->GetTileType(targetX, targetY);
+            // 2. Check the prop layer for the inside doormat (ID 7)
+            int propTile = map->GetPropType(targetX, targetY);
+            
+            // Ask the map: Is this tile walkable?
             if (map->IsWalkable(targetX, targetY)) {
+                // WE ARE WALKING!
                 m_GridX = targetX;
                 m_GridY = targetY;
                 m_State = State::MOVING;
                 m_IsMoving = true;
+                
+                // Did we just step ONTO the inside doormat?
+                //if (propTile == 7) {
+                //    m_HitDoor = true;
+                //}
             } else {
-                // It's water! Turn to face it, but don't walk. (Classic Pokemon style!)
+                // WE BUMPED A WALL! 
                 m_State = State::IDLE;
                 m_CurrentDirection = {0.0f, 0.0f};
-                int hitTile = map->GetTileType(targetX, targetY);
-                if (hitTile == 6 || hitTile == 7) {
-                    m_HitDoor = true; // We bumped the door!
+                
+                // Did we bump INTO the outside door?
+                if (groundTile == 6 || groundTile == 99) {
+                    m_HitDoor = true; 
                 } else {
-                    m_HitDoor = false; // We bumped normal water/wall
+                    m_HitDoor = false; 
                 }
             }
+        }
+        else{
+            m_State = State::IDLE;
         }
     }
 
@@ -120,11 +137,17 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
             m_IsMoving = false;
             m_PixelsMoved = 0.0f;
             m_CurrentDirection = {0.0f, 0.0f};
-            m_State = State::IDLE; 
+            //m_State = State::IDLE; 
         }
     }
 
-    UpdateSprite();
-    Draw(); 
+    UpdateSprite(); 
     return movement; 
+}
+
+void Character::StopMoving() {
+    m_IsMoving = false;
+    m_PixelsMoved = 0.0f;
+    m_CurrentDirection = {0.0f, 0.0f};
+    m_State = State::IDLE;
 }
