@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <unordered_map> // ADDED FOR OUR DICTIONARY
+#include <unordered_map> 
 
 // ADDED: The blueprint for every tile!
 struct TileProperties {
@@ -19,38 +19,46 @@ struct TileProperties {
     bool isWalkable = false; // We can handle walkability here now!
 };
 
-
 class Prop;
 
 class Map : public Util::GameObject {
 public:
     Map(); 
+    void WarpTo(int gridX, int gridY);
     int GetPropType(int gridX, int gridY);
     void Move(float dx, float dy);
     void Draw(); 
     bool IsWalkable(int x, int y);
-    
-    //std::shared_ptr<Util::Animation> m_MasterWaterAnim;
-    
-    float m_WaterTimer = 0.0f;
-    bool m_IsWaterFrameOne = true;
-    int m_CurrentWaterFrame = 0;
     
     void Update();
     int GetTileType(int gridX, int gridY);
     void LoadLevel(const std::string& filepath);
 
 private:
+    // --- MAP DATA ---
     std::vector<std::vector<int>> m_PropData;
+    std::vector<std::vector<int>> m_LevelData;
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
     std::vector<std::shared_ptr<Prop>> m_Props;
-    std::vector<std::vector<int>> m_LevelData;
     
-    //water animation
+    // --- THE REGISTRY ---
+    std::unordered_map<int, TileProperties> m_TileRegistry;
+    void InitTileRegistry(); 
+
+    // --- ANIMATIONS ---
     std::shared_ptr<Util::Animation> m_LeaderWater;
     std::shared_ptr<Util::Animation> m_FollowerWater;
 
-    //tile images
+    // (Consider deleting these if Util::Animation handles your water now!)
+    float m_WaterTimer = 0.0f;
+    bool m_IsWaterFrameOne = true;
+    int m_CurrentWaterFrame = 0;
+    std::vector<std::shared_ptr<Util::GameObject>> m_WaterTiles;
+    std::vector<std::shared_ptr<Util::Image>> m_WaterFrames;
+
+    // --- TILE IMAGES ---
+    // Pro-tip: If you only use these inside InitTileRegistry() to load 
+    // the dictionary, you don't actually need to save them as member variables!
     std::shared_ptr<Util::Image> m_GrassImage;
     std::shared_ptr<Util::Image> m_PCfloorTile;
     std::shared_ptr<Util::Image> m_WaterImage;
@@ -65,17 +73,10 @@ private:
     std::shared_ptr<Util::Image> m_PCWall2;
     std::shared_ptr<Util::Image> m_PCWall3;
     std::shared_ptr<Util::Image> m_PokeCentreInsideImage;
-    std::vector<std::shared_ptr<Util::Image>> m_WaterFrames;
 
-    // ADDED: The Dictionary that holds all our tile rules
-    std::unordered_map<int, TileProperties> m_TileRegistry;
-
-    void InitTileRegistry(); // ADDED: Helper function to set up rules
+    // --- HELPER FUNCTIONS ---
     std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
-    //void LoadMapFromFile(const std::string& filepath);
     void ClearMap();
-
-    std::vector<std::shared_ptr<Util::GameObject>> m_WaterTiles;
 };
 
 #endif

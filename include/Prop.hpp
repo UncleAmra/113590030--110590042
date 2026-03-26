@@ -9,8 +9,13 @@ class Prop : public Util::GameObject {
 public:
     // Make sure 'const', '&', and the default values are exactly like this!
     Prop(const std::string& imagePath, const glm::vec2& startPosition, float scale = 3.0f, float zIndex = 0.5f);
-    bool m_UseDynamicZ = true;
+    void SetDynamicZ(bool dynamic) { m_UseDynamicZ = dynamic; }
     void Update();
+
+private: 
+    bool m_UseDynamicZ = true;
 };
+
+
 
 #endif // PROP_HPP

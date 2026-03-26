@@ -4,6 +4,7 @@
 #include "pch.hpp"
 #include "Character.hpp"
 #include "Map.hpp"
+#include "GameConfig.hpp"
 
 class App {
 public:

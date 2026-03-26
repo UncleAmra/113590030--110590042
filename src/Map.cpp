@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "Prop.hpp"
+#include "GameConfig.hpp" // <-- 1. Added our new config file!
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
@@ -7,9 +8,6 @@
 Map::Map() {
     // 1. LOAD IMAGES ONLY ONCE
     m_GrassImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Grass1.png");
-    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water1.png"));
-    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water2.png"));
-    //m_WaterFrames.push_back(std::make_shared<Util::Image>(RESOURCE_DIR "/Water3.png"));
     
     m_DirtImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png");
     m_PokeCentreImage = std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png");
@@ -23,7 +21,6 @@ Map::Map() {
     m_PCfloorTile = std::make_shared<Util::Image>(RESOURCE_DIR "/PCFloorTile.png");
     m_ChurchImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Church.png");
 
-    
     // 2. SETUP THE DICTIONARY
     InitTileRegistry();
 
@@ -48,11 +45,8 @@ void Map::InitTileRegistry() {
     m_TileRegistry[11] = { m_PCWall1, 0.0f, 0.0f, false }; 
     m_TileRegistry[12] = { m_PCWall2, 0.0f, 0.0f, false }; //  PokeCentre floor tile
     m_TileRegistry[13] = { m_PCWall3, 0.0f, 0.0f, false }; //  PokeCentre floor tile
-
-
-
-
 }
+
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     std::vector<std::vector<int>> data;
     std::ifstream file(filepath);
@@ -67,7 +61,14 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
         std::stringstream ss(line);
         std::string cell;
         while (std::getline(ss, cell, ',')) {
-            row.push_back(std::stoi(cell)); 
+            try {
+                row.push_back(std::stoi(cell)); 
+            } catch (const std::exception& e) {
+                // If it hits a stray space or a \r, it catches the error and defaults to 0
+                std::cerr << "Bad CSV value '" << cell << "' at row " 
+                          << data.size() << ": " << e.what() << "\n";
+                row.push_back(0); 
+            }
         }
         data.push_back(row);
     }
@@ -77,8 +78,7 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
 void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
     
-    // 1. Load the two layers using our new helper function!
-    // Example: If mapName is "RESOURCE_DIR/level", it loads "RESOURCE_DIR/level_ground.csv"
+    // 1. Load the two layers
     m_LevelData = LoadCSV(mapName + "_ground.csv");
     m_PropData = LoadCSV(mapName + "_props.csv");
 
@@ -87,17 +87,12 @@ void Map::LoadLevel(const std::string& mapName) {
         return;
     }
 
-    float tileSize = 16.0f; 
-    float scale = 3.0f;     
-    float scaledTileSize = (tileSize * scale) - 0.1f; 
-    float startX = -288.0f; 
-    float startY = 288.0f;
     std::vector<std::string> waterPaths = {RESOURCE_DIR "/Water1.png", RESOURCE_DIR "/Water2.png", RESOURCE_DIR "/Water3.png"};
-    //auto masterWaterAnim = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
     m_LeaderWater = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
     m_FollowerWater = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
     bool leaderAssigned = false;
-    // 2. PHASE 1: Build the Ground Tiles
+    
+    // 3. PHASE 1: Build the Ground Tiles
     for (size_t y = 0; y < m_LevelData.size(); y++) {
         for (size_t x = 0; x < m_LevelData[y].size(); x++) {
             int tileID = m_LevelData[y][x];
@@ -106,9 +101,10 @@ void Map::LoadLevel(const std::string& mapName) {
                 auto newTile = std::make_shared<Util::GameObject>();
                 const TileProperties& props = m_TileRegistry[tileID];
 
-                newTile->m_Transform.scale = {scale, scale};
-                newTile->m_Transform.translation.x = startX + (x * scaledTileSize);
-                newTile->m_Transform.translation.y = startY - (y * scaledTileSize) + props.yOffset;
+                // Use the config scale and EFFECTIVE_TILE_SIZE
+                newTile->m_Transform.scale = {GameConfig::SCALE, GameConfig::SCALE};
+                newTile->m_Transform.translation.x = GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
+                newTile->m_Transform.translation.y = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE) + props.yOffset;
                 newTile->SetZIndex(props.zIndex);
                 
                 // Assign the correct image/animation
@@ -123,46 +119,59 @@ void Map::LoadLevel(const std::string& mapName) {
                     newTile->SetDrawable(props.texture); // Normal ground tiles
                 }
 
-                // CRITICAL: Don't forget to save the tile!
                 m_Tiles.push_back(newTile);
-            
             }
         }
     }
   
-
-
-    // 3. PHASE 2: Spawn the Props!
-    // We check the second grid to see if any props go on top of the ground
+    // 4. PHASE 2: Spawn the Props!
     if (!m_PropData.empty()) {
         for (size_t y = 0; y < m_PropData.size(); y++) {
             for (size_t x = 0; x < m_PropData[y].size(); x++) {
                 int propID = m_PropData[y][x];
                 
-                // Calculate exactly where this is in the world
-                float worldX = startX + (x * scaledTileSize);
-                float worldY = startY - (y * scaledTileSize);
+                // Calculate position using EFFECTIVE_TILE_SIZE
+                float worldX = GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
+                float worldY = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE);
 
-                if (propID == 3) { // 3 = PokeCenter
+                // Use the new GameConfig names instead of magic numbers!
+                if (propID == GameConfig::PROP_POKECENTER) { 
                     auto pc = std::make_shared<Prop>(RESOURCE_DIR "/PokeCentre.png", glm::vec2(worldX, worldY));
                     m_Props.push_back(pc);
                 }
-                else if (propID == 5) { // 5 = Church
+                else if (propID == GameConfig::PROP_CHURCH) { 
                     auto church = std::make_shared<Prop>(RESOURCE_DIR "/Church.png", glm::vec2(worldX, worldY));
                     m_Props.push_back(church);
                 }
-                else if (propID == 7) { // 7 = PC doormat
+                else if (propID == GameConfig::PROP_DOORMAT) { 
                     auto exitDoor = std::make_shared<Prop>(RESOURCE_DIR "/PC_doormat.png", glm::vec2(worldX, worldY));
                     exitDoor->SetZIndex(0.1f);
-                    exitDoor->m_UseDynamicZ = false;
+                    exitDoor->SetDynamicZ(false);
                     m_Props.push_back(exitDoor);
+                }
+                else if (propID == GameConfig::PROP_PC_DESK) { 
+                    // Make sure the image path matches your actual file!
+                    auto desk = std::make_shared<Prop>(RESOURCE_DIR "/PCDesk.png", glm::vec2(worldX, worldY));
+                    desk->SetZIndex(0.4f); // Sits above the floor, but behind the player if needed
+                    desk->SetDynamicZ(false); // Desk doesn't move, so lock it!
+                    m_Props.push_back(desk);
+                }
+                else if (propID == GameConfig::PROP_PC_WALL_LEFT) { 
+                    auto leftWall = std::make_shared<Prop>(RESOURCE_DIR "/PCWall2.png", glm::vec2(worldX, worldY));
+                    leftWall->SetZIndex(0.3f); // High Z-index so it overlaps the player walking near it
+                    leftWall->SetDynamicZ(false);
+                    m_Props.push_back(leftWall);
+                }
+                else if (propID == GameConfig::PROP_PC_WALL_RIGHT) { 
+                    auto rightWall = std::make_shared<Prop>(RESOURCE_DIR "/PCWall3.png", glm::vec2(worldX, worldY));
+                    rightWall->SetZIndex(0.3f); 
+                    rightWall->SetDynamicZ(false);
+                    m_Props.push_back(rightWall);
                 }
             }
         }
     }
 }
-
-
 
 void Map::Move(float dx, float dy) {
     for (auto& tile : m_Tiles) {
@@ -197,10 +206,15 @@ bool Map::IsWalkable(int x, int y) {
     if (m_TileRegistry.count(tileType) > 0) {
         return m_TileRegistry[tileType].isWalkable;
     }
+    int propID = m_PropData[y][x];
+    if (propID == GameConfig::PROP_PC_DESK || 
+        propID == GameConfig::PROP_PC_WALL_LEFT || 
+        propID == GameConfig::PROP_PC_WALL_RIGHT) {
+        return false; // The prop blocks you!
+    }
     
     return false; 
 }
-
 
 void Map::Update() {
     // 1. Tell the Follower to copy the Leader's exact page number!
@@ -237,4 +251,10 @@ int Map::GetPropType(int gridX, int gridY) {
     }
     
     return m_PropData[gridY][gridX];
+}
+
+void Map::WarpTo(int gridX, int gridY) {
+    float shiftX = GameConfig::CAMERA_START_X + (gridX * GameConfig::EFFECTIVE_TILE_SIZE);
+    float shiftY = GameConfig::CAMERA_START_Y - (gridY * GameConfig::EFFECTIVE_TILE_SIZE);
+    Move(-shiftX, -shiftY);
 }

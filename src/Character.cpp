@@ -2,7 +2,7 @@
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
 #include "Map.hpp"
-#include "stdio.h"
+// Removed stdio.h!
 
 Character::Character(float x, float y) {
     m_Transform.translation = {x, y + 24.0f};
@@ -10,21 +10,17 @@ Character::Character(float x, float y) {
     m_Visible = true;
     m_State = State::IDLE;
     m_Direction = Direction::DOWN;
-    m_Transform.scale = {3.0f, 3.0f};
+    m_Transform.scale = {GameConfig::SCALE, GameConfig::SCALE}; // Used config here too!
     
     LoadSprites();
     UpdateSprite();
 }
 
 void Character::LoadSprites() {
-    // Define the sequences using your 12 new files
-    // The pattern is: Left foot (0), Stand (1), Right foot (2), Stand (1)
-    // Change the last string in each vector to be the "Standing" sprite!
-// Pattern: Stand, Foot 1, Stand, Foot 2
-std::vector<std::string> downFrames  = {RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_001.png", RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_002.png"};
-std::vector<std::string> upFrames    = {RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_004.png", RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_005.png"};
-std::vector<std::string> leftFrames  = {RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_007.png", RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_008.png"};
-std::vector<std::string> rightFrames = {RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_010.png", RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_011.png"};
+    std::vector<std::string> downFrames  = {RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_001.png", RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_002.png"};
+    std::vector<std::string> upFrames    = {RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_004.png", RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_005.png"};
+    std::vector<std::string> leftFrames  = {RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_007.png", RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_008.png"};
+    std::vector<std::string> rightFrames = {RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_010.png", RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_011.png"};
 
     // Initialize the animations (Paths, Play=false, Interval=150ms, Looping=true, Cooldown=0)
     m_AnimDown  = std::make_shared<Util::Animation>(downFrames, false, 150, true, 0);
@@ -63,13 +59,14 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
     glm::vec2 movement = {0.0f, 0.0f};
     float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
     SetZIndex(dynamicZ);
+    
     if (!m_IsMoving) {
         int targetX = m_GridX;
         int targetY = m_GridY;
         bool attemptMove = false;
 
         if (Util::Input::IsKeyPressed(Util::Keycode::UP) || Util::Input::IsKeyPressed(Util::Keycode::W)) {
-            targetY -= 1; // Moving UP physically means moving UP the array (towards 0)
+            targetY -= 1; 
             m_CurrentDirection = {0.0f, 1.0f};
             m_Direction = Direction::UP;
             attemptMove = true;
@@ -90,11 +87,9 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
             attemptMove = true;
         }
         
-if (attemptMove) {
-            // 1. Check the ground layer for the outside door (ID 6)
+        // Indentation fixed!
+        if (attemptMove) {
             int groundTile = map->GetTileType(targetX, targetY);
-            // 2. Check the prop layer for the inside doormat (ID 7)
-            int propTile = map->GetPropType(targetX, targetY);
             
             // Ask the map: Is this tile walkable?
             if (map->IsWalkable(targetX, targetY)) {
@@ -104,40 +99,36 @@ if (attemptMove) {
                 m_State = State::MOVING;
                 m_IsMoving = true;
                 
-                // Did we just step ONTO the inside doormat?
-                //if (propTile == 7) {
-                //    m_HitDoor = true;
-                //}
             } else {
                 // WE BUMPED A WALL! 
                 m_State = State::IDLE;
                 m_CurrentDirection = {0.0f, 0.0f};
                 
-                // Did we bump INTO the outside door?
-                if (groundTile == 6 || groundTile == 99) {
+                // DOOR LOGIC: Using GameConfig instead of magic numbers 6 and 99!
+                if (groundTile == GameConfig::TILE_DOOR || groundTile == GameConfig::TILE_EXIT) {
                     m_HitDoor = true; 
                 } else {
                     m_HitDoor = false; 
                 }
             }
-        }
-        else{
+        } else {
             m_State = State::IDLE;
         }
     }
 
-    // ... (Keep your existing Part 2 movement math and Draw calls down here exactly as they were!)
+    // MOVEMENT MATH: Replaced m_TileSize with GameConfig::EFFECTIVE_TILE_SIZE
     if (m_IsMoving) {
         float step = m_Speed;
-        if (m_PixelsMoved + step > m_TileSize) { step = m_TileSize - m_PixelsMoved; }
+        if (m_PixelsMoved + step > GameConfig::EFFECTIVE_TILE_SIZE) { 
+            step = GameConfig::EFFECTIVE_TILE_SIZE - m_PixelsMoved; 
+        }
         m_PixelsMoved += step;
         movement = {m_CurrentDirection.x * step, m_CurrentDirection.y * step};
 
-        if (m_PixelsMoved >= m_TileSize) {
+        if (m_PixelsMoved >= GameConfig::EFFECTIVE_TILE_SIZE) {
             m_IsMoving = false;
             m_PixelsMoved = 0.0f;
             m_CurrentDirection = {0.0f, 0.0f};
-            //m_State = State::IDLE; 
         }
     }
 

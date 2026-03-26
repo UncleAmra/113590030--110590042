@@ -4,7 +4,7 @@
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
 #include "Util/Logger.hpp"
-#include "iostream"
+#include <iostream>
 
 void App::Start() {
     LOG_TRACE("Start");
@@ -16,9 +16,8 @@ void App::Start() {
 
 void App::Update() {
     m_Map->Update();
-    //m_Character.Update();
     
-    // 4. Handle quitting
+    // Handle quitting
     if (Util::Input::IsKeyUp(Util::Keycode::ESCAPE) ||
         Util::Input::IfExit()) {
         m_CurrentState = State::END;
@@ -27,49 +26,32 @@ void App::Update() {
     glm::vec2 movement = m_Character.Update(m_Map);
     m_Map->Move(-movement.x, -movement.y);
 
+    // --- SAFE DOOR LOGIC ---
 // --- SAFE DOOR LOGIC ---
     if (m_Character.HasHitDoor()) {
         
-        // Are we outside trying to go IN?
+        // 1. Determine the destination data
+        GameConfig::WarpDestination dest;
         if (!m_IsIndoors) {
             LOG_TRACE("Warping Inside!");
-            m_Map->LoadLevel(RESOURCE_DIR "/inside");
-            
-            // 1. TELEPORT RED TO INDOOR SPAWN
-            // Change these to the tile right above your exit mat in inside.csv
-            int indoorSpawnX = 7; 
-            int indoorSpawnY = 9; 
-            m_Character.SetGridPosition(indoorSpawnX, indoorSpawnY);
-            
-            // 2. SHIFT CAMERA TO NEW COORDINATES
-            float shiftX = -288.0f + (indoorSpawnX * 48.0f);
-            float shiftY = 288.0f - (indoorSpawnY * 48.0f);
-            m_Map->Move(-shiftX, -shiftY);
-            m_Character.StopMoving();
+            dest = GameConfig::WARP_PC_INSIDE;
             m_IsIndoors = true; 
-        } 
-        // Or are we inside trying to go OUT?
-        else {
+        } else {
             LOG_TRACE("Warping Outside!");
-            m_Map->LoadLevel(RESOURCE_DIR "/level");
-            
-            // 1. TELEPORT RED TO OUTDOOR SPAWN
-            // Change these to the dirt tile right below your door in level.csv
-            int outdoorSpawnX = 15;
-            int outdoorSpawnY = 7;
-            m_Character.SetGridPosition(outdoorSpawnX, outdoorSpawnY);
-            
-            // 2. SHIFT CAMERA TO NEW COORDINATES
-            float shiftX = -288.0f + (outdoorSpawnX * 48.0f);
-            float shiftY = 288.0f - (outdoorSpawnY * 48.0f);
-            m_Map->Move(-shiftX, -shiftY);
-            m_Character.StopMoving();
+            dest = GameConfig::WARP_TOWN_OUTSIDE;
             m_IsIndoors = false;
         }
 
-        // FORCE THE LOOP TO STOP!
+        // 2. Execute the warp using the unified data!
+        m_Map->LoadLevel(dest.levelPath);
+        m_Character.SetGridPosition(dest.spawnX, dest.spawnY);
+        m_Map->WarpTo(dest.spawnX, dest.spawnY);
+        m_Character.StopMoving();
+
+        // 3. Clear the flag
         m_Character.ClearDoorFlag(); 
     }
+    
     m_Map->Draw();
     m_Character.Draw();
 }

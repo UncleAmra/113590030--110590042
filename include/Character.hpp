@@ -3,7 +3,8 @@
 
 #include "pch.hpp"
 #include "Util/GameObject.hpp"
-#include "Util/Animation.hpp" // We use Animation now instead of Image
+#include "GameConfig.hpp"
+#include "Util/Animation.hpp" 
 #include <vector>
 #include <memory>
 
@@ -14,33 +15,36 @@ public:
 
     enum class Direction { DOWN, UP, LEFT, RIGHT };
     enum class State { IDLE, MOVING };
-    bool HasHitDoor() const { return m_HitDoor; }
-
+    
     Character(float x, float y);
 
-    //void Update();
+    bool HasHitDoor() const { return m_HitDoor; }
+    void ClearDoorFlag() { m_HitDoor = false; }
+    
     int GetGridX() const { return m_GridX; }
     int GetGridY() const { return m_GridY; }
-    bool IsMoving() const { return m_IsMoving; }
-    void ClearDoorFlag() { m_HitDoor = false; }
     void SetGridPosition(int x, int y) { m_GridX = x; m_GridY = y; }
-    glm::vec2 Update(std::shared_ptr<Map> map);
+    
+    bool IsMoving() const { return m_IsMoving; }
     void StopMoving();
+    
+    glm::vec2 Update(std::shared_ptr<Map> map);
+
 private:
-    //void HandleInput();
     glm::vec2 HandleInput();
-    bool m_HitDoor = false;
     void LoadSprites();
     void UpdateSprite();
     
+    bool m_HitDoor = false;
 
     bool m_IsMoving = false;                // Is Red currently between tiles?
     glm::vec2 m_CurrentDirection = {0, 0};  // Which way is he walking?
     float m_PixelsMoved = 0.0f;             // How far has he walked so far?
     
-    float m_TileSize = 48.0f;               // 16 pixels * 3.0 scale = 48
-    float m_Speed = 4.0f;
+    // We deleted m_TileSize! 
+    float m_Speed = 4.0f; // (You could even move this to GameConfig::PLAYER_SPEED if you want!)
 
+    // Default these to 0, App will set the real spawn!
     int m_GridX = 6;
     int m_GridY = 6;
 
