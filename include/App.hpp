@@ -2,7 +2,7 @@
 #define APP_HPP
 
 #include "pch.hpp"
-#include "Character.hpp"
+#include "Player.hpp"
 #include "Map.hpp"
 #include "GameConfig.hpp"
 
@@ -26,7 +26,7 @@ private:
 private:
     std::shared_ptr<Map> m_Map;
     State m_CurrentState = State::START;
-    Character m_Character{0.0f, 0.0f};
+    Player m_Character{0.0f, 0.0f};
     bool m_IsIndoors = false;
 };
 

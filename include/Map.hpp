@@ -2,6 +2,7 @@
 #define MAP_HPP
 
 #include "pch.hpp"
+#include "NPC.hpp"
 #include "Util/GameObject.hpp"
 #include "Util/Image.hpp"
 #include "Util/Time.hpp"
@@ -18,7 +19,11 @@ struct TileProperties {
     float yOffset = 0.0f;
     bool isWalkable = false; // We can handle walkability here now!
 };
-
+struct PropProperties {
+    std::string texturePath;
+    float zIndex;
+    bool dynamicZ;
+};
 class Prop;
 
 class Map : public Util::GameObject {
@@ -36,6 +41,7 @@ public:
 
 private:
     // --- MAP DATA ---
+    std::vector<std::shared_ptr<NPC>> m_NPCs;
     std::vector<std::vector<int>> m_PropData;
     std::vector<std::vector<int>> m_LevelData;
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
@@ -43,7 +49,11 @@ private:
     
     // --- THE REGISTRY ---
     std::unordered_map<int, TileProperties> m_TileRegistry;
+    std::unordered_map<int, std::string> m_NPCRegistry;   
+    std::unordered_map<int, PropProperties> m_PropRegistry; 
     void InitTileRegistry(); 
+    void InitPropRegistry();
+    void InitNPCRegistry(); // A helper to set up the dictionary
 
     // --- ANIMATIONS ---
     std::shared_ptr<Util::Animation> m_LeaderWater;

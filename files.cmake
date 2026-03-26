@@ -3,6 +3,8 @@ set(SRC_FILES
     Character.cpp
     Map.cpp
     Prop.cpp
+    Player.cpp
+    NPC.cpp
 )
 
 set(INCLUDE_FILES
@@ -10,6 +12,8 @@ set(INCLUDE_FILES
     Character.hpp
     Map.hpp
     Prop.hpp
+    Player.hpp
+    NPC.hpp
 )
 
 set(TEST_FILES

@@ -25,9 +25,11 @@ namespace GameConfig {
     constexpr int PROP_CHURCH = 5;
     constexpr int PROP_DOORMAT = 7;
     constexpr int PROP_INVISIBLE_EXIT = 8;
+    constexpr int PROP_INVISIBLE_WALL = 999;
     constexpr int PROP_PC_DESK = 10;
     constexpr int PROP_PC_WALL_LEFT = 12;
     constexpr int PROP_PC_WALL_RIGHT = 13;
+    constexpr int NPC_NURSE = 100;
 
     struct WarpDestination {
         std::string levelPath;

@@ -12,15 +12,12 @@ class Map;
 
 class Character : public Util::GameObject {
 public:
-
     enum class Direction { DOWN, UP, LEFT, RIGHT };
     enum class State { IDLE, MOVING };
     
     Character(float x, float y);
+    virtual ~Character() = default; // Good practice for base classes!
 
-    bool HasHitDoor() const { return m_HitDoor; }
-    void ClearDoorFlag() { m_HitDoor = false; }
-    
     int GetGridX() const { return m_GridX; }
     int GetGridY() const { return m_GridY; }
     void SetGridPosition(int x, int y) { m_GridX = x; m_GridY = y; }
@@ -28,23 +25,22 @@ public:
     bool IsMoving() const { return m_IsMoving; }
     void StopMoving();
     
-    glm::vec2 Update(std::shared_ptr<Map> map);
+    // Virtual so Player can add input logic to it!
+    virtual glm::vec2 Update(std::shared_ptr<Map> map);
 
-private:
-    glm::vec2 HandleInput();
-    void LoadSprites();
+protected:
+    // Pure virtual function! Forces Player and NPC to load their own unique sprites.
+    virtual void LoadSprites() = 0; 
     void UpdateSprite();
     
-    bool m_HitDoor = false;
+    // A generic function to try and walk into a tile
+    bool TryMove(int dx, int dy, std::shared_ptr<Map> map);
 
-    bool m_IsMoving = false;                // Is Red currently between tiles?
-    glm::vec2 m_CurrentDirection = {0, 0};  // Which way is he walking?
-    float m_PixelsMoved = 0.0f;             // How far has he walked so far?
-    
-    // We deleted m_TileSize! 
-    float m_Speed = 4.0f; // (You could even move this to GameConfig::PLAYER_SPEED if you want!)
+    bool m_IsMoving = false;                
+    glm::vec2 m_CurrentDirection = {0, 0};  
+    float m_PixelsMoved = 0.0f;             
+    float m_Speed = 4.0f; 
 
-    // Default these to 0, App will set the real spawn!
     int m_GridX = 6;
     int m_GridY = 6;
 
@@ -55,7 +51,6 @@ private:
     std::shared_ptr<Util::Animation> m_AnimUp;
     std::shared_ptr<Util::Animation> m_AnimLeft;
     std::shared_ptr<Util::Animation> m_AnimRight;
-    
     std::shared_ptr<Util::Animation> m_CurrentAnimation;
 };
 
