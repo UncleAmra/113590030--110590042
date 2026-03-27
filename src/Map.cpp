@@ -4,6 +4,14 @@
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
+//paths to assests
+const std::string RES      = std::string(RESOURCE_DIR);
+const std::string TILE_DIR = RES + "/tiles/";
+const std::string MAP_DIR = RES + "/maps/";
+const std::string PROP_DIR = RES + "/props/";
+const std::string NPC_DIR  = RES + "/npcs/";
+const std::string DIALOGUE_DIR = RES + "/dialogue/";
+
 
 Map::Map() { 
     // 2. SETUP THE DICTIONARY
@@ -11,47 +19,38 @@ Map::Map() {
     InitNPCRegistry();
     InitPropRegistry();
     // 3. BUILD THE FIRST MAP
-    LoadLevel(RESOURCE_DIR "/level");
+    LoadLevel(MAP_DIR + "/level");
 }
 
 void Map::InitTileRegistry() {
     // ID = { texture, zIndex, yOffset, isWalkable }
-    m_TileRegistry[0] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Grass1.png"), 0.0f, 0.0f, true };
+    m_TileRegistry[0] = { std::make_shared<Util::Image>(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
     m_TileRegistry[1] = { nullptr, 0.0f, 0.0f, false };
-    m_TileRegistry[2] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), 0.0f, 0.0f, true };
-    m_TileRegistry[3] = { std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png"), 0.1f, 24.0f, false };
-    m_TileRegistry[4] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), -0.1f, 0.0f, false }; 
-    //m_TileRegistry[41] = { m_DirtImage, 0.0f, 0.0f, false }; 
-    //m_TileRegistry[5] = { m_ChurchImage, 0.5f, 0.0f, false };
-    m_TileRegistry[6] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), 0.0f, 0.0f, false }; // Door (acts as wall)
-    //m_TileRegistry[7] = { m_PCDoorImage, 0.1f, 0.0f, false }; // Inside mat (acts as wall)
-    //m_TileRegistry[8] = { m_PokeCentreInsideImage, 0.3f, 0.0f, true }; // Inside floor
-    m_TileRegistry[9] = { std::make_shared<Util::Image>(RESOURCE_DIR "/PCFloorTile.png"), 0.0f, 0.0f, true }; //  PokeCentre floor tile
-    //m_TileRegistry[10] = { m_PCDesk, 0.3f, 0.0f, true };  
-    m_TileRegistry[11] = { std::make_shared<Util::Image>(RESOURCE_DIR "/PCWall1.png"), 0.0f, 0.0f, false }; 
-    //m_TileRegistry[12] = { m_PCWall2, 0.0f, 0.0f, false }; //  PokeCentre floor tile
-    //m_TileRegistry[13] = { m_PCWall3, 0.0f, 0.0f, false }; //  PokeCentre floor tile
+    m_TileRegistry[2] = { std::make_shared<Util::Image>(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, true };
+    m_TileRegistry[6] = { std::make_shared<Util::Image>(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; // Door (acts as wall)
+    m_TileRegistry[9] = { std::make_shared<Util::Image>(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; //  PokeCentre floor tile  
+    m_TileRegistry[11] = { std::make_shared<Util::Image>(TILE_DIR +"/PCWall1.png"), 0.0f, 0.0f, false }; 
 }
 
 void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
     
     // THE FIX: Add "NPCProperties" right before the braces!
-    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ RESOURCE_DIR "/Nurse.png", 12.0f, 0.0f, false };
-    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ RESOURCE_DIR "/TA0.png", -12.0f, 0.8f, true };
+    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "/Nurse.png", 12.0f, 0.0f, false, DIALOGUE_DIR + "nurse.txt"};
+    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "/TA0.png", -12.0f, 0.8f, true, DIALOGUE_DIR + "ta.txt"};
 }
 void Map::InitPropRegistry() {
     // ID = { texturePath, zIndex, dynamicZ, isWalkable }
     
     // Buildings
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { RESOURCE_DIR "/PokeCentre.png", 0.8f, true, false }; 
-    m_PropRegistry[GameConfig::PROP_CHURCH] = { RESOURCE_DIR "/Church.png", 0.8f, true, false };
+    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR +  "/PokeCentre.png", 0.8f, true, false }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH] = { PROP_DIR + "/Church.png", 0.8f, true, false };
 
     // PokeCenter Interiors
-    m_PropRegistry[GameConfig::PROP_DOORMAT] = { RESOURCE_DIR "/PC_doormat.png", 0.1f, false, true }; // WALKABLE!
-    m_PropRegistry[GameConfig::PROP_PC_DESK] = { RESOURCE_DIR "/PCDesk1.png", 0.7f, false, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { RESOURCE_DIR "/PCWall2.png", 0.3f, false, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { RESOURCE_DIR "/PCWall3.png", 0.3f, false, false };
+    m_PropRegistry[GameConfig::PROP_DOORMAT] = { PROP_DIR + "/PC_doormat.png", 0.1f, false, true }; // WALKABLE!
+    m_PropRegistry[GameConfig::PROP_PC_DESK] = { PROP_DIR + "/PCDesk1.png", 0.7f, false, false };
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { PROP_DIR + "/PCWall2.png", 0.3f, false, false };
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png", 0.3f, false, false };
     
     //invisible wall
     m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "", 0.0f, false, false}; 
@@ -96,7 +95,7 @@ void Map::LoadLevel(const std::string& mapName) {
         return;
     }
 
-    std::vector<std::string> waterPaths = {RESOURCE_DIR "/Water1.png", RESOURCE_DIR "/Water2.png", RESOURCE_DIR "/Water3.png"};
+    std::vector<std::string> waterPaths = {TILE_DIR + "/Water1.png", TILE_DIR + "/Water2.png",TILE_DIR + "/Water3.png"};
     m_LeaderWater = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
     m_FollowerWater = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
     bool leaderAssigned = false;
@@ -149,8 +148,7 @@ void Map::LoadLevel(const std::string& mapName) {
                     const NPCProperties& npcProps = m_NPCRegistry[propID];
             
                     
-                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath); 
-                    //npc->SetPivot(glm::vec2(0.0f, npcProps.visualOffsetY));                  
+                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath, npcProps.dialogueFilePath);                    //npc->SetPivot(glm::vec2(0.0f, npcProps.visualOffsetY));                  
                     
                     
                     // THE FIX: Use the registry for Z-sorting!
@@ -284,4 +282,13 @@ void Map::WarpTo(int gridX, int gridY) {
     float shiftX = GameConfig::CAMERA_START_X + (gridX * GameConfig::EFFECTIVE_TILE_SIZE);
     float shiftY = GameConfig::CAMERA_START_Y - (gridY * GameConfig::EFFECTIVE_TILE_SIZE);
     Move(-shiftX, -shiftY);
+}
+
+std::shared_ptr<NPC> Map::GetNPCAt(int gridX, int gridY) {
+    for (auto& npc : m_NPCs) {
+        if (npc->GetGridX() == gridX && npc->GetGridY() == gridY) {
+            return npc;
+        }
+    }
+    return nullptr;
 }

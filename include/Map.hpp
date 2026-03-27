@@ -32,6 +32,7 @@ struct NPCProperties {
     float visualOffsetY; // Every NPC can have their own custom offset now!
     float zIndex;    
     bool dynamicZ;
+    std::string dialogueFilePath;
   
 
 };
@@ -49,6 +50,7 @@ public:
     void Update();
     int GetTileType(int gridX, int gridY);
     void LoadLevel(const std::string& filepath);
+    std::shared_ptr<NPC> GetNPCAt(int gridX, int gridY);
 
 private:
     // --- MAP DATA ---

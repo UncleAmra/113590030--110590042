@@ -27,6 +27,7 @@ public:
     void SetBaseZIndex(float z) { m_BaseZIndex = z; }
     // Virtual so Player can add input logic to it!
     virtual glm::vec2 Update(std::shared_ptr<Map> map);
+    Direction GetFacingDirection() const { return m_Direction; }
 
 protected:
     // Pure virtual function! Forces Player and NPC to load their own unique sprites.

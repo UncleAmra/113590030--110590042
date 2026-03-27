@@ -12,10 +12,35 @@ Player::Player(float x, float y) : Character(x, y) {
 }
 
 void Player::LoadSprites() {
-    std::vector<std::string> downFrames  = {RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_001.png", RESOURCE_DIR "/character_000.png", RESOURCE_DIR "/character_002.png"};
-    std::vector<std::string> upFrames    = {RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_004.png", RESOURCE_DIR "/character_003.png", RESOURCE_DIR "/character_005.png"};
-    std::vector<std::string> leftFrames  = {RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_007.png", RESOURCE_DIR "/character_006.png", RESOURCE_DIR "/character_008.png"};
-    std::vector<std::string> rightFrames = {RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_010.png", RESOURCE_DIR "/character_009.png", RESOURCE_DIR "/character_011.png"};
+    const std::string CHAR_DIR = std::string(RESOURCE_DIR) + "/player/";
+
+    std::vector<std::string> downFrames  = {
+        CHAR_DIR + "character_000.png",
+        CHAR_DIR + "character_001.png",
+        CHAR_DIR + "character_000.png",
+        CHAR_DIR + "character_002.png"
+    };
+
+    std::vector<std::string> upFrames = {
+        CHAR_DIR + "character_003.png",
+        CHAR_DIR + "character_004.png",
+        CHAR_DIR + "character_003.png",
+        CHAR_DIR + "character_005.png"
+    };
+
+    std::vector<std::string> leftFrames = {
+        CHAR_DIR + "character_006.png",
+        CHAR_DIR + "character_007.png",
+        CHAR_DIR + "character_006.png",
+        CHAR_DIR + "character_008.png"
+    };
+
+    std::vector<std::string> rightFrames = {
+        CHAR_DIR + "character_009.png",
+        CHAR_DIR + "character_010.png",
+        CHAR_DIR + "character_009.png",
+        CHAR_DIR + "character_011.png"
+    };
 
     m_AnimDown  = std::make_shared<Util::Animation>(downFrames, false, 150, true, 0);
     m_AnimUp    = std::make_shared<Util::Animation>(upFrames, false, 150, true, 0);

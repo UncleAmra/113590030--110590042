@@ -11,12 +11,12 @@ public:
 
     bool HasHitDoor() const { return m_HitDoor; }
     void ClearDoorFlag() { m_HitDoor = false; }
-
+    void HandleInput(std::shared_ptr<Map> map);
 protected:
     void LoadSprites() override; // Loads the Red character sprites
 
 private:
-    void HandleInput(std::shared_ptr<Map> map);
+
     bool m_HitDoor = false;
 };
 

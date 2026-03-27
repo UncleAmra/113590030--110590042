@@ -39,7 +39,7 @@ namespace GameConfig {
     };
 
     // Define our current doors!
-    inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/inside", 7, 9 };
-    inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/level", 15, 7 };
+    inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 9 };
+    inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/maps/level", 15, 7 };
 }
 #endif

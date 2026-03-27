@@ -1,10 +1,17 @@
 #include "NPC.hpp"
+#include "Util/LoadTextFile.hpp"
 
 // 1. Initialize m_UseDynamicZ to false by default
-NPC::NPC(float x, float y, const std::string& spritePath) 
+NPC::NPC(float x, float y, const std::string& spritePath, const std::string& dialoguePath) 
     : Character(x, y), m_SpritePath(spritePath), m_UseDynamicZ(false) {
     
-    // We must call these here so the NPC gets its visual components!
+    // Load the text file if the path isn't empty!
+    if (!dialoguePath.empty()) {
+        m_Dialogue = Util::LoadTextFile(dialoguePath);
+    } else {
+        m_Dialogue = "..."; // Default text if no file exists
+    }
+
     LoadSprites();
     UpdateSprite();
 }
@@ -27,4 +34,8 @@ glm::vec2 NPC::Update(std::shared_ptr<Map> map) {
     
     // We deleted the math! The parent class handles the Y-sorting perfectly now.
     return Character::Update(map); 
+}
+
+std::string NPC::Interact() {
+    return m_Dialogue; // Hand the text to whatever is managing the UI
 }
