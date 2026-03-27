@@ -3,6 +3,7 @@
 
 #include "pch.hpp"
 #include "NPC.hpp"
+#include "Character.hpp"
 #include "Util/GameObject.hpp"
 #include "Util/Image.hpp"
 #include "Util/Time.hpp"
@@ -23,6 +24,16 @@ struct PropProperties {
     std::string texturePath;
     float zIndex;
     bool dynamicZ;
+    bool isWalkable;
+};
+
+struct NPCProperties {
+    std::string texturePath;
+    float visualOffsetY; // Every NPC can have their own custom offset now!
+    float zIndex;    
+    bool dynamicZ;
+  
+
 };
 class Prop;
 
@@ -49,7 +60,8 @@ private:
     
     // --- THE REGISTRY ---
     std::unordered_map<int, TileProperties> m_TileRegistry;
-    std::unordered_map<int, std::string> m_NPCRegistry;   
+    //std::unordered_map<int, std::string> m_NPCRegistry;   
+    std::unordered_map<int, NPCProperties> m_NPCRegistry;
     std::unordered_map<int, PropProperties> m_PropRegistry; 
     void InitTileRegistry(); 
     void InitPropRegistry();

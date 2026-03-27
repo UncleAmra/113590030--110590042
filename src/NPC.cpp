@@ -1,7 +1,8 @@
 #include "NPC.hpp"
 
+// 1. Initialize m_UseDynamicZ to false by default
 NPC::NPC(float x, float y, const std::string& spritePath) 
-    : Character(x, y), m_SpritePath(spritePath) {
+    : Character(x, y), m_SpritePath(spritePath), m_UseDynamicZ(false) {
     
     // We must call these here so the NPC gets its visual components!
     LoadSprites();
@@ -21,9 +22,9 @@ void NPC::LoadSprites() {
     m_Drawable = m_CurrentAnimation;
 }
 
-// In NPC.cpp, at the bottom:
-glm::vec2 NPC::Update(std::shared_ptr<Map>){
-    // NPCs don't read the keyboard and don't change their Z-index dynamically!
-    // They just stand there looking pretty.
-    return {0.0f, 0.0f}; 
+glm::vec2 NPC::Update(std::shared_ptr<Map> map) {
+    //if (!map) return {0.0f, 0.0f}; 
+    
+    // We deleted the math! The parent class handles the Y-sorting perfectly now.
+    return Character::Update(map); 
 }

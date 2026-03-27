@@ -9,11 +9,8 @@ Prop::Prop(const std::string& imagePath, const glm::vec2& startPosition, float s
 }
 
 void Prop::Update() {
-    // Y-Sorting Magic!
-    // We start at a base of 0.5f (above the ground tiles at 0.0f).
-    // We divide Y by 1000.0f to keep the number small enough that it doesn't break the engine.
     if (m_UseDynamicZ) {
-        float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
+        float dynamicZ = 0.8f - (m_Transform.translation.y / 10000.0f);
         SetZIndex(dynamicZ);
     }
 }

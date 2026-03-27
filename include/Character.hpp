@@ -24,14 +24,16 @@ public:
     
     bool IsMoving() const { return m_IsMoving; }
     void StopMoving();
-    
+    void SetBaseZIndex(float z) { m_BaseZIndex = z; }
     // Virtual so Player can add input logic to it!
     virtual glm::vec2 Update(std::shared_ptr<Map> map);
 
 protected:
     // Pure virtual function! Forces Player and NPC to load their own unique sprites.
     virtual void LoadSprites() = 0; 
+    bool m_UseDynamicZ = true;
     void UpdateSprite();
+    float m_BaseZIndex = 0.0f;
     
     // A generic function to try and walk into a tile
     bool TryMove(int dx, int dy, std::shared_ptr<Map> map);

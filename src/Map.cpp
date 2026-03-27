@@ -20,10 +20,10 @@ void Map::InitTileRegistry() {
     m_TileRegistry[1] = { nullptr, 0.0f, 0.0f, false };
     m_TileRegistry[2] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), 0.0f, 0.0f, true };
     m_TileRegistry[3] = { std::make_shared<Util::Image>(RESOURCE_DIR "/PokeCentre.png"), 0.1f, 24.0f, false };
-    m_TileRegistry[4] = { m_DirtImage, -0.1f, 0.0f, false }; 
+    m_TileRegistry[4] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), -0.1f, 0.0f, false }; 
     //m_TileRegistry[41] = { m_DirtImage, 0.0f, 0.0f, false }; 
     //m_TileRegistry[5] = { m_ChurchImage, 0.5f, 0.0f, false };
-    m_TileRegistry[6] = { m_DirtImage, 0.0f, 0.0f, false }; // Door (acts as wall)
+    m_TileRegistry[6] = { std::make_shared<Util::Image>(RESOURCE_DIR "/Dirt1.png"), 0.0f, 0.0f, false }; // Door (acts as wall)
     //m_TileRegistry[7] = { m_PCDoorImage, 0.1f, 0.0f, false }; // Inside mat (acts as wall)
     //m_TileRegistry[8] = { m_PokeCentreInsideImage, 0.3f, 0.0f, true }; // Inside floor
     m_TileRegistry[9] = { std::make_shared<Util::Image>(RESOURCE_DIR "/PCFloorTile.png"), 0.0f, 0.0f, true }; //  PokeCentre floor tile
@@ -34,24 +34,27 @@ void Map::InitTileRegistry() {
 }
 
 void Map::InitNPCRegistry() {
-    // Map the GameConfig IDs to their specific sprite paths!
-    m_NPCRegistry[GameConfig::NPC_NURSE] = RESOURCE_DIR "/Nurse.png";
-    //m_NPCRegistry[GameConfig::NPC_OLD_MAN] = RESOURCE_DIR "/oldman.png";
-    // m_NPCRegistry[GameConfig::NPC_BOY] = RESOURCE_DIR "/boy.png";
-}
-
-void Map::InitPropRegistry() {
-    // ID = { texturePath, zIndex, dynamicZ }
+    // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
     
-    // Buildings, to find prop number for map check GameConfig
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { RESOURCE_DIR "/PokeCentre.png", 0.5f, true }; // (Assuming default dynamic true/0.5f)
-    m_PropRegistry[GameConfig::PROP_CHURCH] = { RESOURCE_DIR "/Church.png", 0.5f, true };
+    // THE FIX: Add "NPCProperties" right before the braces!
+    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ RESOURCE_DIR "/Nurse.png", 12.0f, 0.0f, false };
+    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ RESOURCE_DIR "/TA0.png", -12.0f, 0.8f, true };
+}
+void Map::InitPropRegistry() {
+    // ID = { texturePath, zIndex, dynamicZ, isWalkable }
+    
+    // Buildings
+    m_PropRegistry[GameConfig::PROP_POKECENTER] = { RESOURCE_DIR "/PokeCentre.png", 0.8f, true, false }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH] = { RESOURCE_DIR "/Church.png", 0.8f, true, false };
 
     // PokeCenter Interiors
-    m_PropRegistry[GameConfig::PROP_DOORMAT] = { RESOURCE_DIR "/PC_doormat.png", 0.1f, false };
-    m_PropRegistry[GameConfig::PROP_PC_DESK] = { RESOURCE_DIR "/PCDesk1.png", 0.4f, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { RESOURCE_DIR "/PCWall2.png", 0.3f, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { RESOURCE_DIR "/PCWall3.png", 0.3f, false };
+    m_PropRegistry[GameConfig::PROP_DOORMAT] = { RESOURCE_DIR "/PC_doormat.png", 0.1f, false, true }; // WALKABLE!
+    m_PropRegistry[GameConfig::PROP_PC_DESK] = { RESOURCE_DIR "/PCDesk1.png", 0.7f, false, false };
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { RESOURCE_DIR "/PCWall2.png", 0.3f, false, false };
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { RESOURCE_DIR "/PCWall3.png", 0.3f, false, false };
+    
+    //invisible wall
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "", 0.0f, false, false}; 
 }
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     std::vector<std::vector<int>> data;
@@ -141,16 +144,21 @@ void Map::LoadLevel(const std::string& mapName) {
                 float worldY = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE);
 
                 // --- 1. SPAWN NPCs ---
+
                 if (m_NPCRegistry.count(propID) > 0) {
-                    // Look up the sprite path for this specific ID
-                    std::string spritePath = m_NPCRegistry[propID];
+                    const NPCProperties& npcProps = m_NPCRegistry[propID];
             
-                    // Spawn them!
-                    float visualOffsetY = 16.0f;
-                    auto npc = std::make_shared<NPC>(worldX, worldY + visualOffsetY, spritePath);
                     
+                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath); 
+                    //npc->SetPivot(glm::vec2(0.0f, npcProps.visualOffsetY));                  
+                    
+                    
+                    // THE FIX: Use the registry for Z-sorting!
                     npc->SetGridPosition(x, y);
-                    npc->SetZIndex(0.35f);
+                    npc->SetZIndex(npcProps.zIndex);
+                    npc->SetBaseZIndex(npcProps.zIndex);
+                    npc->SetDynamicZ(npcProps.dynamicZ); 
+                    
                     m_NPCs.push_back(npc);
                 }
                 
@@ -159,12 +167,13 @@ void Map::LoadLevel(const std::string& mapName) {
                     // Look up the visual settings for this specific ID
                     const PropProperties& props = m_PropRegistry[propID];
                     
-                    // Spawn the Prop using the settings from the dictionary!
-                    auto prop = std::make_shared<Prop>(props.texturePath, glm::vec2(worldX, worldY));
-                    prop->SetZIndex(props.zIndex);
-                    prop->SetDynamicZ(props.dynamicZ);
-                    
-                    m_Props.push_back(prop);
+                    if (!props.texturePath.empty()) {
+                        auto prop = std::make_shared<Prop>(props.texturePath, glm::vec2(worldX, worldY));
+                        //float finalZ = props.zIndex - (worldY / 1000.0f);
+                        prop->SetZIndex(props.zIndex);
+                        prop->SetDynamicZ(props.dynamicZ);
+                        m_Props.push_back(prop);
+                    }
                 }
                 
                 // (Notice how there are ZERO if / else if statements checking for specific IDs now! 
@@ -216,10 +225,7 @@ bool Map::IsWalkable(int x, int y) {
 
     // 3. Check Props (Tripwire 2)
     int propID = m_PropData[y][x];
-    if (propID == GameConfig::PROP_PC_DESK || 
-        propID == GameConfig::PROP_PC_WALL_LEFT || 
-        propID == GameConfig::PROP_PC_WALL_RIGHT ||
-        propID == GameConfig::PROP_INVISIBLE_WALL) {
+    if (m_PropRegistry.count(propID) > 0 && !m_PropRegistry[propID].isWalkable) {
         return false; // A solid prop is blocking the way!
     }
 
@@ -232,8 +238,6 @@ bool Map::IsWalkable(int x, int y) {
         }
     }
     
-
-
     // If we survived all the tripwires, the tile is clear!
     return true;
 }
@@ -281,4 +285,3 @@ void Map::WarpTo(int gridX, int gridY) {
     float shiftY = GameConfig::CAMERA_START_Y - (gridY * GameConfig::EFFECTIVE_TILE_SIZE);
     Move(-shiftX, -shiftY);
 }
-

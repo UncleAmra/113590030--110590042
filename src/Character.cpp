@@ -50,10 +50,16 @@ bool Character::TryMove(int dx, int dy, std::shared_ptr<Map> map) {
     }
 }
 
-glm::vec2 Character::Update(std::shared_ptr<Map> map) {
+glm::vec2 Character::Update(std::shared_ptr<Map> map) { // Added 'map' back since you might need it later
     glm::vec2 movement = {0.0f, 0.0f};
-    float dynamicZ = 0.5f - (m_Transform.translation.y / 1000.0f);
-    SetZIndex(dynamicZ);
+
+    // 1. Z-SORTING FIX
+    if (m_UseDynamicZ) {
+        // Use the saved base index, and adjust slightly based on grid position.
+        // We add a tiny amount per GridY so entities lower on the screen overlap higher ones.
+        float dynamicZ = m_BaseZIndex + (m_GridY * 0.001f); 
+        SetZIndex(dynamicZ);
+    }
 
     if (m_IsMoving) {
         float step = m_Speed;
@@ -67,7 +73,6 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
             m_IsMoving = false;
             m_PixelsMoved = 0.0f;
             m_CurrentDirection = {0.0f, 0.0f};
-            
         }
     }
 
