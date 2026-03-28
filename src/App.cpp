@@ -2,16 +2,32 @@
 #include "Map.hpp"
 #include "Player.hpp"
 #include "Character.hpp"
+#include "SaveSystem.hpp"
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
 #include "Util/Logger.hpp"
 #include "Util/Text.hpp"
 #include <iostream>
+const std::string RES      = std::string(RESOURCE_DIR);
+const std::string MAP_DIR = RES + "/maps/";
 
 void App::Start() {
     LOG_TRACE("Start");
-    
-    m_Map = std::make_shared<Map>(); 
+    SaveSystem::GameState loadedState;
+    if (SaveSystem::LoadGame(loadedState)) {
+        m_Map = std::make_shared<Map>();
+        m_Map->LoadLevel(loadedState.mapPath);
+        m_Character.SetGridPosition(loadedState.gridX, loadedState.gridY);
+        m_Map->WarpTo(loadedState.gridX, loadedState.gridY);
+        m_Character.SetDirection(static_cast<Character::Direction>(loadedState.direction));
+    } else {
+        // DEFAULT START (If no save file exists)
+        m_Map = std::make_shared<Map>();
+        m_Map->LoadLevel(MAP_DIR + "/level");
+        m_Character.SetGridPosition(10, 10); 
+        m_Map->WarpTo(10, 10);
+    }
+    //m_Map = std::make_shared<Map>(); 
     
     // ==========================================
     // BUILD THE DIALOGUE UI
@@ -51,27 +67,30 @@ void App::Update() {
         Util::Input::IfExit()) {
         m_CurrentState = State::END;
     }
+    if (Util::Input::IsKeyDown(Util::Keycode::F) && !m_IsInDialogue) {
+        SaveSystem::GameState current;
+        current.mapPath = m_Map->GetCurrentLevelPath(); // Ensure your Map class has this getter!
+        current.gridX = m_Character.GetGridX();
+        current.gridY = m_Character.GetGridY();
+        current.direction = static_cast<int>(m_Character.GetFacingDirection());
 
+        SaveSystem::SaveGame(current);
+    }
     // ==========================================
     // 1. STATE MACHINE (Input & Logic)
     // ==========================================
     if (m_IsInDialogue) {
-        // Only process the Z key press once per tap
         if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
-            
-            // Are there more lines left in the conversation?
-            if (m_CurrentDialogueIndex < m_CurrentDialogueLines.size() - 1) {
-                // Yes! Move to the next line
+            // Guard against empty vectors AND check the index safely
+            if (!m_CurrentDialogueLines.empty() && m_CurrentDialogueIndex < m_CurrentDialogueLines.size() - 1) {
                 m_CurrentDialogueIndex++;
-                
-                // SAFE TEXT UPDATE (Fixes the SetText Error)
                 m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
             } 
             else {
-                // No more lines! End the dialogue.
                 m_IsInDialogue = false;
                 m_DialogueBoxUI->SetVisible(false);
                 m_DialogueUI->SetVisible(false);
+                
             }
         }
     }
@@ -136,22 +155,32 @@ void App::Update() {
 
         // 1c. SAFE DOOR LOGIC
         if (m_Character.HasHitDoor()) {
-            GameConfig::WarpDestination dest;
-            if (!m_IsIndoors) {
-                LOG_TRACE("Warping Inside!");
-                dest = GameConfig::WARP_PC_INSIDE;
-                m_IsIndoors = true; 
-            } else {
-                LOG_TRACE("Warping Outside!");
-                dest = GameConfig::WARP_TOWN_OUTSIDE;
-                m_IsIndoors = false;
-            }
+            std::string currentMap = m_Map->GetCurrentLevelPath();
+            int doorX = m_Character.GetGridX();
+            int doorY = m_Character.GetGridY();
 
-            m_Map->LoadLevel(dest.levelPath);
-            m_Character.SetGridPosition(dest.spawnX, dest.spawnY);
-            m_Map->WarpTo(dest.spawnX, dest.spawnY);
-            m_Character.StopMoving();
-            m_Character.ClearDoorFlag(); 
+            // 1. Build the unique key for the door we just stepped on
+            std::string doorKey = currentMap + "_" + std::to_string(doorX) + "_" + std::to_string(doorY);
+
+            // 2. Look up the key in our GameConfig dictionary
+            auto it = GameConfig::DoorRouting.find(doorKey);
+            
+            if (it != GameConfig::DoorRouting.end()) {
+                // WE FOUND THE DOOR! Teleport the player!
+                GameConfig::WarpDestination dest = it->second;
+
+                LOG_TRACE("Taking door to: {}", dest.levelPath);
+                m_Map->LoadLevel(dest.levelPath);
+                m_Character.SetGridPosition(dest.spawnX, dest.spawnY);
+                m_Map->WarpTo(dest.spawnX, dest.spawnY);
+                m_Character.StopMoving();
+                m_Character.ClearDoorFlag(); 
+            } else {
+                // THE DOOR IS NOT IN THE DICTIONARY! 
+                // Don't teleport, just log an error so we can fix it!
+                LOG_ERROR("Unregistered door at: {}", doorKey);
+                m_Character.ClearDoorFlag(); 
+            }
         }
     }
 

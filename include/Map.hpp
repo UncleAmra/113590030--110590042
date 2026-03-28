@@ -22,6 +22,7 @@ struct TileProperties {
 };
 struct PropProperties {
     std::string texturePath;
+    float visualOffsetY;
     float zIndex;
     bool dynamicZ;
     bool isWalkable;
@@ -51,6 +52,7 @@ public:
     int GetTileType(int gridX, int gridY);
     void LoadLevel(const std::string& filepath);
     std::shared_ptr<NPC> GetNPCAt(int gridX, int gridY);
+    std::string GetCurrentLevelPath() const { return m_CurrentLevelPath; }
 
 private:
     // --- MAP DATA ---
@@ -59,7 +61,8 @@ private:
     std::vector<std::vector<int>> m_LevelData;
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
     std::vector<std::shared_ptr<Prop>> m_Props;
-    
+    std::string m_CurrentLevelPath;
+
     // --- THE REGISTRY ---
     std::unordered_map<int, TileProperties> m_TileRegistry;
     //std::unordered_map<int, std::string> m_NPCRegistry;   
@@ -100,6 +103,7 @@ private:
 
     // --- HELPER FUNCTIONS ---
     std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
+    
     void ClearMap();
 };
 

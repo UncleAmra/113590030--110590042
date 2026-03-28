@@ -16,6 +16,7 @@ set(INCLUDE_FILES
     NPC.hpp
     GameFlags.hpp
     GameConfif.hpp
+    SaveSystem.hpp
 )
 
 set(TEST_FILES

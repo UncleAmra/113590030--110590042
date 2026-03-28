@@ -27,9 +27,14 @@ void Map::InitTileRegistry() {
     m_TileRegistry[0] = { std::make_shared<Util::Image>(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
     m_TileRegistry[1] = { nullptr, 0.0f, 0.0f, false };
     m_TileRegistry[2] = { std::make_shared<Util::Image>(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, true };
+   //3 is used by Pokecentre Prop
+    m_TileRegistry[4] = { std::make_shared<Util::Image>(TILE_DIR +"/Concrete.png"), 0.0f, 0.0f, true }; 
+   //idk about 5
     m_TileRegistry[6] = { std::make_shared<Util::Image>(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; // Door (acts as wall)
+    //7 is used by church prop
     m_TileRegistry[9] = { std::make_shared<Util::Image>(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; //  PokeCentre floor tile  
-    m_TileRegistry[11] = { std::make_shared<Util::Image>(TILE_DIR +"/PCWall1.png"), 0.0f, 0.0f, false }; 
+    m_TileRegistry[11] = { std::make_shared<Util::Image>(TILE_DIR +"/PCWall1.png"), 0.0f, 0.0f, false };
+ 
 }
 
 void Map::InitNPCRegistry() {
@@ -43,17 +48,19 @@ void Map::InitPropRegistry() {
     // ID = { texturePath, zIndex, dynamicZ, isWalkable }
     
     // Buildings
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR +  "/PokeCentre.png", 0.8f, true, false }; 
-    m_PropRegistry[GameConfig::PROP_CHURCH] = { PROP_DIR + "/Church.png", 0.8f, true, false };
-
+    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR +  "/PokeCentre.png", 0.0f, 0.8f, true, false }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH] = { PROP_DIR + "/Church.png",0.0f, 0.8f, true, false };
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT] = { PROP_DIR + "/Checkpoint2.png", 96.0f,0.8f, true, false }; //15
     // PokeCenter Interiors
-    m_PropRegistry[GameConfig::PROP_DOORMAT] = { PROP_DIR + "/PC_doormat.png", 0.1f, false, true }; // WALKABLE!
-    m_PropRegistry[GameConfig::PROP_PC_DESK] = { PROP_DIR + "/PCDesk1.png", 0.7f, false, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { PROP_DIR + "/PCWall2.png", 0.3f, false, false };
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png", 0.3f, false, false };
+    m_PropRegistry[GameConfig::PROP_DOORMAT] = { PROP_DIR + "/PC_doormat.png", 0.0f,0.1f, false, true }; // WALKABLE! 6 or 7
+    m_PropRegistry[GameConfig::PROP_PC_DESK] = { PROP_DIR + "/PCDesk1.png",0.0f, 0.7f, false, false }; //10 I think
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { PROP_DIR + "/PCWall2.png", 0.0f,0.3f, false, false }; //12
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png",0.0f, 0.3f, false, false }; //13
+    
+
     
     //invisible wall
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "", 0.0f, false, false}; 
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "",0.0f, 0.0f, false, false}; 
 }
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     std::vector<std::vector<int>> data;
@@ -85,7 +92,7 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
 
 void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
-    
+    m_CurrentLevelPath = mapName;
     // 1. Load the two layers
     m_LevelData = LoadCSV(mapName + "_ground.csv");
     m_PropData = LoadCSV(mapName + "_props.csv");
@@ -166,7 +173,7 @@ void Map::LoadLevel(const std::string& mapName) {
                     const PropProperties& props = m_PropRegistry[propID];
                     
                     if (!props.texturePath.empty()) {
-                        auto prop = std::make_shared<Prop>(props.texturePath, glm::vec2(worldX, worldY));
+                        auto prop = std::make_shared<Prop>(props.texturePath, glm::vec2(worldX, worldY+props.visualOffsetY));
                         //float finalZ = props.zIndex - (worldY / 1000.0f);
                         prop->SetZIndex(props.zIndex);
                         prop->SetDynamicZ(props.dynamicZ);
