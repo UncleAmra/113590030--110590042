@@ -14,6 +14,8 @@ set(INCLUDE_FILES
     Prop.hpp
     Player.hpp
     NPC.hpp
+    GameFlags.hpp
+    GameConfif.hpp
 )
 
 set(TEST_FILES

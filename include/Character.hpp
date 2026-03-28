@@ -27,6 +27,7 @@ public:
     void SetBaseZIndex(float z) { m_BaseZIndex = z; }
     // Virtual so Player can add input logic to it!
     virtual glm::vec2 Update(std::shared_ptr<Map> map);
+    void SetDirection(Direction dir);
     Direction GetFacingDirection() const { return m_Direction; }
 
 protected:
@@ -55,6 +56,8 @@ protected:
     std::shared_ptr<Util::Animation> m_AnimLeft;
     std::shared_ptr<Util::Animation> m_AnimRight;
     std::shared_ptr<Util::Animation> m_CurrentAnimation;
+
+    
 };
 
 #endif

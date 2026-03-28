@@ -51,6 +51,7 @@ bool Character::TryMove(int dx, int dy, std::shared_ptr<Map> map) {
 }
 
 glm::vec2 Character::Update(std::shared_ptr<Map> map) { // Added 'map' back since you might need it later
+    (void)map;
     glm::vec2 movement = {0.0f, 0.0f};
 
     // 1. Z-SORTING FIX
@@ -85,4 +86,10 @@ void Character::StopMoving() {
     m_PixelsMoved = 0.0f;
     m_CurrentDirection = {0.0f, 0.0f};
     m_State = State::IDLE;
+}
+
+// Allows us to force a character to look a certain way
+void Character::SetDirection(Direction dir) {
+    m_Direction = dir;
+    UpdateSprite();
 }

@@ -1,15 +1,23 @@
 #include "NPC.hpp"
 #include "Util/LoadTextFile.hpp"
+#include "GameFlags.hpp"
 
 // 1. Initialize m_UseDynamicZ to false by default
-NPC::NPC(float x, float y, const std::string& spritePath, const std::string& dialoguePath) 
-    : Character(x, y), m_SpritePath(spritePath), m_UseDynamicZ(false) {
+NPC::NPC(float x, float y, const std::string& spritePath,
+     const std::string& dialoguePath, 
+     const std::string& altDialoguePath, 
+     const std::string& flagCondition) 
+    : Character(x, y), m_SpritePath(spritePath), m_UseDynamicZ(false), m_FlagCondition(flagCondition){
     
     // Load the text file if the path isn't empty!
     if (!dialoguePath.empty()) {
-        m_Dialogue = Util::LoadTextFile(dialoguePath);
+        m_DialogueLines = Util::LoadDialogueFile(dialoguePath);
     } else {
-        m_Dialogue = "..."; // Default text if no file exists
+        m_DialogueLines.push_back("...");
+    }
+    // Load Alternative Dialogue (if provided)
+    if (!altDialoguePath.empty()) {
+        m_AltDialogueLines = Util::LoadDialogueFile(altDialoguePath);
     }
 
     LoadSprites();
@@ -18,15 +26,15 @@ NPC::NPC(float x, float y, const std::string& spritePath, const std::string& dia
 
 void NPC::LoadSprites() {
     // For now, we just use the same image for all 4 directions
-    std::vector<std::string> frames = {m_SpritePath};
+    std::vector<std::string> downFrames  = {m_SpritePath + "_Down.png"};
+    std::vector<std::string> upFrames    = {m_SpritePath + "_Up.png"};
+    std::vector<std::string> leftFrames  = {m_SpritePath + "_Left.png"};
+    std::vector<std::string> rightFrames = {m_SpritePath + "_Right.png"};
     
-    m_AnimDown  = std::make_shared<Util::Animation>(frames, false, 150, true, 0);
-    m_AnimUp    = std::make_shared<Util::Animation>(frames, false, 150, true, 0);
-    m_AnimLeft  = std::make_shared<Util::Animation>(frames, false, 150, true, 0);
-    m_AnimRight = std::make_shared<Util::Animation>(frames, false, 150, true, 0);
-
-    m_CurrentAnimation = m_AnimDown;
-    m_Drawable = m_CurrentAnimation;
+    m_AnimDown  = std::make_shared<Util::Animation>(downFrames, false, 150, true, 0);
+    m_AnimUp    = std::make_shared<Util::Animation>(upFrames, false, 150, true, 0);
+    m_AnimLeft  = std::make_shared<Util::Animation>(leftFrames, false, 150, true, 0);
+    m_AnimRight = std::make_shared<Util::Animation>(rightFrames, false, 150, true, 0);
 }
 
 glm::vec2 NPC::Update(std::shared_ptr<Map> map) {
@@ -36,6 +44,14 @@ glm::vec2 NPC::Update(std::shared_ptr<Map> map) {
     return Character::Update(map); 
 }
 
-std::string NPC::Interact() {
-    return m_Dialogue; // Hand the text to whatever is managing the UI
+std::vector<std::string> NPC::Interact() {
+    std::vector<std::string> lines;
+    
+    // If this NPC has a flag condition AND that flag is currently true...
+    if (!m_FlagCondition.empty() && GameFlags::Get(m_FlagCondition)) {
+        return m_AltDialogueLines; // Return the post-event text!
+    }
+    
+    // Otherwise, return normal text
+    return m_DialogueLines;
 }

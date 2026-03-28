@@ -17,21 +17,21 @@ void App::Start() {
     // BUILD THE DIALOGUE UI
     // ==========================================
     m_DialogueBoxUI = std::make_shared<Util::GameObject>();
-    auto boxImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Fonts/TextBox1.png"); // Your new image
+    auto boxImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Fonts/BWTextBox2.png"); // Your new image
     m_DialogueBoxUI->SetDrawable(boxImage);
     m_DialogueBoxUI->SetZIndex(9.0f); // Under the text, over the game
     m_DialogueBoxUI->SetVisible(false);
 
     // Move it to the bottom of the screen! 
     // (You may need to tweak these numbers depending on your window size)
-    m_DialogueBoxUI->m_Transform.scale = {0.8f, 0.6f};          // Shrink the massive image
-    m_DialogueBoxUI->m_Transform.translation = {0.0f, -280.0f};
+    m_DialogueBoxUI->m_Transform.scale = {1.0f, 1.0f};          // Shrink the massive image
+    m_DialogueBoxUI->m_Transform.translation = {0.0f, -288.0f};
 
     // 2. The Text
     m_DialogueUI = std::make_shared<Util::GameObject>();
     m_DialogueText = std::make_shared<Util::Text>(
-        RESOURCE_DIR "/Fonts/sserife.fon", 
-        72,                              
+        RESOURCE_DIR "/Fonts/micross.ttf", 
+        24,                              
         "...",                           
         Util::Color(50, 50, 50) // Dark Grey
     );
@@ -40,7 +40,7 @@ void App::Start() {
     m_DialogueUI->SetVisible(false);
 
     // Position the text slightly offset from the center of the box so it starts top-left
-    m_DialogueUI->m_Transform.translation = {-130.0f, -260.0f};
+    m_DialogueUI->m_Transform.translation = {-450.0f, -260.0f};
     
     m_CurrentState = State::UPDATE;
 }
@@ -56,39 +56,76 @@ void App::Update() {
     // 1. STATE MACHINE (Input & Logic)
     // ==========================================
     if (m_IsInDialogue) {
-        // --- DIALOGUE STATE ---
-        // If we are talking, the ONLY thing the player can do is close the box.
-        if (Util::Input::IsKeyDown(Util::Keycode::Z)) { 
-            m_IsInDialogue = false;
-            m_DialogueUI->SetVisible(false); // Hide the UI
-            m_DialogueBoxUI->SetVisible(false); // Hide box
+        // Only process the Z key press once per tap
+        if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
+            
+            // Are there more lines left in the conversation?
+            if (m_CurrentDialogueIndex < m_CurrentDialogueLines.size() - 1) {
+                // Yes! Move to the next line
+                m_CurrentDialogueIndex++;
+                
+                // SAFE TEXT UPDATE (Fixes the SetText Error)
+                m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
+            } 
+            else {
+                // No more lines! End the dialogue.
+                m_IsInDialogue = false;
+                m_DialogueBoxUI->SetVisible(false);
+                m_DialogueUI->SetVisible(false);
+            }
         }
-    } 
+    }
     else {
         // --- NORMAL GAME STATE ---
-        // 1. Change m_Player-> to m_Character.
-        m_Character.HandleInput(m_Map);
 
         // 1a. Check for Interaction (Pressing 'Z' to talk)
         if (Util::Input::IsKeyDown(Util::Keycode::Z) && !m_Character.IsMoving()) {
+            
+            // 1. Get the player's current grid position
             int checkX = m_Character.GetGridX();
             int checkY = m_Character.GetGridY();
 
-            // 2. Add "Character::Direction::" before your directions
+            // 2. Adjust the coordinates based on which way the player is facing
             Character::Direction facing = m_Character.GetFacingDirection();
             if (facing == Character::Direction::UP)    checkY -= 1;
             if (facing == Character::Direction::DOWN)  checkY += 1;
             if (facing == Character::Direction::LEFT)  checkX -= 1;
             if (facing == Character::Direction::RIGHT) checkX += 1;
 
-            // Ask the map if an NPC is there
+            // 3. Ask the map if an NPC is there
             auto targetNPC = m_Map->GetNPCAt(checkX, checkY);
+            
             if (targetNPC) {
-                std::string text = targetNPC->Interact();
-                m_DialogueText->SetText(text); 
-                m_DialogueUI->SetVisible(true);
+                m_Character.StopMoving();
+                m_IsInDialogue = true;
                 m_DialogueBoxUI->SetVisible(true);
-                m_IsInDialogue = true;          
+                m_DialogueUI->SetVisible(true);
+
+                // ==========================================
+                // MAKE THE NPC FACE THE PLAYER!
+                // ==========================================
+                Character::Direction playerDir = m_Character.GetFacingDirection();
+                if (playerDir == Character::Direction::UP) {
+                    targetNPC->SetDirection(Character::Direction::DOWN);
+                } 
+                else if (playerDir == Character::Direction::DOWN) {
+                    targetNPC->SetDirection(Character::Direction::UP);
+                } 
+                else if (playerDir == Character::Direction::LEFT) {
+                    targetNPC->SetDirection(Character::Direction::RIGHT);
+                } 
+                else if (playerDir == Character::Direction::RIGHT) {
+                    targetNPC->SetDirection(Character::Direction::LEFT);
+                }
+
+                // Grab the list of dialogue lines from the NPC
+                m_CurrentDialogueLines = targetNPC->Interact();
+                m_CurrentDialogueIndex = 0; // Start at the first line
+
+                // Display the first line!
+                if (!m_CurrentDialogueLines.empty()) {
+                    m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
+                }
             }
         }
 
@@ -121,7 +158,6 @@ void App::Update() {
     // ==========================================
     // 2. GENERAL UPDATES (Always runs)
     // ==========================================
-    // We still update the map so water animations keep playing during dialogue!
     m_Map->Update(); 
 
     // ==========================================
@@ -130,15 +166,11 @@ void App::Update() {
     m_Map->Draw();
     m_Character.Draw();
     
-    // Make sure your dialogue UI actually gets drawn!
-    // If your m_DialogueUI is a Util::GameObject, you need to draw it last so it's on top.
     if (m_IsInDialogue) {
         if (m_DialogueBoxUI) m_DialogueBoxUI->Draw();
-        m_DialogueUI->Draw(); 
         if (m_DialogueUI) m_DialogueUI->Draw();
     }
 }
-
 void App::End() {
     LOG_TRACE("End");
 }

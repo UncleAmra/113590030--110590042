@@ -9,6 +9,7 @@ Player::Player(float x, float y) : Character(x, y) {
     LoadSprites();
     // 2. Snap to the first frame
     UpdateSprite(); 
+    
 }
 
 void Player::LoadSprites() {
@@ -52,31 +53,34 @@ void Player::LoadSprites() {
 }
 
 void Player::HandleInput(std::shared_ptr<Map> map) {
-    if (m_IsMoving) return;
+    // 1. INPUT LOCK: This MUST be at the very top!
+    if (IsMoving()) {
+        return; 
+    }
 
     int dx = 0;
     int dy = 0;
 
-    if (Util::Input::IsKeyPressed(Util::Keycode::UP) || Util::Input::IsKeyPressed(Util::Keycode::W)) {
+    // Set Sprite Animation Directions
+    if (Util::Input::IsKeyPressed(Util::Keycode::W) || Util::Input::IsKeyPressed(Util::Keycode::UP)) {
         dy = -1; 
         m_Direction = Direction::UP;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::DOWN) || Util::Input::IsKeyPressed(Util::Keycode::S)) {
+    } else if (Util::Input::IsKeyPressed(Util::Keycode::S) || Util::Input::IsKeyPressed(Util::Keycode::DOWN)) {
         dy = 1;
         m_Direction = Direction::DOWN;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::LEFT) || Util::Input::IsKeyPressed(Util::Keycode::A)) {
+    } else if (Util::Input::IsKeyPressed(Util::Keycode::A) || Util::Input::IsKeyPressed(Util::Keycode::LEFT)) {
         dx = -1;
         m_Direction = Direction::LEFT;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::RIGHT) || Util::Input::IsKeyPressed(Util::Keycode::D)) {
+    } else if (Util::Input::IsKeyPressed(Util::Keycode::D) || Util::Input::IsKeyPressed(Util::Keycode::RIGHT)) {
         dx = 1;
         m_Direction = Direction::RIGHT;
     }
-    
 
     if (dx != 0 || dy != 0) {
         int targetX = m_GridX + dx;
         int targetY = m_GridY + dy;
 
-        // DOOR LOGIC: Check before we try to move!
+        // DOOR LOGIC
         if (!map->IsWalkable(targetX, targetY)) {
             int groundTile = map->GetTileType(targetX, targetY);
             if (groundTile == GameConfig::TILE_DOOR || groundTile == GameConfig::TILE_EXIT) {
@@ -84,13 +88,16 @@ void Player::HandleInput(std::shared_ptr<Map> map) {
             }
         }
 
-        // Base class handles the math!
+        // 2. THE MISSING MATH FIX: 
+        // We MUST update the movement vector so the camera knows which way to pan!
+        m_CurrentDirection = {dx, dy}; 
+
         TryMove(dx, dy, map);
     }
     else {
-        // ADD THIS: If we aren't pressing keys, the Brain tells the Body to idle!
-        m_State = State::IDLE;
-    }
+    // No key pressed — explicitly go idle
+    m_State = State::IDLE;
+}
 }
 
 glm::vec2 Player::Update(std::shared_ptr<Map> map) {

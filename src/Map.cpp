@@ -36,8 +36,8 @@ void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
     
     // THE FIX: Add "NPCProperties" right before the braces!
-    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "/Nurse.png", 12.0f, 0.0f, false, DIALOGUE_DIR + "nurse.txt"};
-    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "/TA0.png", -12.0f, 0.8f, true, DIALOGUE_DIR + "ta.txt"};
+    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.0f, false, DIALOGUE_DIR + "nurse.txt"};
+    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.8f, true, DIALOGUE_DIR + "ta.txt"};
 }
 void Map::InitPropRegistry() {
     // ID = { texturePath, zIndex, dynamicZ, isWalkable }
@@ -193,7 +193,8 @@ void Map::Move(float dx, float dy) {
     for (auto& npc : m_NPCs) {
         npc->m_Transform.translation.x += dx;
         npc->m_Transform.translation.y += dy; 
-    }}
+    }
+}
 
 void Map::Draw() {
     for (auto& tile : m_Tiles) {

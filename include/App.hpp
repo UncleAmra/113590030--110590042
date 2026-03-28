@@ -7,6 +7,11 @@
 #include "GameConfig.hpp"
 #include "util/Text.hpp"
 
+struct InteractionResult {
+    std::vector<std::string> dialogueLines; // Multiple lines for pressing 'Z' to advance!
+    std::string specialAction;              // e.g., "GIVE_POTION", "START_BATTLE", or "NONE"
+};
+
 class App {
 public:
     enum class State {
@@ -20,7 +25,9 @@ public:
     void Start();
     void Update();
     void End();
-
+    std::vector<std::string> m_CurrentDialogueLines;
+    size_t m_CurrentDialogueIndex = 0;
+    
 private:
     void ValidTask();
 
