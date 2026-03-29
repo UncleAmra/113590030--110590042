@@ -30,7 +30,18 @@ public:
     void SetDirection(Direction dir);
     Direction GetFacingDirection() const { return m_Direction; }
 
+    // --- NEW INVENTORY SYSTEM ---
+    void AddItem(const std::string& itemName, int amount = 1);
+    bool RemoveItem(const std::string& itemName, int amount = 1);
+    int GetItemCount(const std::string& itemName) const;
+    void PrintInventory() const; // Great for debugging!
+    std::unordered_map<std::string, int> GetInventory() const { return m_Inventory; }
+    void SetInventory(const std::unordered_map<std::string, int>& loadedInv) { m_Inventory = loadedInv; }
+
+
 protected:
+    // The Backpack: Maps the Item's Name to the Quantity they own
+    std::unordered_map<std::string, int> m_Inventory;
     // Pure virtual function! Forces Player and NPC to load their own unique sprites.
     virtual void LoadSprites() = 0; 
     bool m_UseDynamicZ = true;

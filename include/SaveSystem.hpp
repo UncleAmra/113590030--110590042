@@ -1,5 +1,6 @@
 #pragma once
 #include "GameFlags.hpp"
+#include "Item.hpp"
 #include "Util/Logger.hpp"
 #include <fstream>
 #include <string>
@@ -13,6 +14,8 @@ namespace SaveSystem {
         int gridX;
         int gridY;
         int direction; // Store as int (0-3)
+        std::unordered_map<std::string, int> inventory;
+        std::unordered_set<std::string> lootedItems;
     };
 
     // 1. SAVE: Write Map, Position, and then all Flags
@@ -28,6 +31,16 @@ namespace SaveSystem {
         // Save All Story Flags
         for (const auto& [name, value] : GameFlags::Flags) {
             outFile << "FLAG " << name << " " << (value ? "1" : "0") << "\n";
+        }
+
+        // ---> NEW: Save Looted Items <---
+        for (const auto& itemID : state.lootedItems) {
+            outFile << "LOOTED " << itemID << "\n";
+        }
+
+        // ---> NEW: Save Inventory <---
+        for (const auto& [itemName, qty] : state.inventory) {
+            outFile << "INV " << itemName << " " << qty << "\n";
         }
 
         outFile.close();
@@ -50,6 +63,19 @@ namespace SaveSystem {
                 bool val;
                 inFile >> name >> val;
                 GameFlags::Set(name, val);
+            }
+            // ---> NEW: Read Looted Items <---
+            else if (type == "LOOTED") {
+                std::string itemID;
+                inFile >> itemID;
+                outState.lootedItems.insert(itemID);
+            }
+            // ---> NEW: Read Inventory <---
+            else if (type == "INV") {
+                std::string itemName;
+                int qty;
+                inFile >> itemName >> qty;
+                outState.inventory[itemName] = qty;
             }
         }
         return true;

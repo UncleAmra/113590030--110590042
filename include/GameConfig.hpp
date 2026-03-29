@@ -1,7 +1,9 @@
 #ifndef GAMECONFIG_HPP
 #define GAMECONFIG_HPP
 #include "config.hpp"
-#include <string> // Added this so std::string works!
+#include <string> 
+#include <unordered_set> 
+#include <unordered_map>
 
 namespace GameConfig {
     // --- TILE & GRID SETTINGS ---
@@ -39,6 +41,8 @@ namespace GameConfig {
         int spawnY;
     };
 
+    //registry for items that have already been looted so they don't respawn
+    inline std::unordered_set<std::string> LootedItems;
 // Define our destinations (Where the player SPAWNS after teleporting)
     inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 8 };
     inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/maps/level", 15, 7 };

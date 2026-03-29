@@ -93,3 +93,33 @@ void Character::SetDirection(Direction dir) {
     m_Direction = dir;
     UpdateSprite();
 }
+
+void Character::AddItem(const std::string& itemName, int amount) {
+    m_Inventory[itemName] += amount;
+    LOG_INFO("Obtained {}x {}!", amount, itemName);
+}
+
+bool Character::RemoveItem(const std::string& itemName, int amount) {
+    if (m_Inventory[itemName] >= amount) {
+        m_Inventory[itemName] -= amount;
+        return true; // Successfully used/removed
+    }
+    LOG_TRACE("Not enough {}!", itemName);
+    return false; // They don't have enough!
+}
+
+int Character::GetItemCount(const std::string& itemName) const {
+    auto it = m_Inventory.find(itemName);
+    if (it != m_Inventory.end()) {
+        return it->second;
+    }
+    return 0; // They own 0 of this item
+}
+
+void Character::PrintInventory() const {
+    LOG_INFO("--- PLAYER INVENTORY ---");
+    for (const auto& pair : m_Inventory) {
+        LOG_INFO("{}: {}", pair.first, pair.second);
+    }
+    LOG_INFO("------------------------");
+}

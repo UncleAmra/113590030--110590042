@@ -5,6 +5,7 @@ set(SRC_FILES
     Prop.cpp
     Player.cpp
     NPC.cpp
+    Item.cpp
 )
 
 set(INCLUDE_FILES
@@ -17,6 +18,7 @@ set(INCLUDE_FILES
     GameFlags.hpp
     GameConfif.hpp
     SaveSystem.hpp
+    Item.hpp
 )
 
 set(TEST_FILES

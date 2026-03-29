@@ -1,6 +1,7 @@
 #include "Map.hpp"
 #include "Prop.hpp"
-#include "GameConfig.hpp" // <-- 1. Added our new config file!
+#include "GameConfig.hpp" 
+#include "Item.hpp"
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
@@ -18,8 +19,9 @@ Map::Map() {
     InitTileRegistry();
     InitNPCRegistry();
     InitPropRegistry();
+    InitItemRegistry();
     // 3. BUILD THE FIRST MAP
-    LoadLevel(MAP_DIR + "/level");
+    LoadLevel(MAP_DIR + "level");
 }
 
 void Map::InitTileRegistry() {
@@ -46,7 +48,6 @@ void Map::InitNPCRegistry() {
 }
 void Map::InitPropRegistry() {
     // ID = { texturePath, zIndex, dynamicZ, isWalkable }
-    
     // Buildings
     m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR +  "/PokeCentre.png", 0.0f, 0.8f, true, false }; 
     m_PropRegistry[GameConfig::PROP_CHURCH] = { PROP_DIR + "/Church.png",0.0f, 0.8f, true, false };
@@ -56,12 +57,14 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_PC_DESK] = { PROP_DIR + "/PCDesk1.png",0.0f, 0.7f, false, false }; //10 I think
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { PROP_DIR + "/PCWall2.png", 0.0f,0.3f, false, false }; //12
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png",0.0f, 0.3f, false, false }; //13
-    
-
-    
     //invisible wall
     m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "",0.0f, 0.0f, false, false}; 
 }
+void Map::InitItemRegistry() {
+    // Make sure you have a Potion.png in your props folder!
+    m_ItemRegistry[50] = { PROP_DIR + "/PokeBall.png", "Potion", 0.5f }; 
+}
+
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     std::vector<std::vector<int>> data;
     std::ifstream file(filepath);
@@ -89,9 +92,10 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     }
     return data;
 }
-
+//Spawns all the tiles, props/npcs and items
 void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
+    
     m_CurrentLevelPath = mapName;
     // 1. Load the two layers
     m_LevelData = LoadCSV(mapName + "_ground.csv");
@@ -180,9 +184,25 @@ void Map::LoadLevel(const std::string& mapName) {
                         m_Props.push_back(prop);
                     }
                 }
-                
-                // (Notice how there are ZERO if / else if statements checking for specific IDs now! 
-                // The dictionaries do all the heavy lifting.)
+                // --- 3. SPAWN ITEMS ---
+                if (m_ItemRegistry.count(propID) > 0) {
+                    // Create a unique ID for this specific tile (e.g. "RESOURCE_DIR/maps/level_10_5")
+                    std::string uniqueID = m_CurrentLevelPath + "_" + std::to_string(x) + "_" + std::to_string(y);
+
+                    // Check if we already looted this spot!
+                    if (GameConfig::LootedItems.count(uniqueID) > 0) {
+                        m_PropData[y][x] = 0; // Remove it from grid data so we can walk here!
+                    } 
+                    else {
+                        const ItemProperties& itemProps = m_ItemRegistry[propID];
+                        
+                        if (!itemProps.texturePath.empty()) {
+                            auto item = std::make_shared<Item>(itemProps.texturePath, glm::vec2(worldX, worldY), itemProps.name, x, y);                        
+                            m_Items.push_back(item); 
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -201,11 +221,18 @@ void Map::Move(float dx, float dy) {
         npc->m_Transform.translation.x += dx;
         npc->m_Transform.translation.y += dy; 
     }
+    for (auto& item : m_Items) {
+        item->m_Transform.translation.x += dx;
+        item->m_Transform.translation.y += dy;
+    }
 }
 
 void Map::Draw() {
     for (auto& tile : m_Tiles) {
         tile->Draw();
+    }
+    for (auto& item : m_Items) {
+        item->Draw();
     }
     for (auto& prop : m_Props) {
         prop->Draw(); 
@@ -233,6 +260,10 @@ bool Map::IsWalkable(int x, int y) {
     int propID = m_PropData[y][x];
     if (m_PropRegistry.count(propID) > 0 && !m_PropRegistry[propID].isWalkable) {
         return false; // A solid prop is blocking the way!
+    }
+    // 3.5 Check Items
+    if (m_ItemRegistry.count(propID) > 0) {
+        return false; // Items act as solid walls until you pick them up!
     }
 
     // 4. Check NPCs (Tripwire 3)
@@ -274,6 +305,7 @@ void Map::ClearMap() {
     m_LevelData.clear();
     m_Props.clear();
     m_NPCs.clear();
+    m_Items.clear();
 }
 
 int Map::GetPropType(int gridX, int gridY) {
@@ -299,4 +331,28 @@ std::shared_ptr<NPC> Map::GetNPCAt(int gridX, int gridY) {
         }
     }
     return nullptr;
+}
+
+std::string Map::CollectItemAt(int gridX, int gridY, Character& player) {
+    int propID = GetPropType(gridX, gridY);
+
+    if (m_ItemRegistry.count(propID) > 0) {
+        std::string itemName = m_ItemRegistry[propID].name;
+        player.AddItem(itemName, 1);
+        m_PropData[gridY][gridX] = 0;
+
+        for (auto& item : m_Items) {
+            if (item->GetGridX() == gridX && item->GetGridY() == gridY && !item->IsCollected()) {
+                item->Collect();
+                break;
+            }
+        }
+        
+        // ---> ADD THESE TWO LINES TO WRITE TO THE BLACKLIST! <---
+        std::string uniqueID = m_CurrentLevelPath + "_" + std::to_string(gridX) + "_" + std::to_string(gridY);
+        GameConfig::LootedItems.insert(uniqueID);
+        
+        return itemName; // <--- Return the name!
+    }
+    return ""; // <--- Return empty if no item was found
 }

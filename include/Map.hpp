@@ -37,6 +37,14 @@ struct NPCProperties {
   
 
 };
+
+struct ItemProperties {
+    std::string texturePath;
+    std::string name;
+    float zIndex;
+};
+
+class Item;
 class Prop;
 
 class Map : public Util::GameObject {
@@ -53,6 +61,7 @@ public:
     void LoadLevel(const std::string& filepath);
     std::shared_ptr<NPC> GetNPCAt(int gridX, int gridY);
     std::string GetCurrentLevelPath() const { return m_CurrentLevelPath; }
+    std::string CollectItemAt(int gridX, int gridY, Character& player);
 
 private:
     // --- MAP DATA ---
@@ -61,6 +70,7 @@ private:
     std::vector<std::vector<int>> m_LevelData;
     std::vector<std::shared_ptr<Util::GameObject>> m_Tiles;
     std::vector<std::shared_ptr<Prop>> m_Props;
+    std::vector<std::shared_ptr<Item>> m_Items;
     std::string m_CurrentLevelPath;
 
     // --- THE REGISTRY ---
@@ -68,10 +78,12 @@ private:
     //std::unordered_map<int, std::string> m_NPCRegistry;   
     std::unordered_map<int, NPCProperties> m_NPCRegistry;
     std::unordered_map<int, PropProperties> m_PropRegistry; 
+    std::unordered_map<int, ItemProperties> m_ItemRegistry;
     void InitTileRegistry(); 
     void InitPropRegistry();
     void InitNPCRegistry(); // A helper to set up the dictionary
-
+    void InitItemRegistry();
+  
     // --- ANIMATIONS ---
     std::shared_ptr<Util::Animation> m_LeaderWater;
     std::shared_ptr<Util::Animation> m_FollowerWater;

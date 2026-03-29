@@ -2,6 +2,7 @@
 #include "Map.hpp"
 #include "Player.hpp"
 #include "Character.hpp"
+#include "Item.hpp"
 #include "SaveSystem.hpp"
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
@@ -14,32 +15,43 @@ const std::string MAP_DIR = RES + "/maps/";
 void App::Start() {
     LOG_TRACE("Start");
     SaveSystem::GameState loadedState;
+    
     if (SaveSystem::LoadGame(loadedState)) {
+        // 1. SET THE BLACKLIST FIRST! (Before the Map constructor runs)
+        GameConfig::LootedItems = loadedState.lootedItems;
+        
+        // 2. NOW CREATE AND LOAD THE MAP
         m_Map = std::make_shared<Map>();
         m_Map->LoadLevel(loadedState.mapPath);
+        
+        // 3. SET PLAYER STATE & INVENTORY
         m_Character.SetGridPosition(loadedState.gridX, loadedState.gridY);
         m_Map->WarpTo(loadedState.gridX, loadedState.gridY);
         m_Character.SetDirection(static_cast<Character::Direction>(loadedState.direction));
+        m_Character.SetInventory(loadedState.inventory);
     } else {
         // DEFAULT START (If no save file exists)
+        GameConfig::LootedItems.clear(); // Ensure blacklist is empty for a new game
+        
         m_Map = std::make_shared<Map>();
-        m_Map->LoadLevel(MAP_DIR + "/level");
+        
+        // FIX: Removed the extra slash before "level" to fix the door bug!
+        m_Map->LoadLevel(MAP_DIR + "level"); 
+        
         m_Character.SetGridPosition(10, 10); 
         m_Map->WarpTo(10, 10);
     }
-    //m_Map = std::make_shared<Map>(); 
     
     // ==========================================
     // BUILD THE DIALOGUE UI
     // ==========================================
     m_DialogueBoxUI = std::make_shared<Util::GameObject>();
-    auto boxImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Fonts/BWTextBox2.png"); // Your new image
+    auto boxImage = std::make_shared<Util::Image>(RESOURCE_DIR "/Fonts/BWTextBox2.png"); 
     m_DialogueBoxUI->SetDrawable(boxImage);
     m_DialogueBoxUI->SetZIndex(9.0f); // Under the text, over the game
     m_DialogueBoxUI->SetVisible(false);
 
     // Move it to the bottom of the screen! 
-    // (You may need to tweak these numbers depending on your window size)
     m_DialogueBoxUI->m_Transform.scale = {1.0f, 1.0f};          // Shrink the massive image
     m_DialogueBoxUI->m_Transform.translation = {0.0f, -288.0f};
 
@@ -60,7 +72,6 @@ void App::Start() {
     
     m_CurrentState = State::UPDATE;
 }
-
 void App::Update() {
     // Handle quitting
     if (Util::Input::IsKeyUp(Util::Keycode::ESCAPE) ||
@@ -73,7 +84,8 @@ void App::Update() {
         current.gridX = m_Character.GetGridX();
         current.gridY = m_Character.GetGridY();
         current.direction = static_cast<int>(m_Character.GetFacingDirection());
-
+        current.inventory = m_Character.GetInventory();
+        current.lootedItems = GameConfig::LootedItems;
         SaveSystem::SaveGame(current);
     }
     // ==========================================
@@ -144,6 +156,26 @@ void App::Update() {
                 // Display the first line!
                 if (!m_CurrentDialogueLines.empty()) {
                     m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
+                }
+            }
+            else {
+                // Check for an item and catch the name it returns!
+                std::string collectedItem = m_Map->CollectItemAt(checkX, checkY, m_Character);
+                
+                if (!collectedItem.empty()) {
+                    m_Character.StopMoving();
+                    m_IsInDialogue = true; // Trigger your dialogue UI!
+                    
+                    // ---> TURN ON THE UI BOXES <---
+                    m_DialogueBoxUI->SetVisible(true);
+                    m_DialogueUI->SetVisible(true);
+                    
+                    // ---> SET THE TEXT <---
+                    m_CurrentDialogueLines = { "Obtained 1x " + collectedItem + "!" };
+                    m_CurrentDialogueIndex = 0;
+                    m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
+                    std::string itemID = m_Map->GetCurrentLevelPath() + "_" + std::to_string(checkX) + "_" + std::to_string(checkY);
+                    GameConfig::LootedItems.insert(itemID);
                 }
             }
         }
