@@ -54,7 +54,7 @@ protected:
     bool m_IsMoving = false;                
     glm::vec2 m_CurrentDirection = {0, 0};  
     float m_PixelsMoved = 0.0f;             
-    float m_Speed = 4.0f; 
+    float m_Speed = 200.0f; 
 
     int m_GridX = 6;
     int m_GridY = 6;

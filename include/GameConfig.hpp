@@ -5,6 +5,8 @@
 #include <unordered_set> 
 #include <unordered_map>
 
+//Check Map.cpp to find the IDs for items/tiles 
+
 namespace GameConfig {
     // --- TILE & GRID SETTINGS ---
     constexpr float TILE_SIZE = 16.0f;
@@ -32,6 +34,9 @@ namespace GameConfig {
     constexpr int PROP_PC_WALL_LEFT = 12;
     constexpr int PROP_PC_WALL_RIGHT = 13;
     constexpr int PROP_CHECKPOINT = 15;
+    constexpr int PROP_CHECKPOINT2 = 16;
+
+    //NPC IDs
     constexpr int NPC_NURSE = 100;
     constexpr int NPC_TA1 = 101;
 
@@ -46,15 +51,15 @@ namespace GameConfig {
 // Define our destinations (Where the player SPAWNS after teleporting)
     inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 8 };
     inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/maps/level", 15, 7 };
-    inline const WarpDestination WARP_NTUT = { RESOURCE_DIR "/maps/NTUT", 7, 8 };
-    inline const WarpDestination WARP_TOWN_FROM_NTUT = { RESOURCE_DIR "/maps/level", 4, 4 };
+    inline const WarpDestination WARP_NTUT = { RESOURCE_DIR "/maps/NTUT",9,3 };
+    inline const WarpDestination WARP_TOWN_FROM_NTUT = { RESOURCE_DIR "/maps/level", 4, 3 };
     // A dictionary that maps: "CurrentMap_DoorX_DoorY" -> "Where the door goes"
     inline std::unordered_map<std::string, WarpDestination> DoorRouting = {
         
         { RESOURCE_DIR "/maps/level_15_7", WARP_PC_INSIDE },
         { RESOURCE_DIR "/maps/inside_7_8", WARP_TOWN_OUTSIDE },
         { RESOURCE_DIR "/maps/level_4_3", WARP_NTUT },
-        { RESOURCE_DIR "/maps/NTUT_7_8", WARP_TOWN_FROM_NTUT }
+        { RESOURCE_DIR "/maps/NTUT_9_3", WARP_TOWN_FROM_NTUT }
         
     };
 }

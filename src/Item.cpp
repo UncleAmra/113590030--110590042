@@ -1,6 +1,6 @@
 #include "Item.hpp"
 
-Item::Item(const std::string& imagePath, const glm::vec2& position, const std::string& name, int gridX, int gridY) 
+Item::Item(const std::string& imagePath, const glm::vec2& position, const std::string& name, ItemCategory category, int gridX, int gridY) 
     : m_Name(name), m_GridX(gridX), m_GridY(gridY) {
     
     // 1. Load the texture
@@ -9,6 +9,7 @@ Item::Item(const std::string& imagePath, const glm::vec2& position, const std::s
     // 2. Set the position
     m_Transform.translation = position;
     m_Transform.scale = glm::vec2(3.0f, 3.0f);
+    m_Category = category;
     // Items usually sit below the player, so a low Z-Index is good
     m_ZIndex = 0.1f; 
 }

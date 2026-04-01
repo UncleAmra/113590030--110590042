@@ -1,4 +1,5 @@
 #include "Character.hpp"
+#include "Util/Time.hpp"
 #include "Map.hpp"
 
 Character::Character(float x, float y) {
@@ -50,20 +51,25 @@ bool Character::TryMove(int dx, int dy, std::shared_ptr<Map> map) {
     }
 }
 
-glm::vec2 Character::Update(std::shared_ptr<Map> map) { // Added 'map' back since you might need it later
+glm::vec2 Character::Update(std::shared_ptr<Map> map) { 
     (void)map;
     glm::vec2 movement = {0.0f, 0.0f};
 
+    // --- NEW: Get Delta Time in seconds ---
+    // (Assuming GetDeltaTimeMs() returns milliseconds. If your engine just has 
+    // GetDeltaTime() that already returns seconds, you don't need the / 1000.0f)
+    float dt = Util::Time::GetDeltaTimeMs() / 1000.0f; 
+
     // 1. Z-SORTING FIX
     if (m_UseDynamicZ) {
-        // Use the saved base index, and adjust slightly based on grid position.
-        // We add a tiny amount per GridY so entities lower on the screen overlap higher ones.
         float dynamicZ = m_BaseZIndex + (m_GridY * 0.001f); 
         SetZIndex(dynamicZ);
     }
 
     if (m_IsMoving) {
-        float step = m_Speed;
+        // --- NEW: Multiply speed by Delta Time ---
+        float step = m_Speed * dt; 
+        
         if (m_PixelsMoved + step > GameConfig::EFFECTIVE_TILE_SIZE) { 
             step = GameConfig::EFFECTIVE_TILE_SIZE - m_PixelsMoved; 
         }

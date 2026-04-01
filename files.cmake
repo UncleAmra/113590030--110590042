@@ -6,6 +6,9 @@ set(SRC_FILES
     Player.cpp
     NPC.cpp
     Item.cpp
+    StartMenu.cpp
+    InventoryMenu.cpp
+
 )
 
 set(INCLUDE_FILES
@@ -19,6 +22,9 @@ set(INCLUDE_FILES
     GameConfif.hpp
     SaveSystem.hpp
     Item.hpp
+    StartMenu.hpp
+    InventoryMenu.hpp
+
 )
 
 set(TEST_FILES

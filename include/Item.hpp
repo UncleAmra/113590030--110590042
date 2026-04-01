@@ -7,16 +7,23 @@
 #include <string>
 #include <memory>
 
+enum class ItemCategory {
+    GENERAL = 0,
+    POKEBALLS = 1,
+    KEY_ITEMS = 2,
+    COUNT = 3 
+};
+
 class Item : public Util::GameObject {
 public:
-    // The constructor takes the image path, position, and the item's name!
-    Item(const std::string& imagePath, const glm::vec2& position, const std::string& name, int gridX, int gridY);
+    // Update the constructor to take the category as an argument
+    Item(const std::string& imagePath, const glm::vec2& position, const std::string& name, ItemCategory category, int gridX, int gridY);
 
-
-    // Getters so the player's inventory knows what they just picked up
     std::string GetName() const { return m_Name; }
     
-    // A function we can call when the player steps on it!
+    // Standard getter instead of a static helper!
+    ItemCategory GetCategory() const { return m_Category; }
+    
     void Collect(); 
 
     bool IsCollected() const { return m_IsCollected; }
@@ -25,8 +32,9 @@ public:
 
 private:
     std::string m_Name;
+    ItemCategory m_Category; // <-- Now it is a proper attribute
     bool m_IsCollected = false;
-    int m_GridX; // <-- Add this
+    int m_GridX; 
     int m_GridY;
 };
 
