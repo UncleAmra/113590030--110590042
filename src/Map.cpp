@@ -358,10 +358,15 @@ std::string Map::CollectItemAt(int gridX, int gridY, Character& player) {
     int propID = GetPropType(gridX, gridY);
 
     if (m_ItemRegistry.count(propID) > 0) {
+        // 1. Pull the name AND category straight from your registry
         std::string itemName = m_ItemRegistry[propID].name;
-        player.AddItem(itemName, 1);
+        ItemCategory itemCat = m_ItemRegistry[propID].category; 
+
+        // 2. Pass the registry category into the player's inventory
+        player.AddItem(itemName, itemCat, 1);
         m_PropData[gridY][gridX] = 0;
 
+        // 3. Find the actual item in the world and mark it as collected
         for (auto& item : m_Items) {
             if (item->GetGridX() == gridX && item->GetGridY() == gridY && !item->IsCollected()) {
                 item->Collect();
@@ -369,7 +374,7 @@ std::string Map::CollectItemAt(int gridX, int gridY, Character& player) {
             }
         }
         
-        // Write to the blacklist
+        // 4. Write to the blacklist
         std::string uniqueID = m_CurrentLevelPath + "_" + std::to_string(gridX) + "_" + std::to_string(gridY);
         GameConfig::LootedItems.insert(uniqueID);
         

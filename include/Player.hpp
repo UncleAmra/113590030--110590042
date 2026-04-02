@@ -1,6 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 #include "Character.hpp"
+#include "Item.hpp"
 
 class Player : public Character {
 public:
@@ -16,7 +17,6 @@ protected:
     void LoadSprites() override; // Loads the Red character sprites
 
 private:
-
     bool m_HitDoor = false;
 };
 

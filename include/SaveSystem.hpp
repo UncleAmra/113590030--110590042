@@ -14,7 +14,8 @@ namespace SaveSystem {
         int gridX;
         int gridY;
         int direction; // Store as int (0-3)
-        std::unordered_map<std::string, int> inventory;
+        //std::unordered_map<std::string, int> inventory;
+        std::unordered_map<std::string, InventoryData> inventory;
         std::unordered_set<std::string> lootedItems;
     };
 
@@ -40,7 +41,7 @@ namespace SaveSystem {
 
         // ---> NEW: Save Inventory <---
         for (const auto& [itemName, qty] : state.inventory) {
-            outFile << "INV " << itemName << " " << qty << "\n";
+            outFile << "INV " << itemName << " " << qty.quantity << "\n";
         }
 
         outFile.close();
@@ -75,7 +76,7 @@ namespace SaveSystem {
                 std::string itemName;
                 int qty;
                 inFile >> itemName >> qty;
-                outState.inventory[itemName] = qty;
+                outState.inventory[itemName].quantity = qty;
             }
         }
         return true;

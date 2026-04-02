@@ -158,16 +158,21 @@ void App::Update() {
             m_MenuState = MenuState::BAG_MAIN; 
             m_StartMenu->SetVisible(false);
             
-            // Fetch inventory map and convert it into a vector list for the menu
-            auto inventory = m_Character->GetInventory();
-            std::vector<std::pair<std::string, int>> inventoryList;
+            // 1. Setup the map with empty arrays so empty tabs still render
+            std::map<ItemCategory, std::vector<std::pair<std::string, int>>> sortedInventory;
+            sortedInventory[ItemCategory::GENERAL] = {};
+            sortedInventory[ItemCategory::POKEBALLS] = {};
+            sortedInventory[ItemCategory::KEY_ITEMS] = {};
             
-            for (const auto& [itemName, qty] : inventory) {
-                inventoryList.push_back({itemName, qty});
+            // 2. Loop through the player's updated inventory struct and sort it
+            auto inventory = m_Character->GetInventory();
+            for (const auto& [itemName, invData] : inventory) {
+                // Notice we grab the category for the sorting, and the quantity for the list!
+                sortedInventory[invData.category].push_back({itemName, invData.quantity});
             }
             
-            // Pass the vector list to the menu!
-            m_InventoryMenu->Show(inventoryList);
+            // 3. Fire up the menu!
+            m_InventoryMenu->Show(sortedInventory);
 
         } else if (selection == StartMenu::MenuOption::SAVE) {
             LOG_TRACE("Selected: SAVE");
@@ -192,7 +197,8 @@ void App::Update() {
         
         m_Renderer->Update();
         return; 
-    }
+       }
+    
     else if (m_MenuState == MenuState::BAG_MAIN) {
         // --- BAG INVENTORY STATE ---
         // Let the InventoryMenu handle its own input. If it returns true, we exit.
@@ -304,6 +310,7 @@ void App::Update() {
     m_Map->Update();
     m_Renderer->Update();
 }
+
 
 void App::End() {
     LOG_TRACE("End");

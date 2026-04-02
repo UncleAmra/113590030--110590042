@@ -100,16 +100,34 @@ void Character::SetDirection(Direction dir) {
     UpdateSprite();
 }
 
-void Character::AddItem(const std::string& itemName, int amount) {
-    m_Inventory[itemName] += amount;
-    LOG_INFO("Obtained {}x {}!", amount, itemName);
+void Character::AddItem(const std::string& itemName, ItemCategory category, int amount) {
+    // If the item already exists in the bag, just add to the quantity
+    if (m_Inventory.find(itemName) != m_Inventory.end()) {
+        m_Inventory[itemName].quantity += amount;
+    } else {
+        // If it's a new item, store the amount AND the category
+        m_Inventory[itemName] = {amount, category};
+    }
 }
 
 bool Character::RemoveItem(const std::string& itemName, int amount) {
-    if (m_Inventory[itemName] >= amount) {
-        m_Inventory[itemName] -= amount;
-        return true; // Successfully used/removed
+    // 1. First, check if the item actually exists in the backpack
+    auto it = m_Inventory.find(itemName);
+    
+    if (it != m_Inventory.end()) {
+        // 2. Check if they have enough of it
+        if (it->second.quantity >= amount) {
+            it->second.quantity -= amount;
+            
+            // 3. Clean up: If they used the last one, remove it from the map entirely
+            if (it->second.quantity <= 0) {
+                m_Inventory.erase(it);
+            }
+            
+            return true; // Successfully used/removed
+        }
     }
+    
     LOG_TRACE("Not enough {}!", itemName);
     return false; // They don't have enough!
 }
@@ -117,7 +135,8 @@ bool Character::RemoveItem(const std::string& itemName, int amount) {
 int Character::GetItemCount(const std::string& itemName) const {
     auto it = m_Inventory.find(itemName);
     if (it != m_Inventory.end()) {
-        return it->second;
+        // Return just the quantity from our struct!
+        return it->second.quantity; 
     }
     return 0; // They own 0 of this item
 }
@@ -125,7 +144,7 @@ int Character::GetItemCount(const std::string& itemName) const {
 void Character::PrintInventory() const {
     LOG_INFO("--- PLAYER INVENTORY ---");
     for (const auto& pair : m_Inventory) {
-        LOG_INFO("{}: {}", pair.first, pair.second);
+        LOG_INFO("{}: {}", pair.first, pair.second.quantity);
     }
     LOG_INFO("------------------------");
 }
