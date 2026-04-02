@@ -62,7 +62,14 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
 
     // 1. Z-SORTING FIX
     if (m_UseDynamicZ) {
-        float dynamicZ = m_BaseZIndex + (m_GridY * 0.001f); 
+        // Use world Y position of the character's feet, not grid index
+        // m_Transform.translation.y is the centre — subtract half 
+        // a scaled tile to get the foot
+        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
+        
+        // Invert: lower footY (further down screen) = higher Z
+        // Divide by a large number to keep Z in a sensible range
+        float dynamicZ = 0.5f - (footY / 10000.0f);
         SetZIndex(dynamicZ);
     }
 

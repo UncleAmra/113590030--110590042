@@ -21,24 +21,43 @@ namespace GameConfig {
     constexpr float CAMERA_START_Y = 288.0f;
 
     // --- TILE IDs ---
-    constexpr int TILE_DOOR = 6;
-    constexpr int TILE_EXIT = 99; // (Make sure 99 matches your actual exit ID!)
+    constexpr int TILE_GRASS = 0;
+    constexpr int TILE_WATER_SOLID = 1;
+    constexpr int TILE_DIRT = 2;
+    constexpr int TILE_CONCRETE = 4;
+    constexpr int TILE_DOOR = 6;      
+    constexpr int TILE_PC_FLOOR = 9;
+    constexpr int TILE_PC_WALL = 11;
+    constexpr int TILE_EXIT = 99;
 
-    // --- PROP IDs ---
+    // --- PROP IDs --- 
     constexpr int PROP_POKECENTER = 3;
     constexpr int PROP_CHURCH = 5;
     constexpr int PROP_DOORMAT = 7;
-    constexpr int PROP_INVISIBLE_EXIT = 8;
+    constexpr int PROP_INVISIBLE_DOOR = 990;
     constexpr int PROP_INVISIBLE_WALL = 999;
     constexpr int PROP_PC_DESK = 10;
     constexpr int PROP_PC_WALL_LEFT = 12;
     constexpr int PROP_PC_WALL_RIGHT = 13;
     constexpr int PROP_CHECKPOINT = 15;
     constexpr int PROP_CHECKPOINT2 = 16;
+    constexpr int PROP_TREE = 60;
+    constexpr int PROP_TALLGRASS = 61;
+
+
+
+
+
+    // --- ITEM IDs ---
+    constexpr int ITEM_POTION = 50;
+    constexpr int ITEM_POKEBALL = 51;
 
     //NPC IDs
     constexpr int NPC_NURSE = 100;
     constexpr int NPC_TA1 = 101;
+
+
+
 
     struct WarpDestination {
         std::string levelPath;

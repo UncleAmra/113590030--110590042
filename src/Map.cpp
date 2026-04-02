@@ -17,28 +17,24 @@ const std::string NPC_DIR  = RES + "/npcs/";
 const std::string DIALOGUE_DIR = RES + "/dialogue/";
 
 Map::Map() { 
-    // 2. SETUP THE DICTIONARY
+    //SETUP THE DICTIONARY
     InitTileRegistry();
     InitNPCRegistry();
     InitPropRegistry();
     InitItemRegistry();
-    
-    // REMOVED LoadLevel here. We will call it in App::Start() 
-    // AFTER the Renderer has been injected!
+
 }
 
+//Check GameCofig to find IDs for each dictionary
 void Map::InitTileRegistry() {
     // ID = { texture, zIndex, yOffset, isWalkable }
-    m_TileRegistry[0] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
-    m_TileRegistry[1] = { nullptr, 0.0f, 0.0f, false };
-    m_TileRegistry[2] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, true };
-   //3 is used by Pokecentre Prop
-    m_TileRegistry[4] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/Concrete.png"), 0.0f, 0.0f, true }; 
-   //idk about 5
-    m_TileRegistry[6] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; // Door (acts as wall)
-    //7 is used by church prop
-    m_TileRegistry[9] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; //  PokeCentre floor tile  
-    m_TileRegistry[11] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"), 0.1f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_GRASS] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_WATER_SOLID] = { nullptr, 0.0f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_DIRT] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_CONCRETE] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/Concrete.png"), 0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_DOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; 
+    m_TileRegistry[GameConfig::TILE_PC_FLOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_PC_WALL] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"), 0.1f, 0.0f, false };
 }
 
 void Map::InitNPCRegistry() {
@@ -48,28 +44,41 @@ void Map::InitNPCRegistry() {
 }
 
 void Map::InitPropRegistry() {
-    // ID = { texturePath, zIndex, dynamicZ, isWalkable }
-    // Buildings
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR +  "/PokeCentre.png", 0.0f, 0.8f, true, false }; 
-    m_PropRegistry[GameConfig::PROP_CHURCH] = { PROP_DIR + "/Church.png",0.0f, 0.8f, true, false };
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT] = { PROP_DIR + "/Checkpoint2.png", 96.0f,0.8f, true, false }; //15
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT2] = { PROP_DIR + "/Checkpoint3.png", 96.0f,0.8f, true, false }; //16
-    // PokeCenter Interiors
-    m_PropRegistry[GameConfig::PROP_DOORMAT] = { PROP_DIR + "/PC_doormat.png", 0.0f,0.1f, false, true }; // WALKABLE! 6 or 7
-    m_PropRegistry[GameConfig::PROP_PC_DESK] = { PROP_DIR + "/PCDesk1.png",0.0f, 0.7f, false, false }; //10 I think
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] = { PROP_DIR + "/PCWall2.png", 0.0f,0.3f, false, false }; //12
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png",0.0f, 0.3f, false, false }; //13
-    //invisible wall
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "",0.0f, 0.0f, false, false}; 
+    // FORMAT: { "Texture", "AltTexture", zIndex, dynamicZ, isWalkable, offsetX, offsetY }
+
+    // 1. INVISIBLE TRIGGERS
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR] = { "", "", 0.0f, false, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "", "", 0.0f, false, false, 0.0f, 0.0f }; 
+
+    // 2. BUILDINGS
+    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR + "/PokeCentre.png", "", 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH] =     { PROP_DIR + "/Church.png",     "", 0.8f, true, false, 0.0f, 0.0f };
+
+    // 3. CHECKPOINTS
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT] =  { PROP_DIR + "/Checkpoint2.png", "", 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT2] = { PROP_DIR + "/Checkpoint3.png", "", 0.8f, true, false, 0.0f, 96.0f }; 
+
+    // 4. INTERIORS
+    m_PropRegistry[GameConfig::PROP_DOORMAT] =       { PROP_DIR + "/PC_doormat.png", "", 0.1f, false, true,  0.0f, -20.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { PROP_DIR + "/PCDesk1.png",    "", 0.7f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { PROP_DIR + "/PCWall2.png",    "", 0.3f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png",    "", 0.3f, false, false, 0.0f, 0.0f }; 
+
+    // 5. NATURE & SCENERY
+    m_PropRegistry[GameConfig::PROP_TREE] = { PROP_DIR + "/Tree.png", "", 0.8f, true, false, 20.0f, -16.0f }; 
+    
+    // 6. INTERACTIVE PROPS
+    m_PropRegistry[GameConfig::PROP_TALLGRASS] = { 
+        PROP_DIR + "/TallGrass4.png", 
+        PROP_DIR + "/TallGrass3.png", // The flattened grass!
+        0.80f, true, true, 0.0f, 0.0f 
+    }; 
 }
 
 void Map::InitItemRegistry() {
-    // Item ID = texturePath, name, zIndex
-    m_ItemRegistry[50] = { PROP_DIR + "/PokeBall.png", "Potion", ItemCategory::GENERAL, 0.5f }; 
-    m_ItemRegistry[51] = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::POKEBALLS,0.5f }; 
-    //m_ItemRegistry[51] = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::KEY_ITEMS,0.5f }; 
-
-
+    // Item ID = texturePath, name, category, zIndex
+    m_ItemRegistry[GameConfig::ITEM_POTION] = { PROP_DIR + "/PokeBall.png", "Potion", ItemCategory::GENERAL, 0.5f }; 
+    m_ItemRegistry[GameConfig::ITEM_POKEBALL] = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::POKEBALLS, 0.5f }; 
 }
 
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
@@ -179,13 +188,24 @@ void Map::LoadLevel(const std::string& mapName) {
                 }
                 
                 // --- 2. SPAWN PROPS ---
+            // --- 2. SPAWN PROPS ---
                 if (m_PropRegistry.count(propID) > 0) {
-                    // Look up the visual settings for this specific ID
                     const PropProperties& props = m_PropRegistry[propID];
                     
                     if (!props.texturePath.empty()) {
-                        auto prop = std::make_shared<Prop>(props.texturePath, glm::vec2(worldX, worldY + props.visualOffsetY));
-                        prop->SetZIndex(props.zIndex);
+                        glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
+                        
+                        // THE FIX: Pass scale, zIndex, x, y, and altTexturePath!
+                        auto prop = std::make_shared<Prop>(
+                            props.texturePath, 
+                            spawnPos, 
+                            3.0f,               // scale
+                            props.zIndex, 
+                            x,                  // The Prop's Grid X
+                            y,                  // The Prop's Grid Y
+                            props.altTexturePath // The squished grass texture!
+                        );
+                        
                         prop->SetDynamicZ(props.dynamicZ);
                         
                         m_Props.push_back(prop);   
@@ -381,4 +401,18 @@ std::string Map::CollectItemAt(int gridX, int gridY, Character& player) {
         return itemName; 
     }
     return ""; 
+}
+
+void Map::UpdateSteppedProps(int playerGridX, int playerGridY) {
+    for (auto& prop : m_Props) {
+        // Skip props that don't use the grid system (like buildings)
+        if (prop->GetGridX() == -1 || prop->GetGridY() == -1) continue;
+
+        // If the player's coordinates match the prop's coordinates, squish it!
+        if (prop->GetGridX() == playerGridX && prop->GetGridY() == playerGridY) {
+            prop->SetSteppedOn(true); 
+        } else {
+            prop->SetSteppedOn(false); 
+        }
+    }
 }

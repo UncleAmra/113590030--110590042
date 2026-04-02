@@ -24,10 +24,12 @@ struct TileProperties {
 };
 struct PropProperties {
     std::string texturePath;
-    float visualOffsetY;
+    std::string altTexturePath;
     float zIndex;
-    bool dynamicZ;
+    bool dynamicZ; 
     bool isWalkable;
+    float visualOffsetX; 
+    float visualOffsetY; 
 };
 
 struct NPCProperties {
@@ -67,6 +69,7 @@ public:
     std::string GetCurrentLevelPath() const { return m_CurrentLevelPath; }
     std::string CollectItemAt(int gridX, int gridY, Character& player);
     void SetRenderer(std::weak_ptr<Util::Renderer> renderer);
+    void UpdateSteppedProps(int playerGridX, int playerGridY);
     
 private:
     // --- MAP DATA ---

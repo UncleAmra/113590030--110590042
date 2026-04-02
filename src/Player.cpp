@@ -82,8 +82,12 @@ void Player::HandleInput(std::shared_ptr<Map> map) {
 
         // DOOR LOGIC
         if (!map->IsWalkable(targetX, targetY)) {
-            int groundTile = map->GetTileType(targetX, targetY);
-            if (groundTile == GameConfig::TILE_DOOR || groundTile == GameConfig::TILE_EXIT) {
+            //int groundTile = map->GetTileType(targetX, targetY);
+            //if (groundTile == GameConfig::TILE_DOOR || groundTile == GameConfig::TILE_EXIT || Prop == GameConfig::PROP_INVISIBLE_DOOR) {
+            //    m_HitDoor = true; 
+            //}
+            int Prop = map->GetPropType(targetX, targetY);
+            if (Prop == GameConfig::PROP_INVISIBLE_DOOR) {
                 m_HitDoor = true; 
             }
         }
@@ -104,6 +108,7 @@ glm::vec2 Player::Update(std::shared_ptr<Map> map) {
     // 1. Handle our keyboard inputs
     HandleInput(map);
     
+    map->UpdateSteppedProps(m_GridX, m_GridY);
     // 2. Let the base Character class do the animation and movement math!
     return Character::Update(map); 
 }
