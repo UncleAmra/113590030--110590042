@@ -17,12 +17,12 @@ StartMenu::StartMenu(std::shared_ptr<Util::Renderer> renderer) {
     m_TextUI = std::make_shared<Util::GameObject>();
     auto menuText = std::make_shared<Util::Text>(
         RESOURCE_DIR "/Fonts/micross.ttf", 32, 
-        "BAG\nSAVE\nEXIT", 
+        "POKEMON\nBAG\nSAVE\nEXIT", // <-- Added POKEMON to the top!
         Util::Color(50, 50, 50)
     );
     m_TextUI->SetDrawable(menuText);
     m_TextUI->SetZIndex(91.0f); 
-    m_TextUI->m_Transform.translation = {170.0f, 220.0f}; 
+    m_TextUI->m_Transform.translation = {170.0f, 220.0f}; // You may need to tweak this Y-value slightly to center the taller text block
 
     // 3. Cursor Setup
     m_CursorUI = std::make_shared<Util::GameObject>();
@@ -71,8 +71,8 @@ StartMenu::MenuOption StartMenu::Update() {
 }
 
 void StartMenu::UpdateCursorPosition() {
-    float cursorBaseY = 260.0f;   
+    float cursorBaseY = 280.0f;   
     float cursorSpacing = 40.0f;  
-    float cursorX = 100.0f;       
+    float cursorX = 60.0f;       
     m_CursorUI->m_Transform.translation = {cursorX, cursorBaseY - (m_CursorIndex * cursorSpacing)};
 }

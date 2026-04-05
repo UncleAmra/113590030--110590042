@@ -105,10 +105,27 @@ void Player::HandleInput(std::shared_ptr<Map> map) {
 }
 
 glm::vec2 Player::Update(std::shared_ptr<Map> map) {
-    // 1. Handle our keyboard inputs
     HandleInput(map);
     
+    // Snapshot moving state BEFORE the base update runs
+    bool wasMoving = m_IsMoving;
+    
+    glm::vec2 movement = Character::Update(map);
+    
     map->UpdateSteppedProps(m_GridX, m_GridY);
-    // 2. Let the base Character class do the animation and movement math!
-    return Character::Update(map); 
+    
+    // If we JUST finished a step this frame, check the tile we landed on
+    if (wasMoving && !m_IsMoving) {
+        int propID = map->GetPropType(m_GridX, m_GridY);
+        
+        if (propID == GameConfig::PROP_TALLGRASS) {
+            // 15% encounter rate per step — adjust to taste
+            if (rand() % 100 < 15) {
+                m_WildEncounterTriggered = true;
+                LOG_TRACE("Wild encounter triggered at ({}, {})!", m_GridX, m_GridY);
+            }
+        }
+    }
+    
+    return movement;
 }

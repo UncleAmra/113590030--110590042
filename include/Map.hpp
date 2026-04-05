@@ -23,8 +23,7 @@ struct TileProperties {
     bool isWalkable = false; 
 };
 struct PropProperties {
-    std::string texturePath;
-    std::string altTexturePath;
+    std::vector<std::string> texturePaths;
     float zIndex;
     bool dynamicZ; 
     bool isWalkable;
@@ -70,6 +69,7 @@ public:
     std::string CollectItemAt(int gridX, int gridY, Character& player);
     void SetRenderer(std::weak_ptr<Util::Renderer> renderer);
     void UpdateSteppedProps(int playerGridX, int playerGridY);
+    void SetVisible(bool visible);
     
 private:
     // --- MAP DATA ---
@@ -101,6 +101,7 @@ private:
     // --- HELPER FUNCTIONS ---
     std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
     void ClearMap();
+    
 };
 
 #endif

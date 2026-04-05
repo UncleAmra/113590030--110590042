@@ -44,34 +44,33 @@ void Map::InitNPCRegistry() {
 }
 
 void Map::InitPropRegistry() {
-    // FORMAT: { "Texture", "AltTexture", zIndex, dynamicZ, isWalkable, offsetX, offsetY }
+    // FORMAT: { {"Frame1", "Frame2", ...}, zIndex, dynamicZ, isWalkable, offsetX, offsetY }
 
-    // 1. INVISIBLE TRIGGERS
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR] = { "", "", 0.0f, false, false,  0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { "", "", 0.0f, false, false, 0.0f, 0.0f }; 
+    // 1. INVISIBLE TRIGGERS (Empty list of textures)
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR] = { {}, 0.0f, false, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { {}, 0.0f, false, false, 0.0f, 0.0f }; 
 
-    // 2. BUILDINGS
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { PROP_DIR + "/PokeCentre.png", "", 0.8f, true, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_CHURCH] =     { PROP_DIR + "/Church.png",     "", 0.8f, true, false, 0.0f, 0.0f };
+    // 2. BUILDINGS (1 Texture)
+    m_PropRegistry[GameConfig::PROP_POKECENTER] = { {PROP_DIR + "/PokeCentre.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH] =     { {PROP_DIR + "/Church.png"},     0.8f, true, false, 0.0f, 0.0f };
 
-    // 3. CHECKPOINTS
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT] =  { PROP_DIR + "/Checkpoint2.png", "", 0.8f, true, false, 0.0f, 96.0f }; 
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT2] = { PROP_DIR + "/Checkpoint3.png", "", 0.8f, true, false, 0.0f, 96.0f }; 
+    // 3. CHECKPOINTS (1 Texture)
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT] =  { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT2] = { {PROP_DIR + "/Checkpoint3.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
 
-    // 4. INTERIORS
-    m_PropRegistry[GameConfig::PROP_DOORMAT] =       { PROP_DIR + "/PC_doormat.png", "", 0.1f, false, true,  0.0f, -20.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { PROP_DIR + "/PCDesk1.png",    "", 0.7f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { PROP_DIR + "/PCWall2.png",    "", 0.3f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { PROP_DIR + "/PCWall3.png",    "", 0.3f, false, false, 0.0f, 0.0f }; 
+    // 4. INTERIORS (1 Texture)
+    m_PropRegistry[GameConfig::PROP_DOORMAT] =       { {PROP_DIR + "/PC_doormat.png"}, 0.1f, false, true,  0.0f, -20.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { {PROP_DIR + "/PCDesk1.png"},    0.7f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { {PROP_DIR + "/PCWall2.png"},    0.3f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { {PROP_DIR + "/PCWall3.png"},    0.3f, false, false, 0.0f, 0.0f }; 
 
-    // 5. NATURE & SCENERY
-    m_PropRegistry[GameConfig::PROP_TREE] = { PROP_DIR + "/Tree.png", "", 0.8f, true, false, 20.0f, -16.0f }; 
+    // 5. NATURE & SCENERY (1 Texture)
+    m_PropRegistry[GameConfig::PROP_TREE] = { {PROP_DIR + "/Tree.png"}, 0.8f, true, false, 20.0f, -16.0f }; 
     
-    // 6. INTERACTIVE PROPS
+    // 6. INTERACTIVE PROPS (2 Textures)
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = { 
-        PROP_DIR + "/TallGrass4.png", 
-        PROP_DIR + "/TallGrass3.png", // The flattened grass!
-        0.80f, true, true, 0.0f, 0.0f 
+        { PROP_DIR + "/TallGrass2.png" , PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" }, // Normal, then Flattened!
+        1.0f, true, true, 0.0f, 0.0f 
     }; 
 }
 
@@ -188,28 +187,27 @@ void Map::LoadLevel(const std::string& mapName) {
                 }
                 
                 // --- 2. SPAWN PROPS ---
-            // --- 2. SPAWN PROPS ---
                 if (m_PropRegistry.count(propID) > 0) {
                     const PropProperties& props = m_PropRegistry[propID];
                     
-                    if (!props.texturePath.empty()) {
-                        glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
-                        
-                        // THE FIX: Pass scale, zIndex, x, y, and altTexturePath!
-                        auto prop = std::make_shared<Prop>(
-                            props.texturePath, 
-                            spawnPos, 
-                            3.0f,               // scale
-                            props.zIndex, 
-                            x,                  // The Prop's Grid X
-                            y,                  // The Prop's Grid Y
-                            props.altTexturePath // The squished grass texture!
-                        );
-                        
-                        prop->SetDynamicZ(props.dynamicZ);
-                        
-                        m_Props.push_back(prop);   
-                        AddToRenderer(prop);       // USES NEW WEAK_PTR LOGIC
+                    glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
+                    
+                    // 1. ALWAYS create the prop so collisions, doors, and grid math work!
+                    auto prop = std::make_shared<Prop>(
+                        props.texturePaths, 
+                        spawnPos, 
+                        3.0f,               
+                        props.zIndex, 
+                        x,                  
+                        y                   
+                    );
+                    
+                    prop->SetDynamicZ(props.dynamicZ);
+                    m_Props.push_back(prop);   
+
+                    // 2. ONLY add it to the visual engine if it actually has images!
+                    if (!props.texturePaths.empty()) {
+                        AddToRenderer(prop);       
                     }
                 }
                 
@@ -414,5 +412,23 @@ void Map::UpdateSteppedProps(int playerGridX, int playerGridY) {
         } else {
             prop->SetSteppedOn(false); 
         }
+    }
+}
+
+void Map::SetVisible(bool visible) {
+    // This looks very similar to your ClearMap loop, but instead of removing 
+    // them from the renderer or deleting them, it just toggles their visibility!
+    
+    for (auto& tile : m_Tiles) {
+        if (tile) tile->SetVisible(visible);
+    }
+    for (auto& prop : m_Props) {
+        if (prop) prop->SetVisible(visible);
+    }
+    for (auto& npc : m_NPCs) {
+        if (npc) npc->SetVisible(visible);
+    }
+    for (auto& item : m_Items) {
+        if (item) item->SetVisible(visible);
     }
 }

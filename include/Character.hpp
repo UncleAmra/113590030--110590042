@@ -5,7 +5,8 @@
 #include "Util/GameObject.hpp"
 #include "GameConfig.hpp"
 #include "Util/Animation.hpp" 
-#include "Item.hpp" // <-- ADDED THIS so ItemCategory is recognized
+#include "Item.hpp" 
+#include "Pokemon.hpp" // <-- 1. ADD THIS INCLUDE
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -37,21 +38,39 @@ public:
     void SetDirection(Direction dir);
     Direction GetFacingDirection() const { return m_Direction; }
 
-    // --- NEW INVENTORY SYSTEM ---
-    // AddItem now needs to know the category!
+    // --- INVENTORY SYSTEM ---
     void AddItem(const std::string& itemName, ItemCategory category, int amount = 1);
     bool RemoveItem(const std::string& itemName, int amount = 1);
     int GetItemCount(const std::string& itemName) const;
     void PrintInventory() const; 
     
-    // Getters and Setters updated to use InventoryData instead of int!
     std::unordered_map<std::string, InventoryData> GetInventory() const { return m_Inventory; }
     void SetInventory(const std::unordered_map<std::string, InventoryData>& loadedInv) { m_Inventory = loadedInv; }
 
+    // --- NEW: POKEMON PARTY SYSTEM ---
+    bool AddPokemon(std::shared_ptr<Pokemon> newPokemon) {
+        if (m_PokemonParty.size() < 6) {
+            m_PokemonParty.push_back(newPokemon);
+            return true; // Successfully added!
+        }
+        return false; // Party is full!
+    }
+
+    std::vector<std::shared_ptr<Pokemon>>& GetParty() { return m_PokemonParty; }
+
+    bool HasUsablePokemon() const {
+        for (const auto& pkmn : m_PokemonParty) {
+            if (!pkmn->IsFainted()) return true;
+        }
+        return false;
+    }
 
 protected:
-    // The Backpack: Maps the Item's Name to the new InventoryData struct
+    // The Backpack
     std::unordered_map<std::string, InventoryData> m_Inventory;
+    
+    // The Pokemon Team (Max 6) <-- 2. ADD THIS VECTOR
+    std::vector<std::shared_ptr<Pokemon>> m_PokemonParty;
     
     virtual void LoadSprites() = 0; 
     bool m_UseDynamicZ = true;

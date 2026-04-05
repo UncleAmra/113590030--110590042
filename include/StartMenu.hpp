@@ -10,9 +10,10 @@ public:
     // This makes it super easy for App to know what the player picked!
     enum class MenuOption {
         NONE = -1,
-        BAG = 0,
-        SAVE = 1,
-        EXIT = 2
+        POKEMON = 0,
+        BAG = 1,
+        SAVE = 2,
+        EXIT = 3
     };
 
     // Constructor takes the renderer so it can add its own UI elements
@@ -31,7 +32,7 @@ private:
 
     // Internal State
     int m_CursorIndex = 0;
-    const int MAX_OPTIONS = 3;
+    const int MAX_OPTIONS = 4;
 
     // Helper to keep math in one place
     void UpdateCursorPosition();

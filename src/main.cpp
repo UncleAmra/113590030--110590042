@@ -1,5 +1,4 @@
 #include "App.hpp"
-
 #include "Core/Context.hpp"
 
 int main(int, char**) {
@@ -12,7 +11,15 @@ int main(int, char**) {
                 app.Start();
                 break;
 
+            // ==========================================
+            // Stack all active game states right here!
+            // ==========================================
             case App::State::UPDATE:
+            case App::State::DIALOGUE:
+            case App::State::START_MENU:
+            case App::State::POKEMON_MENU:
+            case App::State::INVENTORY_MENU:
+            case App::State::BATTLE:
                 app.Update();
                 break;
 
