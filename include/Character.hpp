@@ -73,7 +73,8 @@ protected:
     std::vector<std::shared_ptr<Pokemon>> m_PokemonParty;
     
     virtual void LoadSprites() = 0; 
-    bool m_UseDynamicZ = true;
+    //bool m_UseDynamicZ = true;
+    bool m_UseDynamicZ;
     void UpdateSprite();
     float m_BaseZIndex = 0.0f;
     

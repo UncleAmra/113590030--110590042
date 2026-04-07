@@ -1,105 +1,431 @@
 #include "BattleManager.hpp"
-#include <cstdlib> // For rand()
 #include "MoveDatabase.hpp"
-#include "Pokemon.hpp"
+#include "Util/Logger.hpp"
+#include <cstdlib>
+#include <cmath>
 #include <algorithm>
 
 BattleManager::BattleManager(std::shared_ptr<Pokemon> playerPokemon,
                              std::shared_ptr<Pokemon> enemyPokemon,
                              bool isWildBattle)
-    : m_PlayerPokemon(playerPokemon),
-      m_EnemyPokemon(enemyPokemon),
-      m_IsWildBattle(isWildBattle),
-      m_State(BattleState::SELECTING_ACTION) {
+    : m_PlayerPokemon(playerPokemon)
+    , m_EnemyPokemon(enemyPokemon)
+    , m_IsWildBattle(isWildBattle)
+    , m_State(BattleState::SELECTING_ACTION) {
 }
 
-int BattleManager::CalculateDamage(Pokemon* attacker, Pokemon* defender, const std::string& moveName) {
-    // 1. Fetch the real move data!
-    MoveData move = MoveDatabase::GetMove(moveName);
-    
-    // Status moves do 0 direct damage
-    if (move.category == MoveCategory::STATUS) {
-        return 0; 
+// ==========================================
+// TYPE EFFECTIVENESS TABLE
+// ==========================================
+static float GetTypeEffectiveness(PokemonType attackType, PokemonType defenderType) {
+    // Returns 0 (immune), 0.5 (not very effective), 1 (normal), 2 (super effective)
+    // Only the non-1.0 matchups are listed — everything else defaults to 1.0
+
+    using T = PokemonType;
+
+    static const std::unordered_map<PokemonType,
+        std::unordered_map<PokemonType, float>> chart = {
+        { T::FIRE, {
+            { T::GRASS, 2.0f }, { T::ICE, 2.0f }, { T::BUG, 2.0f },
+            { T::FIRE, 0.5f },  { T::WATER, 0.5f }, { T::ROCK, 0.5f },
+            { T::DRAGON, 0.5f }
+        }},
+        { T::WATER, {
+            { T::FIRE, 2.0f }, { T::GROUND, 2.0f }, { T::ROCK, 2.0f },
+            { T::WATER, 0.5f }, { T::GRASS, 0.5f }, { T::DRAGON, 0.5f }
+        }},
+        { T::GRASS, {
+            { T::WATER, 2.0f }, { T::GROUND, 2.0f }, { T::ROCK, 2.0f },
+            { T::FIRE, 0.5f }, { T::GRASS, 0.5f }, { T::POISON, 0.5f },
+            { T::FLYING, 0.5f }, { T::BUG, 0.5f }, { T::DRAGON, 0.5f }
+        }},
+        { T::ELECTRIC, {
+            { T::WATER, 2.0f }, { T::FLYING, 2.0f },
+            { T::ELECTRIC, 0.5f }, { T::GRASS, 0.5f }, { T::DRAGON, 0.5f },
+            { T::GROUND, 0.0f }
+        }},
+        { T::ICE, {
+            { T::GRASS, 2.0f }, { T::GROUND, 2.0f },
+            { T::FLYING, 2.0f }, { T::DRAGON, 2.0f },
+            { T::FIRE, 0.5f }, { T::WATER, 0.5f }, { T::ICE, 0.5f }
+        }},
+        { T::FIGHTING, {
+            { T::NORMAL, 2.0f }, { T::ICE, 2.0f }, { T::ROCK, 2.0f },
+            { T::POISON, 0.5f }, { T::BUG, 0.5f }, { T::FLYING, 0.5f },
+            { T::PSYCHIC, 0.5f },
+            { T::GHOST, 0.0f }
+        }},
+        { T::POISON, {
+            { T::GRASS, 2.0f }, { T::BUG, 2.0f },
+            { T::POISON, 0.5f }, { T::GROUND, 0.5f },
+            { T::ROCK, 0.5f }, { T::GHOST, 0.5f }
+        }},
+        { T::GROUND, {
+            { T::FIRE, 2.0f }, { T::ELECTRIC, 2.0f }, { T::POISON, 2.0f },
+            { T::ROCK, 2.0f },
+            { T::GRASS, 0.5f }, { T::BUG, 0.5f },
+            { T::FLYING, 0.0f }
+        }},
+        { T::FLYING, {
+            { T::GRASS, 2.0f }, { T::FIGHTING, 2.0f }, { T::BUG, 2.0f },
+            { T::ELECTRIC, 0.5f }, { T::ROCK, 0.5f }
+        }},
+        { T::PSYCHIC, {
+            { T::FIGHTING, 2.0f }, { T::POISON, 2.0f },
+            { T::PSYCHIC, 0.5f },
+            { T::GHOST, 0.0f }
+        }},
+        { T::BUG, {
+            { T::GRASS, 2.0f }, { T::POISON, 2.0f }, { T::PSYCHIC, 2.0f },
+            { T::FIRE, 0.5f }, { T::FIGHTING, 0.5f }, { T::FLYING, 0.5f }
+        }},
+        { T::ROCK, {
+            { T::FIRE, 2.0f }, { T::ICE, 2.0f },
+            { T::FLYING, 2.0f }, { T::BUG, 2.0f },
+            { T::FIGHTING, 0.5f }, { T::GROUND, 0.5f }
+        }},
+        { T::GHOST, {
+            { T::GHOST, 2.0f },
+            { T::PSYCHIC, 0.0f },
+            { T::NORMAL, 0.0f }
+        }},
+        { T::DRAGON, {
+            { T::DRAGON, 2.0f }
+        }}
+    };
+
+    auto outer = chart.find(attackType);
+    if (outer == chart.end()) return 1.0f;
+
+    auto inner = outer->second.find(defenderType);
+    if (inner == outer->second.end()) return 1.0f;
+
+    return inner->second;
+}
+
+// ==========================================
+// DAMAGE CALCULATION
+// ==========================================
+int BattleManager::CalculateDamage(Pokemon* attacker, Pokemon* defender,
+                                    const std::string& moveName) {
+    if (!MoveDatabase::HasMove(moveName)) {
+        LOG_ERROR("Move '{}' not found in MoveDatabase!", moveName);
+        return 0;
     }
 
-    // 2. Physical vs Special Split
-    float attackStat = 0.0f;
-    float defenseStat = 0.0f;
+    const MoveData& move = MoveDatabase::GetMove(moveName);
 
-    if (move.category == MoveCategory::PHYSICAL) {
-        attackStat = static_cast<float>(attacker->GetAttack());
-        defenseStat = static_cast<float>(defender->GetDefense());
-    } else if (move.category == MoveCategory::SPECIAL) {
-        attackStat = static_cast<float>(attacker->GetSpecialAttack());
-        defenseStat = static_cast<float>(defender->GetSpecialDefense());
-    }
+    if (move.category == MoveCategory::STATUS) return 0;
+    if (move.power <= 0) return 0;
 
-    // 3. Core Formula using the real move.power
-    int level = attacker->GetLevel();
-    float baseDamage = (((2.0f * level / 5.0f) + 2.0f) * move.power * (attackStat / defenseStat)) / 50.0f + 2.0f;
+    // 1. Pick correct attack/defense stats based on move category
+    int atk = (move.category == MoveCategory::PHYSICAL)
+              ? attacker->GetAttack()
+              : attacker->GetSpecialAttack();
 
-    // 4. STAB (Same Type Attack Bonus)
-    // Assuming your Pokemon class has a GetType1() or similar function
-    float stabMod = 1.0f;
+    int def = (move.category == MoveCategory::PHYSICAL)
+              ? defender->GetDefense()
+              : defender->GetSpecialDefense();
+
+    // 2. Gen 1 damage formula
+    float base = ((2.0f * attacker->GetLevel() / 5.0f) + 2.0f)
+                 * move.power * ((float)atk / (float)def)
+                 / 50.0f + 2.0f;
+
+    // 3. STAB (Same Type Attack Bonus) — 1.5x if move type matches attacker type
+    float stab = 1.0f;
     if (move.type == attacker->GetType1() || move.type == attacker->GetType2()) {
-        stabMod = 1.5f;
+        stab = 1.5f;
     }
 
-    // 5. Random variance (0.85 to 1.0)
-    float randomMod = (rand() % 16 + 85) / 100.0f; 
-    
-    // Calculate final damage
-    int finalDamage = static_cast<int>(baseDamage * stabMod * randomMod);
-    
-    return std::max(1, finalDamage);
+    // 4. Type effectiveness against defender (handles dual types)
+    float effectiveness = GetTypeEffectiveness(move.type, defender->GetType1());
+    if (defender->GetType2() != PokemonType::NONE) {
+        effectiveness *= GetTypeEffectiveness(move.type, defender->GetType2());
+    }
+
+    // 5. Random factor (217-255 / 255, same as Gen 1)
+    float randomFactor = (float)(rand() % 39 + 217) / 255.0f;
+
+    int damage = static_cast<int>(base * stab * effectiveness * randomFactor);
+
+    // Always deal at least 1 damage if the move isn't immune
+    if (effectiveness > 0.0f && damage < 1) damage = 1;
+
+    return damage;
 }
 
+// ==========================================
+// ACCURACY CHECK
+// ==========================================
+static bool AccuracyCheck(int moveAccuracy) {
+    return (rand() % 100) < moveAccuracy;
+}
+
+// ==========================================
+// EFFECTIVENESS MESSAGE
+// ==========================================
+static std::string EffectivenessMessage(PokemonType moveType,
+                                         Pokemon* defender) {
+    float e = GetTypeEffectiveness(moveType, defender->GetType1());
+    if (defender->GetType2() != PokemonType::NONE) {
+        e *= GetTypeEffectiveness(moveType, defender->GetType2());
+    }
+
+    if (e == 0.0f)  return "It doesn't affect " + defender->GetName() + "!";
+    if (e < 1.0f)   return "It's not very effective...";
+    if (e > 1.0f)   return "It's super effective!";
+    return "";
+}
+
+// ==========================================
+// SELECT ACTION (called by BattleUI)
+// ==========================================
+BattleManager::TurnResult BattleManager::SelectAction(Action action) {
+    TurnResult result;
+    result.playerFainted = false;
+    result.enemyFainted = false;
+    result.expGained = 0;
+
+    switch (action) {
+        case Action::FIGHT:
+            m_State = BattleState::SELECTING_MOVE;
+            result.message = "Choose a move!";
+            break;
+
+        case Action::RUN:
+            if (m_IsWildBattle) {
+                // Simple run formula — always succeeds for now
+                m_State = BattleState::BATTLE_WON;
+                result.message = "Got away safely!";
+            } else {
+                result.message = "Can't escape from a trainer battle!";
+            }
+            break;
+
+        case Action::BAG:
+            result.message = "Choose an item!";
+            // BattleUI handles switching to bag screen
+            break;
+
+        case Action::POKEMON:
+            result.message = "Choose a Pokemon!";
+            // BattleUI handles switching to party screen
+            break;
+    }
+
+    return result;
+}
+
+// ==========================================
+// SELECT MOVE (called by BattleUI after player picks)
+// ==========================================
 BattleManager::TurnResult BattleManager::SelectMove(int moveIndex) {
     TurnResult result;
     result.playerFainted = false;
     result.enemyFainted = false;
     result.expGained = 0;
 
-    // 1. Get the names of the moves being used
-    std::string playerMove = m_PlayerPokemon->GetMoves()[moveIndex];
-    
-    // Enemy just picks a random move for now
-    auto enemyMoves = m_EnemyPokemon->GetMoves();
-    std::string enemyMove = enemyMoves[rand() % enemyMoves.size()];
+    auto moves = m_PlayerPokemon->GetMoves();
+    if (moveIndex < 0 || moveIndex >= (int)moves.size()) {
+        result.message = "No move in that slot!";
+        return result;
+    }
 
-    // 2. Determine Turn Order (Speed Tie goes to player for simplicity right now)
+    // --- SPEED CHECK: faster Pokemon attacks first ---
     bool playerGoesFirst = m_PlayerPokemon->GetSpeed() >= m_EnemyPokemon->GetSpeed();
 
-    // 3. Execute the turns based on speed
     if (playerGoesFirst) {
-        // Player attacks first
-        int pDamage = CalculateDamage(m_PlayerPokemon.get(), m_EnemyPokemon.get(), playerMove);
-        m_EnemyPokemon->TakeDamage(pDamage);
-        result.message = m_PlayerPokemon->GetName() + " used " + playerMove + "!\n";
-
-        if (m_EnemyPokemon->IsFainted()) {
-            result.enemyFainted = true;
-            result.message += m_EnemyPokemon->GetName() + " fainted!";
-            m_State = BattleState::BATTLE_WON;
-            return result; // End turn early
+        result = ExecutePlayerMove(moveIndex);
+        if (!result.enemyFainted && !m_EnemyPokemon->IsFainted()) {
+            TurnResult enemyResult = ExecuteEnemyMove();
+            // Append enemy message
+            result.message += "\n" + enemyResult.message;
+            result.playerFainted = enemyResult.playerFainted;
         }
+    } else {
+        TurnResult enemyResult = ExecuteEnemyMove();
+        result.message = enemyResult.message;
+        result.playerFainted = enemyResult.playerFainted;
 
-        // Enemy attacks second
-        int eDamage = CalculateDamage(m_EnemyPokemon.get(), m_PlayerPokemon.get(), enemyMove);
-        m_PlayerPokemon->TakeDamage(eDamage);
-        result.message += "Foe " + m_EnemyPokemon->GetName() + " used " + enemyMove + "!\n";
-
-        if (m_PlayerPokemon->IsFainted()) {
-            result.playerFainted = true;
-            result.message += m_PlayerPokemon->GetName() + " fainted!";
-            m_State = BattleState::BATTLE_LOST;
+        if (!result.playerFainted && !m_PlayerPokemon->IsFainted()) {
+            TurnResult playerResult = ExecutePlayerMove(moveIndex);
+            result.message += "\n" + playerResult.message;
+            result.enemyFainted = playerResult.enemyFainted;
+            result.expGained = playerResult.expGained;
         }
-    } 
-    else {
-        // (If enemy goes first, just flip the logic above!)
-        // I've omitted the inverse block here to keep the code concise, 
-        // but it follows the exact same pattern: Enemy hits, check faint, Player hits, check faint.
+    }
+
+    // Update battle state
+    if (result.playerFainted) {
+        m_State = BattleState::BATTLE_LOST;
+    } else if (result.enemyFainted) {
+        m_State = BattleState::BATTLE_WON;
+    } else {
+        m_State = BattleState::SELECTING_ACTION;
     }
 
     return result;
+}
+
+// ==========================================
+// EXECUTE PLAYER MOVE
+// ==========================================
+BattleManager::TurnResult BattleManager::ExecutePlayerMove(int moveIndex) {
+    TurnResult result;
+    result.playerFainted = false;
+    result.enemyFainted = false;
+    result.expGained = 0;
+
+    auto moves = m_PlayerPokemon->GetMoves();
+    const std::string& moveName = moves[moveIndex];
+
+    result.message = m_PlayerPokemon->GetName() + " used " + moveName + "!";
+
+    if (!MoveDatabase::HasMove(moveName)) {
+        result.message += " (Unknown move)";
+        return result;
+    }
+
+    const MoveData& move = MoveDatabase::GetMove(moveName);
+
+    // Accuracy check
+    if (!AccuracyCheck(move.accuracy)) {
+        result.message += "\n" + m_PlayerPokemon->GetName() + "'s attack missed!";
+        return result;
+    }
+
+    if (move.category == MoveCategory::STATUS) {
+        result.message += "\n(Status move — not yet implemented)";
+        return result;
+    }
+
+    int damage = CalculateDamage(
+        m_PlayerPokemon.get(),
+        m_EnemyPokemon.get(),
+        moveName);
+
+    m_EnemyPokemon->TakeDamage(damage);
+    result.message += "\nDealt " + std::to_string(damage) + " damage!";
+
+    std::string effMsg = EffectivenessMessage(move.type, m_EnemyPokemon.get());
+    if (!effMsg.empty()) result.message += "\n" + effMsg;
+
+    if (m_EnemyPokemon->IsFainted()) {
+        result.enemyFainted = true;
+        result.message += "\n" + m_EnemyPokemon->GetName() + " fainted!";
+
+        // EXP calculation — simplified Gen 1 formula
+        // base_exp * level / 7
+        result.expGained = (m_EnemyPokemon->GetLevel() * 50) / 7;
+        result.message += "\n" + m_PlayerPokemon->GetName()
+                        + " gained " + std::to_string(result.expGained) + " EXP!";
+
+        m_PlayerPokemon->GainExp(result.expGained);
+    }
+
+    return result;
+}
+
+// ==========================================
+// EXECUTE ENEMY MOVE (simple random AI)
+// ==========================================
+BattleManager::TurnResult BattleManager::ExecuteEnemyMove() {
+    TurnResult result;
+    result.playerFainted = false;
+    result.enemyFainted = false;
+    result.expGained = 0;
+
+    auto moves = m_EnemyPokemon->GetMoves();
+    if (moves.empty()) {
+        result.message = m_EnemyPokemon->GetName() + " has no moves!";
+        return result;
+    }
+
+    // Pick a random move
+    int moveIndex = rand() % (int)moves.size();
+    const std::string& moveName = moves[moveIndex];
+
+    result.message = m_EnemyPokemon->GetName() + " used " + moveName + "!";
+
+    if (!MoveDatabase::HasMove(moveName)) {
+        result.message += " (Unknown move)";
+        return result;
+    }
+
+    const MoveData& move = MoveDatabase::GetMove(moveName);
+
+    if (!AccuracyCheck(move.accuracy)) {
+        result.message += "\n" + m_EnemyPokemon->GetName() + "'s attack missed!";
+        return result;
+    }
+
+    if (move.category == MoveCategory::STATUS) {
+        result.message += "\n(Status move — not yet implemented)";
+        return result;
+    }
+
+    int damage = CalculateDamage(
+        m_EnemyPokemon.get(),
+        m_PlayerPokemon.get(),
+        moveName);
+
+    m_PlayerPokemon->TakeDamage(damage);
+    result.message += "\nDealt " + std::to_string(damage) + " damage!";
+
+    std::string effMsg = EffectivenessMessage(move.type, m_PlayerPokemon.get());
+    if (!effMsg.empty()) result.message += "\n" + effMsg;
+
+    if (m_PlayerPokemon->IsFainted()) {
+        result.playerFainted = true;
+        result.message += "\n" + m_PlayerPokemon->GetName() + " fainted!";
+    }
+
+    return result;
+}
+
+// ==========================================
+// THROW POKEBALL
+// ==========================================
+BattleManager::TurnResult BattleManager::ThrowBall() {
+    TurnResult result;
+    result.playerFainted = false;
+    result.enemyFainted = false;
+    result.expGained = 0;
+
+    if (!m_IsWildBattle) {
+        result.message = "You can't catch a trainer's Pokemon!";
+        return result;
+    }
+
+    int catchChance = CalculateCatchRate();
+
+    if (rand() % 255 < catchChance) {
+        m_State = BattleState::BATTLE_WON;
+        result.message = m_EnemyPokemon->GetName() + " was caught!";
+        result.enemyFainted = true; // Reuse this flag to signal "battle over"
+    } else {
+        result.message = m_EnemyPokemon->GetName() + " broke free!";
+        // Enemy gets a free attack after breaking out
+        TurnResult enemyTurn = ExecuteEnemyMove();
+        result.message += "\n" + enemyTurn.message;
+        result.playerFainted = enemyTurn.playerFainted;
+    }
+
+    return result;
+}
+
+// ==========================================
+// CATCH RATE FORMULA (simplified Gen 1)
+// ==========================================
+int BattleManager::CalculateCatchRate() {
+    // Formula: (maxHP * 255 * 4) / (currentHP * catchRate)
+    // Using catchRate = 45 (Rattata level) as default
+    // Higher result = easier to catch
+    int maxHP = m_EnemyPokemon->GetMaxHP();
+    int currentHP = std::max(1, m_EnemyPokemon->GetCurrentHP());
+    int baseCatchRate = 45; // Standard wild Pokemon rate
+
+    int catchValue = (maxHP * 255 * 4) / (currentHP * baseCatchRate);
+    return std::min(catchValue, 255); // Cap at 255
 }

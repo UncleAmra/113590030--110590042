@@ -5,6 +5,7 @@
 // NEW CONSTRUCTOR: Uses the vector list of image paths
 Prop::Prop(const std::vector<std::string>& imagePaths, const glm::vec2& startPosition, float scale, float zIndex, int gridX, int gridY) {
     
+    
     // 1. Setup the basic transform stuff
     m_Transform.translation = startPosition;
     m_Transform.scale = {scale, scale};
@@ -13,6 +14,7 @@ Prop::Prop(const std::vector<std::string>& imagePaths, const glm::vec2& startPos
     // 2. Save the grid coordinates!
     m_GridX = gridX;
     m_GridY = gridY;
+    m_BaseZIndex = zIndex;
 
     // 3. Load ALL images provided in the list
     for (const std::string& path : imagePaths) {
@@ -55,8 +57,11 @@ void Prop::SetSteppedOn(bool stepped) {
 void Prop::Update() {
     // --- 1. YOUR DYNAMIC Z-SORTING ---
     if (m_UseDynamicZ) {
+        
         float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
-        float dynamicZ = 0.5f - (footY / 10000.0f);
+
+        float tieBreaker = m_BaseZIndex * 0.0001f;        //LOG_TRACE(m_ZIndex);
+        float dynamicZ = 0.5f - (footY / 10000.0f) + tieBreaker;
         SetZIndex(dynamicZ);
     }
 

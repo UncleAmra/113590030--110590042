@@ -7,7 +7,11 @@ NPC::NPC(float x, float y, const std::string& spritePath,
      const std::string& dialoguePath, 
      const std::string& altDialoguePath, 
      const std::string& flagCondition) 
-    : Character(x, y), m_SpritePath(spritePath), m_UseDynamicZ(false), m_FlagCondition(flagCondition){
+    // REMOVED m_UseDynamicZ from here!
+    : Character(x, y), m_SpritePath(spritePath), m_FlagCondition(flagCondition) {
+    
+    // 1. Set the BASE class variable inside the body!
+    m_UseDynamicZ = false; 
     
     // Load the text file if the path isn't empty!
     if (!dialoguePath.empty()) {

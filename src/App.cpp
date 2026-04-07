@@ -304,7 +304,7 @@ void App::Update() {
 
                 int currentProp = m_Map->GetPropType(currentX, currentY);
                 
-                LOG_INFO("STEPPED ON NEW TILE: ({}, {}) | PROP ID: {}", currentX, currentY, currentProp);
+                //LOG_INFO("STEPPED ON NEW TILE: ({}, {}) | PROP ID: {}", currentX, currentY, currentProp);
 
                 if (currentProp == GameConfig::PROP_TALLGRASS) {
                     if (rand() % 100 < 10) { // Still keeping at 100% chance for testing!

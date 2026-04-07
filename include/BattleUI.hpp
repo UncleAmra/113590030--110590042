@@ -28,6 +28,7 @@ private:
     UIState m_UIState = UIState::ANIMATING;
     int m_CursorIndex = 0;
     void UpdateCursorPosition();
+    void UpdateMenuVisibility();
     
     std::shared_ptr<Util::Renderer> m_Renderer;
     std::unique_ptr<BattleManager> m_BattleLogic;
@@ -58,9 +59,13 @@ private:
     // ==========================================
     std::shared_ptr<Util::GameObject> m_DialogueBox;
     std::shared_ptr<Util::Text> m_DialogueText;
+    std::shared_ptr<Util::GameObject> m_DialogueTextObj;
+    std::shared_ptr<Util::Text> m_MoveTexts[4];
+    std::shared_ptr<Util::GameObject> m_MoveTextObjs[4];
 
     std::shared_ptr<Util::GameObject> m_CommandBox; 
     std::shared_ptr<Util::GameObject> m_MenuCursor;
+    std::shared_ptr<Util::GameObject> m_MoveBox;
     // (We will add the actual health bar fill later once the text works!)
 
     int m_IntroAnimTimer = 0;
@@ -74,4 +79,9 @@ private:
     int m_CommandCursorIndex = 0;
     bool m_IsSlidingIn = false;
     int m_SlideTimer = 0;
+    int m_TextWaitTimer = 0;
+
+
+    bool m_BattleOver = false;
+    BattleManager::TurnResult m_LastResult;
 };

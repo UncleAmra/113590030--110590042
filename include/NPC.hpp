@@ -23,7 +23,7 @@ protected:
 
 private:
     std::string m_SpritePath;
-    bool m_UseDynamicZ;
+    //bool m_UseDynamicZ;
     
     // 2. Changed m_Dialogue to a vector called m_DialogueLines
     std::vector<std::string> m_DialogueLines;       

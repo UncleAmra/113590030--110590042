@@ -34,4 +34,5 @@ private:
     int m_GridY = -1;
     bool m_IsSteppedOn = false;
     bool m_UseDynamicZ = false;
+    float m_BaseZIndex = 0.0f; // Add this line to remember the original Z!
 };

@@ -1,6 +1,6 @@
 #ifndef UTIL_Renderer_HPP
 #define UTIL_Renderer_HPP
-
+#include <algorithm>
 #include <memory>
 #include <vector>
 

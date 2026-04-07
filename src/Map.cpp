@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Map.hpp"
 #include "Prop.hpp"
 #include "GameConfig.hpp" 
@@ -5,7 +6,6 @@
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
-#include <algorithm> // just in case you still need it for other logic
 #include "ResourceManager.hpp"
 
 //paths to assests
@@ -39,7 +39,7 @@ void Map::InitTileRegistry() {
 
 void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
-    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt"};
+    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.6f, false, DIALOGUE_DIR + "nurse.txt"};
     m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.8f, true, DIALOGUE_DIR + "ta.txt"};
 }
 
@@ -60,7 +60,7 @@ void Map::InitPropRegistry() {
 
     // 4. INTERIORS (1 Texture)
     m_PropRegistry[GameConfig::PROP_DOORMAT] =       { {PROP_DIR + "/PC_doormat.png"}, 0.1f, false, true,  0.0f, -20.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { {PROP_DIR + "/PCDesk1.png"},    0.7f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { {PROP_DIR + "/PCDesk1.png"},    0.6f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { {PROP_DIR + "/PCWall2.png"},    0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { {PROP_DIR + "/PCWall3.png"},    0.3f, false, false, 0.0f, 0.0f }; 
 
@@ -203,6 +203,8 @@ void Map::LoadLevel(const std::string& mapName) {
                     );
                     
                     prop->SetDynamicZ(props.dynamicZ);
+                    prop->SetZIndex(props.zIndex);      // <-- ADD THIS!
+                    //prop->SetBaseZIndex(props.zIndex);
                     m_Props.push_back(prop);   
 
                     // 2. ONLY add it to the visual engine if it actually has images!
