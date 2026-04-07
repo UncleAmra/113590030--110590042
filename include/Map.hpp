@@ -24,18 +24,18 @@ struct TileProperties {
 };
 struct PropProperties {
     std::vector<std::string> texturePaths;
-    float zIndex;
-    bool dynamicZ; 
-    bool isWalkable;
-    float visualOffsetX; 
-    float visualOffsetY; 
+    float zIndex = 0.8f;
+    bool dynamicZ = true; 
+    bool isWalkable = false;
+    float visualOffsetX = 0.0f; 
+    float visualOffsetY = 0.0f; 
 };
 
 struct NPCProperties {
     std::string texturePath;
-    float visualOffsetY; 
-    float zIndex;    
-    bool dynamicZ;
+    float visualOffsetY = 0.0f; 
+    float zIndex = 0.8f;    
+    bool dynamicZ = true;
     std::string dialogueFilePath;
 };
 

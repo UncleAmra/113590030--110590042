@@ -5,7 +5,7 @@
 
 Player::Player(float x, float y) : Character(x, y) {
     // 1. Load our specific Red sprites
-    m_BaseZIndex = 0.8f;
+    m_BaseZIndex = 0.5f;
     LoadSprites();
     // 2. Snap to the first frame
     UpdateSprite(); 

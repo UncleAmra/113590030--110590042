@@ -69,7 +69,10 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
         
         // Invert: lower footY (further down screen) = higher Z
         // Divide by a large number to keep Z in a sensible range
-        float dynamicZ = 0.5f - (footY / 10000.0f);
+        //float tieBreaker = m_BaseZIndex * 0.0001f;
+        float dynamicZ = m_BaseZIndex - (footY / 10000.0f);
+        //float dynamicZ = 0.5f - (footY / 10000.0f);
+
         SetZIndex(dynamicZ);
     }
 

@@ -74,9 +74,10 @@ protected:
     
     virtual void LoadSprites() = 0; 
     //bool m_UseDynamicZ = true;
-    bool m_UseDynamicZ;
+    bool m_UseDynamicZ = true;
     void UpdateSprite();
-    float m_BaseZIndex = 0.0f;
+    float m_BaseZIndex = 0.8f;
+    float m_FootOffsetY = 0.0f;
     
     bool TryMove(int dx, int dy, std::shared_ptr<Map> map);
 
