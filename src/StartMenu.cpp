@@ -28,6 +28,7 @@ StartMenu::StartMenu(std::shared_ptr<Util::Renderer> renderer) {
     m_CursorUI = std::make_shared<Util::GameObject>();
     auto cursorImg = ResourceManager::GetImageStore().Get(RESOURCE_DIR "/UI/Cursor.png"); 
     m_CursorUI->SetDrawable(cursorImg);
+    m_CursorUI->m_Transform.scale = {2.5f, 2.5f}; 
     m_CursorUI->SetZIndex(92.0f); 
 
     // 4. Add to Renderer and hide by default

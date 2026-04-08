@@ -331,7 +331,18 @@ void App::Update() {
         case State::BATTLE: {
             // This runs every single frame while you are in a battle
             m_BattleUI->Update();
-
+            if (m_BattleUI->IsBattleOver()) {
+                
+                // (Note: m_BattleUI->Hide() is now automatically called inside 
+                // BattleUI::Update() when the battle ends, so we don't need to call it here)
+                
+                // 3. Bring the Overworld back!
+                m_Map->SetVisible(true);
+                m_Character->SetVisible(true);
+                
+                // 4. Return to the Overworld state
+                m_CurrentState = State::UPDATE;
+            }
             // TEMP: Press ESCAPE to run away and return to the overworld
             if (Util::Input::IsKeyDown(Util::Keycode::ESCAPE)) {
                 m_BattleUI->Hide();

@@ -81,5 +81,10 @@ namespace GameConfig {
         { RESOURCE_DIR "/maps/NTUT_9_3", WARP_TOWN_FROM_NTUT }
         
     };
+    inline std::unordered_map<std::string, int> MapBorders = {
+        { RESOURCE_DIR "/maps/level", PROP_TREE }, // Town gets surrounded by trees
+        { RESOURCE_DIR "/maps/NTUT", PROP_TREE }   // NTUT gets surrounded by trees
+        // We leave "/maps/inside" out of this list so it defaults to the void!
+    };
 }
 #endif

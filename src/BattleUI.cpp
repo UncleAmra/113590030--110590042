@@ -5,15 +5,18 @@
 #include "Util/Renderer.hpp"
 #include "Util/Logger.hpp"
 #include "ResourceManager.hpp"
+#include <cmath>   // For std::sin
+#include <cstdlib> // For rand()
+#include <algorithm> // For std::clamp
 
 const std::string BATTLE_RES = std::string(RESOURCE_DIR) + "/battle/";
-const std::string FONT_PATH = std::string(RESOURCE_DIR) + "/Fonts/micross.ttf"; 
+const std::string FONT_PATH = std::string(RESOURCE_DIR) + "/Fonts/PokemonClassic.ttf"; 
 
 BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(renderer) {
     // ==========================================
     // MASTER SCALE
     // ==========================================
-    glm::vec2 battleScale = {4.0f, 4.0f}; 
+    glm::vec2 battleScale = {3.5f, 3.5f}; 
     
     // ==========================================
     // 1. BACKGROUND & BASES
@@ -46,7 +49,7 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
 
     m_PlayerSprite = std::make_shared<Util::GameObject>();
     m_PlayerSprite->m_Transform.scale = battleScale;
-    m_PlayerSprite->m_Transform.translation = {-270.0f, -30.0f}; 
+    m_PlayerSprite->m_Transform.translation = {-270.0f, -50.0f}; 
     m_PlayerSprite->SetZIndex(12);
 
     // ==========================================
@@ -54,29 +57,51 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
     // ==========================================
     m_EnemyPanel = std::make_shared<Util::GameObject>();
     m_EnemyPanel->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "enemy_panel.png"));
-    m_EnemyPanel->m_Transform.scale = battleScale;
-    m_EnemyPanel->m_Transform.translation = {-400.0f, 220.0f}; 
+    m_EnemyPanel->m_Transform.scale = {5.0f, 4.0f};
+    m_EnemyPanel->m_Transform.translation = {-340.0f, 280.0f}; 
     m_EnemyPanel->SetZIndex(13);
 
     m_PlayerPanel = std::make_shared<Util::GameObject>();
     m_PlayerPanel->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "player_panel.png"));
-    m_PlayerPanel->m_Transform.scale = battleScale;
-    m_PlayerPanel->m_Transform.translation = {400.0f, -50.0f}; 
+    m_PlayerPanel->m_Transform.scale = {4.8f, 4.0f};
+    m_PlayerPanel->m_Transform.translation = {340.0f, -50.0f}; 
     m_PlayerPanel->SetZIndex(13);
+
+    // --- NEW: DYNAMIC BARS ---
+    m_EnemyHPBar = std::make_shared<Util::GameObject>();
+    m_EnemyHPBar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_green.png"));
+    m_EnemyHPBar->m_Transform.scale = {6.0f, 4.0f}; // Fixed scale Y
+    m_EnemyHPBar->SetZIndex(14); 
+
+    m_PlayerHPBar = std::make_shared<Util::GameObject>();
+    m_PlayerHPBar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_green.png"));
+    m_PlayerHPBar->m_Transform.scale = {4.8f, 4.0f}; // Fixed scale Y
+    m_PlayerHPBar->SetZIndex(14); 
+
+    m_PlayerEXPBar = std::make_shared<Util::GameObject>();
+    m_PlayerEXPBar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_blue.png"));
+    m_PlayerEXPBar->m_Transform.scale = {4.8f, 4.0f}; // Fixed scale Y
+    m_PlayerEXPBar->SetZIndex(14); 
+
+    // --- NEW: PLAYER HP NUMBERS ---
+    m_PlayerHPText = std::make_shared<Util::Text>(FONT_PATH, 25, "HP: 50/50", Util::Color{0, 0, 0, 255});
+    m_PlayerHPTextObj = std::make_shared<Util::GameObject>();
+    m_PlayerHPTextObj->SetDrawable(m_PlayerHPText);
+    m_PlayerHPTextObj->SetZIndex(14); 
 
     // ==========================================
     // 4. DIALOGUE & COMMAND MENU
     // ==========================================
     m_DialogueBox = std::make_shared<Util::GameObject>();
     m_DialogueBox->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "dialogue_box.png"));
-    m_DialogueBox->m_Transform.scale = {4.0f, 4.0f}; 
-    m_DialogueBox->m_Transform.translation = {-160.0f, -280.0f}; 
+    m_DialogueBox->m_Transform.scale = {5.33f, 4.0f}; 
+    m_DialogueBox->m_Transform.translation = {0.20f, -265.0f}; 
     m_DialogueBox->SetZIndex(14); 
 
     m_CommandBox = std::make_shared<Util::GameObject>();
     m_CommandBox->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "command_box.png"));
-    m_CommandBox->m_Transform.scale = battleScale;
-    m_CommandBox->m_Transform.translation = {400.0f, -270.0f}; 
+    m_CommandBox->m_Transform.scale = {4.0f, 4.0f}; 
+    m_CommandBox->m_Transform.translation = {400.0f, -260.0f}; 
     m_CommandBox->SetZIndex(15); 
 
     m_MoveBox = std::make_shared<Util::GameObject>();
@@ -87,16 +112,16 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
 
     m_MenuCursor = std::make_shared<Util::GameObject>();
     m_MenuCursor->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "cursor.png"));
-    m_MenuCursor->m_Transform.scale = battleScale;
-    m_MenuCursor->m_Transform.translation = {200.0f, -240.0f}; 
+    m_MenuCursor->m_Transform.scale = {3.5f, 3.5f}; ;
+    m_MenuCursor->m_Transform.translation = {170.0f, -200.0f}; 
     m_MenuCursor->SetZIndex(16); 
 
-    m_DialogueText = std::make_shared<Util::Text>(FONT_PATH, 30, "What will you do?", Util::Color{0, 0, 0, 255});
+    m_DialogueText = std::make_shared<Util::Text>(FONT_PATH, 20, "What will you do?", Util::Color{255, 255, 255, 255});
     
     m_DialogueTextObj = std::make_shared<Util::GameObject>();
     m_DialogueTextObj->SetDrawable(m_DialogueText);
     m_DialogueTextObj->SetZIndex(100); 
-    m_DialogueTextObj->m_Transform.translation = {-150.0f, -220.0f}; 
+    m_DialogueTextObj->m_Transform.translation = {-460.0f, -120.0f}; 
     
     // ADD MAIN GAMEOBJECTS TO RENDERER
     m_Renderer->AddChild(m_MoveBox);
@@ -108,22 +133,29 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
     m_Renderer->AddChild(m_PlayerSprite);
     m_Renderer->AddChild(m_EnemyPanel);
     m_Renderer->AddChild(m_PlayerPanel);
+    
+    // ADD THE NEW BARS AND HP TEXT
+    m_Renderer->AddChild(m_EnemyHPBar);
+    m_Renderer->AddChild(m_PlayerHPBar);
+    m_Renderer->AddChild(m_PlayerEXPBar);
+    m_Renderer->AddChild(m_PlayerHPTextObj);
+
     m_Renderer->AddChild(m_DialogueBox);
     m_Renderer->AddChild(m_CommandBox);
     m_Renderer->AddChild(m_MenuCursor);
 
     // ==========================================
-    // 5. MOVE TEXTS (MOVED HERE TO THE CONSTRUCTOR!)
+    // 5. MOVE TEXTS
     // ==========================================
     for (int i = 0; i < 4; i++) {
-        m_MoveTexts[i] = std::make_shared<Util::Text>(FONT_PATH, 30, "-", Util::Color{0, 0, 0, 255});
+        m_MoveTexts[i] = std::make_shared<Util::Text>(FONT_PATH, 20, "-", Util::Color{0, 0, 0, 255});
         
         m_MoveTextObjs[i] = std::make_shared<Util::GameObject>();
         m_MoveTextObjs[i]->SetDrawable(m_MoveTexts[i]);
         m_MoveTextObjs[i]->SetZIndex(100); 
         
-        float startX = -210.0f; 
-        float startY = -240.0f; 
+        float startX = -310.0f; 
+        float startY = -220.0f; 
         float xOffset = (i % 2 == 1) ? 300.0f : 0.0f; 
         float yOffset = (i >= 2) ? -65.0f : 0.0f; 
         
@@ -141,7 +173,12 @@ void BattleUI::Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shar
     m_BattleLogic = std::make_unique<BattleManager>(playerParty[0], wildPokemon, true);
     m_MoveBox->SetVisible(false);
     
-    m_DialogueText->SetText("What will you do?");
+    // --- CACHE POKEMON FOR UI UPDATES ---
+    m_PlayerPokemon = playerParty[0];
+    m_EnemyPokemon = wildPokemon;
+    m_EscapeSuccessful = false;
+
+    SetDialogue("What will you do?"); 
     
     std::string enemyName = wildPokemon->GetName();
     std::transform(enemyName.begin(), enemyName.end(), enemyName.begin(), ::tolower);
@@ -158,7 +195,6 @@ void BattleUI::Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shar
     m_EnemySprite->SetDrawable(m_EnemyFrame1);
     m_PlayerSprite->SetDrawable(m_PlayerFrame1);
 
-    //m_PlayerBase->m_Transform.translation.x = -850.0f;
     m_PlayerSprite->m_Transform.translation.x = -870.0f;
 
     m_EnemyBase->m_Transform.translation.x = 1000.0f;
@@ -177,6 +213,13 @@ void BattleUI::Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shar
 
     m_EnemyPanel->SetVisible(false);
     m_PlayerPanel->SetVisible(false);
+    
+    // Hide the dynamic UI elements during the intro sliding
+    m_EnemyHPBar->SetVisible(false);
+    m_PlayerHPBar->SetVisible(false);
+    m_PlayerEXPBar->SetVisible(false);
+    m_PlayerHPTextObj->SetVisible(false);
+
     m_DialogueBox->SetVisible(true);
     m_CommandBox->SetVisible(false);
     m_MenuCursor->SetVisible(false);
@@ -184,9 +227,7 @@ void BattleUI::Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shar
 
     LOG_TRACE("Wild {} appeared!", wildPokemon->GetName());
     
-    // Load the Move Names!
     auto moves = playerParty[0]->GetMoves(); 
-    
     for (size_t i = 0; i < 4; i++) {
         if (i < moves.size()) {
             m_MoveTexts[i]->SetText(moves[i]); 
@@ -200,12 +241,50 @@ bool BattleUI::Update() {
     if (!m_IsVisible) return false;
 
     // ==========================================
+    // DYNAMIC UI UPDATES (HP / EXP)
+    // ==========================================
+    if (m_PlayerPokemon && m_EnemyPokemon && !m_IsSlidingIn) {
+        // 1. Text Update
+        std::string hpStr = std::to_string(m_PlayerPokemon->GetCurrentHP()) + " / " + std::to_string(m_PlayerPokemon->GetMaxHP());
+        //hpStr
+        m_PlayerHPText->SetText(hpStr);
+        
+        // Ensure HP text is left-aligned correctly on the panel (TUNE THESE COORDINATES)
+        float hpTextLeftX = 350.0f; 
+        float hpTextTopY = -70.0f;
+        glm::vec2 hpTextSize = m_PlayerHPText->GetSize();
+        m_PlayerHPTextObj->m_Transform.translation.x = hpTextLeftX + (hpTextSize.x / 2.0f);
+        m_PlayerHPTextObj->m_Transform.translation.y = hpTextTopY - (hpTextSize.y / 2.0f);
+
+        // 2. Math Percentages
+        float playerHPPercent = (float)m_PlayerPokemon->GetCurrentHP() / m_PlayerPokemon->GetMaxHP();
+        float enemyHPPercent  = (float)m_EnemyPokemon->GetCurrentHP() / m_EnemyPokemon->GetMaxHP();
+        float playerEXPPercent = 0.5f; // Hardcoded to 50% for testing, replace with: (float)m_PlayerPokemon->GetEXP() / MAX_EXP
+        //float playerEXPPercent = (float)m_PlayerPokemon->GetEXP() / m_PlayerPokemon->GetMaxEXP();
+        // 3. Update the Bars
+        // ENEMY HP BAR
+        // Enemy panel is at x=-340, scale={5,4}. The HP slot hollow starts roughly here:
+        // ENEMY HP BAR
+        // The hollow slot in enemy_panel is roughly centered at x=-340, the green slot
+        // appears to start around x=-490 and the slot is ~125px wide in screen space
+        UpdateBar(m_EnemyHPBar,   enemyHPPercent,  -405.0f, 248.0f, 5.1f, 180.0f, true);
+
+        // PLAYER HP BAR
+        // The hollow slot starts just right of the "HP" label on the player panel
+        // Panel center is x=340. The slot appears to start around x=240 and run ~175px
+        UpdateBar(m_PlayerHPBar,  playerHPPercent,  375.0f,  -60.0f, 5.0f, 200.0f, true);
+
+        // PLAYER EXP BAR (the thin blue line)
+        // Sits below HP row, slightly inset. Panel center x=340, runs nearly full width
+        UpdateBar(m_PlayerEXPBar, playerEXPPercent, 145.0f,  -128.0f, 2.0f, 190.0f, false);
+    }
+
+    // ==========================================
     // STATE 1: ANIMATIONS PLAYING
     // ==========================================
     if (m_UIState == UIState::ANIMATING) {
         if (m_IsSlidingIn) {
             m_SlideTimer++;
-            //m_PlayerBase->m_Transform.translation.x += 15.0f;
             m_PlayerSprite->m_Transform.translation.x += 15.0f;
             m_EnemyBase->m_Transform.translation.x -= 15.0f;
             m_EnemySprite->m_Transform.translation.x -= 15.0f;
@@ -214,6 +293,13 @@ bool BattleUI::Update() {
                 m_IsSlidingIn = false;
                 m_EnemyPanel->SetVisible(true);
                 m_PlayerPanel->SetVisible(true);
+                
+                // Show the bars when the panels slide in
+                m_EnemyHPBar->SetVisible(true);
+                m_PlayerHPBar->SetVisible(true);
+                m_PlayerEXPBar->SetVisible(true);
+                m_PlayerHPTextObj->SetVisible(true);
+
                 m_DialogueTextObj->SetVisible(true); 
                 m_IsIntroAnimating = true; 
             }
@@ -239,7 +325,6 @@ bool BattleUI::Update() {
     // STATE 2: MAIN COMMAND MENU
     // ==========================================
     else if (m_UIState == UIState::MAIN_MENU) {
-        
         if (Util::Input::IsKeyDown(Util::Keycode::UP) || Util::Input::IsKeyDown(Util::Keycode::DOWN)) {
             m_CursorIndex = (m_CursorIndex + 2) % 4; 
             UpdateCursorPosition();
@@ -248,7 +333,6 @@ bool BattleUI::Update() {
             if (m_CursorIndex % 2 == 0) m_CursorIndex++; else m_CursorIndex--; 
             UpdateCursorPosition();
         }
-        
 
         if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
             if (m_CursorIndex == 0) {
@@ -257,12 +341,28 @@ bool BattleUI::Update() {
                 UpdateCursorPosition();
             }
             else if (m_CursorIndex == 3) {
-                BattleManager::TurnResult result = m_BattleLogic->SelectAction(
-                    BattleManager::Action::RUN);
-                m_DialogueText->SetText(result.message);
+                bool isWildBattle = true; 
+                
+                if (!isWildBattle) {
+                    SetDialogue("You can't run from a trainer battle!");
+                } else {
+                    int playerLevel = m_PlayerPokemon->GetLevel(); 
+                    int enemyLevel = m_EnemyPokemon->GetLevel();
+                    
+                    int escapeChance = 50 + ((playerLevel - enemyLevel) * 5);
+                    escapeChance = std::clamp(escapeChance, 10, 95); 
+
+                    if (rand() % 100 < escapeChance) {
+                        SetDialogue("Got away safely!");
+                        m_EscapeSuccessful = true; 
+                    } else {
+                        SetDialogue("Failed to escape!");
+                        m_EscapeSuccessful = false;
+                    }
+                }
+                
                 m_UIState = UIState::WAITING_TEXT;
-                m_TextWaitTimer = 30;
-                m_LastResult = result;
+                m_TextWaitTimer = 45; 
             }
         }
     }
@@ -270,7 +370,6 @@ bool BattleUI::Update() {
     // STATE 3: MOVE SELECTION MENU
     // ==========================================
     else if (m_UIState == UIState::MOVE_MENU) {
-        
         if (Util::Input::IsKeyDown(Util::Keycode::UP) || Util::Input::IsKeyDown(Util::Keycode::DOWN)) {
             m_CursorIndex = (m_CursorIndex + 2) % 4; 
             UpdateCursorPosition();
@@ -283,10 +382,12 @@ bool BattleUI::Update() {
         if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
             BattleManager::TurnResult result = m_BattleLogic->SelectMove(m_CursorIndex);
             
-            m_DialogueText->SetText(result.message);
+            SetDialogue(result.message); 
             
             m_UIState = UIState::WAITING_TEXT; 
             m_TextWaitTimer = 30; 
+            m_PlayerLungeTimer = 15; 
+            m_EnemyShakeTimer = 30;  
         }
 
         if (Util::Input::IsKeyDown(Util::Keycode::X)) {
@@ -303,24 +404,61 @@ bool BattleUI::Update() {
             m_TextWaitTimer--;
         }
         else if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
-        // Check if battle is actually over
-        auto state = m_BattleLogic->GetState();
-        if (state == BattleManager::BattleState::BATTLE_WON ||
-            state == BattleManager::BattleState::BATTLE_LOST) {
-            m_BattleOver = true;
-        } 
-        else {
-            m_DialogueText->SetText("What will you do?");
-            m_UIState = UIState::MAIN_MENU;
-            m_CursorIndex = 0;
-            UpdateCursorPosition();
+            
+            if (m_EscapeSuccessful) {
+                m_BattleOver = true;
+                Hide(); 
+                return true;
+            }
+
+            auto state = m_BattleLogic->GetState();
+            
+            if (state == BattleManager::BattleState::BATTLE_WON ||
+                state == BattleManager::BattleState::BATTLE_LOST ||
+                state == BattleManager::BattleState::BATTLE_ESCAPED) { 
+                
+                m_BattleOver = true;
+                Hide(); 
+                return true;
+            } 
+            else {
+                SetDialogue("What will you do?"); 
+                m_UIState = UIState::MAIN_MENU;
+                m_CursorIndex = 0;
+                UpdateCursorPosition();
             }
         }
     }
+    
+    // Procedural Animations
+    if (!m_IsSlidingIn && !m_IsIntroAnimating) {
+        m_AnimTime++;
+        
+        float bobOffset1 = std::sin(m_AnimTime * 0.03f) * 1.5f; 
+        float bobOffset2 = std::sin(m_AnimTime * 0.04f) * 2.5f; 
 
-    // ==========================================
-    // UPDATE GRAPHICS BEFORE RETAINING CONTROL
-    // ==========================================
+        m_EnemySprite->m_Transform.translation.y = 130.0f + bobOffset1;
+        m_PlayerSprite->m_Transform.translation.y = -30.0f + bobOffset2;
+        
+        m_EnemySprite->m_Transform.scale.y = 4.0f;
+        m_PlayerSprite->m_Transform.scale.y = 4.0f;
+
+        if (m_PlayerLungeTimer > 0) {
+            m_PlayerLungeTimer--;
+            m_PlayerSprite->m_Transform.translation.x = -270.0f + 40.0f; 
+        } else {
+            m_PlayerSprite->m_Transform.translation.x = -270.0f; 
+        }
+
+        if (m_EnemyShakeTimer > 0 && m_PlayerLungeTimer < 5) {
+            m_EnemyShakeTimer--;
+            float shake = (rand() % 17) - 8; 
+            m_EnemySprite->m_Transform.translation.x = 400.0f + shake;
+        } else {
+            m_EnemySprite->m_Transform.translation.x = 400.0f; 
+        }
+    }
+
     UpdateMenuVisibility();
 
     return true; 
@@ -337,11 +475,17 @@ void BattleUI::Hide() {
     m_PlayerSprite->SetVisible(false);
     m_EnemyPanel->SetVisible(false);
     m_PlayerPanel->SetVisible(false);
-    m_DialogueBox->SetVisible(false);
+    
+    // --- HIDE THE NEW UI ---
+    if (m_EnemyHPBar) m_EnemyHPBar->SetVisible(false);
+    if (m_PlayerHPBar) m_PlayerHPBar->SetVisible(false);
+    if (m_PlayerEXPBar) m_PlayerEXPBar->SetVisible(false);
+    if (m_PlayerHPTextObj) m_PlayerHPTextObj->SetVisible(false);
+
+    m_DialogueBox->SetVisible(false); 
     m_CommandBox->SetVisible(false);
     m_MenuCursor->SetVisible(false);
     
-    // Safely hide the text objects if they exist
     for (int i = 0; i < 4; i++) {
         if (m_MoveTextObjs[i]) {
             m_MoveTextObjs[i]->SetVisible(false);
@@ -357,13 +501,13 @@ void BattleUI::UpdateCursorPosition() {
 
     if (m_UIState == UIState::MAIN_MENU) {
         startX = 200.0f; 
-        startY = -240.0f; 
+        startY = -230.0f; 
         xOffset = (m_CursorIndex % 2 == 1) ? 220.0f : 0.0f; 
         yOffset = (m_CursorIndex >= 2) ? -65.0f : 0.0f; 
     }
     else if (m_UIState == UIState::MOVE_MENU) {
-        startX = -250.0f; 
-        startY = -240.0f; 
+        startX = -420.0f; 
+        startY = -220.0f; 
         xOffset = (m_CursorIndex % 2 == 1) ? 300.0f : 0.0f; 
         yOffset = (m_CursorIndex >= 2) ? -65.0f : 0.0f; 
     }
@@ -380,7 +524,6 @@ void BattleUI::UpdateMenuVisibility() {
     m_MoveBox->SetVisible(isMoveMenu);
 
     for (int i = 0; i < 4; i++) {
-        // Extra safeguard to make sure they aren't null
         if (m_MoveTextObjs[i]) {
             m_MoveTextObjs[i]->SetVisible(isMoveMenu);
         }
@@ -389,4 +532,52 @@ void BattleUI::UpdateMenuVisibility() {
     m_DialogueBox->SetVisible(isMainMenu || isWaitingText);
     m_DialogueTextObj->SetVisible(isMainMenu || isWaitingText);
     m_MenuCursor->SetVisible(isMainMenu || isMoveMenu);
+}
+
+void BattleUI::SetDialogue(const std::string& text) {
+    m_DialogueText->SetText(text);
+
+    glm::vec2 textSize = m_DialogueText->GetSize(); 
+    
+    float fixedLeftX = -580.0f; 
+    float fixedTopY = -200.0f;  
+
+    m_DialogueTextObj->m_Transform.translation.x = fixedLeftX + (textSize.x / 2.0f);
+    m_DialogueTextObj->m_Transform.translation.y = fixedTopY - (textSize.y / 2.0f);
+}
+
+// =======================================================
+// NEW HELPER: Keeps the left edge fixed while scaling!
+// =======================================================
+void BattleUI::UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, float maxVisualWidth, bool isHPBar) {
+    percent = std::clamp(percent, 0.0f, 1.0f);
+    
+    if (percent <= 0.0f) {
+        bar->SetVisible(false);
+        return; 
+    } else {
+        bar->SetVisible(true);
+    }
+
+    // --- COLOR LOGIC ---
+    if (isHPBar) {
+        if (percent > 0.50f) bar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_green.png"));
+        else if (percent > 0.20f) bar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_yellow.png"));
+        else bar->SetDrawable(ResourceManager::GetImageStore().Get(BATTLE_RES + "bar_red.png"));
+    }
+
+    // --- SCALING ---
+    // Scale X proportionally
+    bar->m_Transform.scale.x = maxScale * percent;
+    
+    // COMPLETELY REMOVED the hardcoded scale.y = 4.0f here so it keeps your constructor values!
+    
+    // --- POSITIONING ---
+    // GetScaledSize already accounts for the new scale.x, so it is the true visual width.
+    float exactVisualWidth = bar->GetScaledSize().x;
+    
+    // Shift the center right by EXACTLY half its new visual width (NO * percent here!)
+    bar->m_Transform.translation.x = leftEdgeX + (exactVisualWidth / 2.0f);
+
+    bar->m_Transform.translation.y = fixedY;
 }

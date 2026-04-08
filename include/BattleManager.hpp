@@ -14,7 +14,8 @@ public:
         SHOWING_MESSAGE,
         BATTLE_WON,
         BATTLE_LOST,
-        CATCHING
+        CATCHING,
+        BATTLE_ESCAPED
     };
 
     enum class Action { FIGHT, BAG, POKEMON, RUN };

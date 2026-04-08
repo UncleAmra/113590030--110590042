@@ -101,6 +101,8 @@ private:
     // --- HELPER FUNCTIONS ---
     std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
     void ClearMap();
+
+    int m_OutOfBoundsPropID = -1;
     
 };
 

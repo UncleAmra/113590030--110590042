@@ -23,6 +23,7 @@ Map::Map() {
     InitPropRegistry();
     InitItemRegistry();
 
+    
 }
 
 //Check GameCofig to find IDs for each dictionary
@@ -87,6 +88,7 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
         std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
         return data; // Return empty data if it fails
     }
+
     
     std::string line;
     while (std::getline(file, line)) {
@@ -113,6 +115,7 @@ void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
     
     m_CurrentLevelPath = mapName;
+
     // 1. Load the two layers
     m_LevelData = LoadCSV(mapName + "_ground.csv");
     m_PropData = LoadCSV(mapName + "_props.csv");
@@ -238,6 +241,7 @@ void Map::LoadLevel(const std::string& mapName) {
 }
 
 void Map::Move(float dx, float dy) {
+    
     for (auto& tile : m_Tiles) {
         tile->m_Transform.translation.x += dx;
         tile->m_Transform.translation.y += dy;
@@ -351,9 +355,11 @@ void Map::ClearMap() {
 
 int Map::GetPropType(int gridX, int gridY) {
     // Bounds check to prevent crashes
+    
     if (gridY < 0 || gridY >= static_cast<int>(m_PropData.size()) || 
         gridX < 0 || gridX >= static_cast<int>(m_PropData[0].size())) {
         return 0; // 0 means "no prop here"
+        //return m_OutOfBoundsPropID;
     }
     
     return m_PropData[gridY][gridX];

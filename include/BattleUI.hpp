@@ -7,6 +7,8 @@
 #include "ResourceManager.hpp"
 #include "Util/Text.hpp"
 #include <memory>
+#include <cmath>   // For std::sin
+#include <cstdlib> // For rand()
 #include <vector>
 
 class BattleUI {
@@ -15,6 +17,7 @@ public:
     void Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shared_ptr<Pokemon> wildPokemon);
     void Hide();
     bool Update();
+    bool IsBattleOver() const { return m_BattleOver; }
 
 private:
 
@@ -23,13 +26,17 @@ private:
             MAIN_MENU,
             MOVE_MENU,
             WAITING_TEXT
+            //BATTLE_ESCAPED
         };
+    std::shared_ptr<Pokemon> m_PlayerPokemon;
+    std::shared_ptr<Pokemon> m_EnemyPokemon;
+    bool m_EscapeSuccessful = false;
 
     UIState m_UIState = UIState::ANIMATING;
     int m_CursorIndex = 0;
     void UpdateCursorPosition();
-    void UpdateMenuVisibility();
-    
+    void UpdateMenuVisibility();    
+    void SetDialogue(const std::string& text);    
     std::shared_ptr<Util::Renderer> m_Renderer;
     std::unique_ptr<BattleManager> m_BattleLogic;
     std::shared_ptr<Util::GameObject> m_PlayerBase;
@@ -52,7 +59,13 @@ private:
 
     std::shared_ptr<Util::GameObject> m_EnemyPanel;
     std::shared_ptr<Util::Text> m_EnemyNameText;
-    
+
+        // UI GameObjects for the bars and text
+    std::shared_ptr<Util::GameObject> m_PlayerHPBar;
+    std::shared_ptr<Util::GameObject> m_EnemyHPBar;
+    std::shared_ptr<Util::GameObject> m_PlayerEXPBar;
+    //std::shared_ptr<Util::Text> m_PlayerHPText;
+    std::shared_ptr<Util::GameObject> m_PlayerHPTextObj;
 
     // ==========================================
     // 3. DIALOGUE & COMMAND MENU
@@ -81,7 +94,14 @@ private:
     int m_SlideTimer = 0;
     int m_TextWaitTimer = 0;
 
+    int m_AnimTime = 0;         // For the continuous breathing sine wave
+    int m_PlayerLungeTimer = 0; // For the attack lunge
+    int m_EnemyShakeTimer = 0;
 
     bool m_BattleOver = false;
     BattleManager::TurnResult m_LastResult;
+
+
+    // Helper to scale bars cleanly from the left side
+    void UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, float maxVisualWidth, bool isHPBar);
 };
