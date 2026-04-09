@@ -52,33 +52,51 @@ void Prop::SetSteppedOn(bool stepped) {
         m_TargetState = 0; 
     }
 }
+void Prop::SetAnimMode(PropAnimMode mode, int frameDelay) {
+    m_AnimMode = mode;
+    m_AnimFrameDelay = frameDelay;
+}
 
 // RESTORED LOGIC: Your original dynamic Z-sorting math!
 void Prop::Update() {
-    // --- 1. YOUR DYNAMIC Z-SORTING ---
+    // --- 1. DYNAMIC Z-SORTING ---
     if (m_UseDynamicZ) {
-        
-        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
-
-        float tieBreaker = m_BaseZIndex * 0.0001f;        //LOG_TRACE(m_ZIndex);
-        float dynamicZ = 0.5f - (footY / 10000.0f) + tieBreaker;
+        float footY = m_Transform.translation.y 
+                    - (GameConfig::SCALED_TILE_SIZE * 0.5f);
+        float dynamicZ = 0.5f - (footY / 10000.0f);
         SetZIndex(dynamicZ);
     }
 
-    // --- 2. SMOOTH MULTI-FRAME TRANSITIONS ---
-    if (m_CurrentState != m_TargetState) {
+    // --- 2. PLAYER-TRIGGERED ANIMATION (existing tall grass logic) ---
+    if (m_AnimMode == PropAnimMode::STATIC && m_CurrentState != m_TargetState) {
         m_FrameDelayCounter++;
-        
-        // Wait 4 frames before snapping to the next image (Adjust this to make it faster/slower!)
-        if (m_FrameDelayCounter >= 8) { 
+        if (m_FrameDelayCounter >= 8) {
             m_FrameDelayCounter = 0;
-            
-            // Move exactly one step closer to the target
-            if (m_CurrentState < m_TargetState) {
-                SetState(m_CurrentState + 1); // Squishing down
-            } else {
-                SetState(m_CurrentState - 1); // Springing back up
+            if (m_CurrentState < m_TargetState) SetState(m_CurrentState + 1);
+            else SetState(m_CurrentState - 1);
+        }
+        return; // Don't run auto-anim while transitioning
+    }
+
+    // --- 3. AUTO ANIMATION ---
+    if (m_AnimMode == PropAnimMode::LOOP && m_Images.size() > 1) {
+        m_AnimCounter++;
+        if (m_AnimCounter >= m_AnimFrameDelay) {
+            m_AnimCounter = 0;
+            SetState((m_CurrentState + 1) % (int)m_Images.size());
+        }
+    }
+    else if (m_AnimMode == PropAnimMode::PING_PONG && m_Images.size() > 1) {
+        m_AnimCounter++;
+        if (m_AnimCounter >= m_AnimFrameDelay) {
+            m_AnimCounter = 0;
+            int next = m_CurrentState + m_AnimDirection;
+            // Reverse at ends
+            if (next >= (int)m_Images.size() || next < 0) {
+                m_AnimDirection *= -1;
+                next = m_CurrentState + m_AnimDirection;
             }
+            SetState(next);
         }
     }
 }

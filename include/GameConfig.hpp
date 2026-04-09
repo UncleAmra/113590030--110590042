@@ -8,6 +8,8 @@
 //Check Map.cpp to find the IDs for items/tiles 
 
 namespace GameConfig {
+
+    
     // --- TILE & GRID SETTINGS ---
     constexpr float TILE_SIZE = 16.0f;
     constexpr float SCALE = 3.0f;
@@ -51,13 +53,12 @@ namespace GameConfig {
     // --- ITEM IDs ---
     constexpr int ITEM_POTION = 50;
     constexpr int ITEM_POKEBALL = 51;
+    constexpr int POKEMART = 52;
+    constexpr int POKEMART_SIGN = 53;
 
     //NPC IDs
     constexpr int NPC_NURSE = 100;
     constexpr int NPC_TA1 = 101;
-
-
-
 
     struct WarpDestination {
         std::string levelPath;
@@ -68,17 +69,30 @@ namespace GameConfig {
     //registry for items that have already been looted so they don't respawn
     inline std::unordered_set<std::string> LootedItems;
 // Define our destinations (Where the player SPAWNS after teleporting)
-    inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 8 };
+
+    //Level MAP
     inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/maps/level", 15, 7 };
-    inline const WarpDestination WARP_NTUT = { RESOURCE_DIR "/maps/NTUT",9,3 };
     inline const WarpDestination WARP_TOWN_FROM_NTUT = { RESOURCE_DIR "/maps/level", 4, 3 };
+    inline const WarpDestination WARP_TOWN_FROM_MAZE = { RESOURCE_DIR "/maps/level", 24, 15};
+
+    //Test Maze
+    inline const WarpDestination WARP_MAZE = { RESOURCE_DIR "/maps/maze", 2, 5 };
+
+    //inside PokeCenter
+    inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 8 };
+
+    //NTUT
+    inline const WarpDestination WARP_NTUT = { RESOURCE_DIR "/maps/NTUT",9,3 };
+
     // A dictionary that maps: "CurrentMap_DoorX_DoorY" -> "Where the door goes"
     inline std::unordered_map<std::string, WarpDestination> DoorRouting = {
         
         { RESOURCE_DIR "/maps/level_15_7", WARP_PC_INSIDE },
         { RESOURCE_DIR "/maps/inside_7_8", WARP_TOWN_OUTSIDE },
         { RESOURCE_DIR "/maps/level_4_3", WARP_NTUT },
-        { RESOURCE_DIR "/maps/NTUT_9_3", WARP_TOWN_FROM_NTUT }
+        { RESOURCE_DIR "/maps/NTUT_9_3", WARP_TOWN_FROM_NTUT},
+        { RESOURCE_DIR "/maps/maze_3_2", WARP_TOWN_FROM_MAZE },
+        { RESOURCE_DIR "/maps/level_24_15", WARP_MAZE }
         
     };
     inline std::unordered_map<std::string, int> MapBorders = {

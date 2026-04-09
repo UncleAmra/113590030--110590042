@@ -54,6 +54,7 @@ void Map::InitPropRegistry() {
     // 2. BUILDINGS (1 Texture)
     m_PropRegistry[GameConfig::PROP_POKECENTER] = { {PROP_DIR + "/PokeCentre.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_CHURCH] =     { {PROP_DIR + "/Church.png"},     0.8f, true, false, 0.0f, 0.0f };
+    m_PropRegistry[GameConfig::POKEMART] =     { {PROP_DIR + "/PokeMart.png"},     0.8f, true, false, 24.0f, 0.0f };
 
     // 3. CHECKPOINTS (1 Texture)
     m_PropRegistry[GameConfig::PROP_CHECKPOINT] =  { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
@@ -73,6 +74,18 @@ void Map::InitPropRegistry() {
         { PROP_DIR + "/TallGrass2.png" , PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" }, // Normal, then Flattened!
         1.0f, true, true, 0.0f, 0.0f 
     }; 
+    m_PropRegistry[GameConfig::POKEMART_SIGN] = {
+        { PROP_DIR + "/PokeMartSign1.png",
+        PROP_DIR + "/PokeMartSign2.png",
+        PROP_DIR + "/PokeMartSign3.png" },
+        0.9f,    // zIndex
+        true,    // dynamicZ
+        false,   // isWalkable
+        16.0f,    // offsetX
+        32.0f,    // offsetY
+        PropAnimMode::LOOP,  // animMode
+        18        // frameDelay — lower = faster
+    };
 }
 
 void Map::InitItemRegistry() {
@@ -207,7 +220,7 @@ void Map::LoadLevel(const std::string& mapName) {
                     
                     prop->SetDynamicZ(props.dynamicZ);
                     prop->SetZIndex(props.zIndex);      // <-- ADD THIS!
-                    //prop->SetBaseZIndex(props.zIndex);
+                    prop->SetAnimMode(props.animMode, props.animFrameDelay); 
                     m_Props.push_back(prop);   
 
                     // 2. ONLY add it to the visual engine if it actually has images!

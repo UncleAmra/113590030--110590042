@@ -15,7 +15,9 @@
 #include "StartMenu.hpp"
 #include "InventoryMenu.hpp"
 #include "PokemonMenu.hpp"
+#include "RandomEncounters.hpp"
 #include "ResourceManager.hpp"
+#include "PokemonDatabase.hpp"
 
 const std::string RES      = std::string(RESOURCE_DIR);
 const std::string MAP_DIR  = RES + "/maps/";
@@ -27,6 +29,7 @@ void App::Start() {
     // 1. INITIALIZE ARCHITECTURE
     // ==========================================
     MoveDatabase::Init();
+    PokemonDatabase::Init();
     srand(static_cast<unsigned int>(time(nullptr)));
     m_Renderer = std::make_shared<Util::Renderer>();
     m_Map = std::make_shared<Map>();
@@ -418,17 +421,42 @@ void App::ReturnToStartMenu() {
 
 
 std::shared_ptr<Pokemon> App::GenerateWildPokemon(const std::string& mapPath) {
-    // Basic test generator
-    int randomLevel = (rand() % 3) + 2; 
-    
-    // We must include the PokemonType enum now!
-    if (rand() % 2 == 0) {
-        // Pidgey is Normal/Flying
-        return std::make_shared<Pokemon>("Starly", randomLevel, PokemonType::NORMAL, PokemonType::FLYING, 40, 45, 40, 35, 35, 56);
-    } else {
-        // Rattata is pure Normal (Assuming you have a NONE type for single-type pokemon)
-        return std::make_shared<Pokemon>("Bulbasar", randomLevel, PokemonType::GRASS, PokemonType::NONE, 30, 56, 35, 25, 35, 72);
+    // 1. Check if the current map actually has an encounter table
+    auto it = RandomEncounters::MapEncounters.find(mapPath);
+    if (it == RandomEncounters::MapEncounters.end()) {
+        // Fallback just in case you step in grass on a map with no table
+        return PokemonDatabase::CreatePokemon("Rattata", 2); 
     }
+
+    const auto& encounterList = it->second;
+
+    // 2. Calculate the total weight of all Pokémon in this area
+    int totalWeight = 0;
+    for (const auto& entry : encounterList) {
+        totalWeight += entry.weight;
+    }
+
+    // 3. Roll a random number between 0 and totalWeight - 1
+    int roll = rand() % totalWeight;
+    
+    // 4. Figure out which Pokémon we rolled!
+    int currentWeight = 0;
+    for (const auto& entry : encounterList) {
+        currentWeight += entry.weight;
+        
+        if (roll < currentWeight) {
+            // WE FOUND OUR POKEMON! 
+            // Calculate a random level between minLevel and maxLevel
+            int levelRange = (entry.maxLevel - entry.minLevel) + 1;
+            int randomLevel = entry.minLevel + (rand() % levelRange);
+            
+            // Ask the Database to build it!
+            return PokemonDatabase::CreatePokemon(entry.speciesName, randomLevel);
+        }
+    }
+
+    // Fallback if the math somehow fails
+    return PokemonDatabase::CreatePokemon("Rattata", 2);
 }
 void App::End() {
     LOG_TRACE("End");

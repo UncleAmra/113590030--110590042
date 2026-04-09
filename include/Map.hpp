@@ -22,6 +22,13 @@ struct TileProperties {
     float yOffset = 0.0f;
     bool isWalkable = false; 
 };
+
+enum class PropAnimMode {
+    STATIC,       // Default — never changes frame automatically
+    LOOP,         // Cycles through all frames continuously  
+    PING_PONG     // Plays forward then backward (good for flickering effects)
+};
+
 struct PropProperties {
     std::vector<std::string> texturePaths;
     float zIndex = 0.8f;
@@ -29,6 +36,8 @@ struct PropProperties {
     bool isWalkable = false;
     float visualOffsetX = 0.0f; 
     float visualOffsetY = 0.0f; 
+    PropAnimMode animMode = PropAnimMode::STATIC;  
+    int animFrameDelay = 8;     
 };
 
 struct NPCProperties {

@@ -10,6 +10,8 @@
 #include <cmath>   // For std::sin
 #include <cstdlib> // For rand()
 #include <vector>
+#include <queue>      
+#include <sstream>
 
 class BattleUI {
 public:
@@ -60,6 +62,14 @@ private:
     std::shared_ptr<Util::GameObject> m_EnemyPanel;
     std::shared_ptr<Util::Text> m_EnemyNameText;
 
+    // Keep the GameObjects you already have:
+    std::shared_ptr<Util::GameObject> m_PlayerLevelText;
+    std::shared_ptr<Util::GameObject> m_EnemyLevelText;
+
+    // ADD THESE: Direct pointers to the text components
+    std::shared_ptr<Util::Text> m_PlayerLevelTextDrawable;
+    std::shared_ptr<Util::Text> m_EnemyLevelTextDrawable;
+
         // UI GameObjects for the bars and text
     std::shared_ptr<Util::GameObject> m_PlayerHPBar;
     std::shared_ptr<Util::GameObject> m_EnemyHPBar;
@@ -98,10 +108,21 @@ private:
     int m_PlayerLungeTimer = 0; // For the attack lunge
     int m_EnemyShakeTimer = 0;
 
+    std::queue<std::string> m_DialogueQueue;
+    int m_EnemyLungeTimer = 0;
+    int m_PlayerShakeTimer = 0;
+
+    float m_DisplayPlayerHPPercent = 1.0f;
+    float m_DisplayEnemyHPPercent = 1.0f;
+    float m_DisplayPlayerEXPPercent = 0.0f;
+    bool m_AllowEXPAnimation = false;
+    // Add this under your private/protected functions:
+    void ProcessNextMessage();
+
     bool m_BattleOver = false;
     BattleManager::TurnResult m_LastResult;
 
 
     // Helper to scale bars cleanly from the left side
-    void UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, float maxVisualWidth, bool isHPBar);
+    void UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, bool isHPBar);
 };
