@@ -59,3 +59,8 @@ std::vector<std::string> NPC::Interact() {
     // Otherwise, return normal text
     return m_DialogueLines;
 }
+
+void NPC::SetAction(NPCAction type, const std::string& data) {
+    m_ActionType = type;
+    m_ActionData = data;
+}

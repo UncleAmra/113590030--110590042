@@ -97,6 +97,20 @@ void PokemonDatabase::Init() {
         },
         "squirtle"
     };
+    s_Species["Tododile"] = {
+        7, "Tododile",
+        PokemonType::WATER, PokemonType::NONE,
+        44, 48, 65, 50, 64, 43,
+        45, 66,
+        {
+            { 1,  "Tackle" },
+            { 1,  "Tail Whip" },
+            { 7,  "Water Gun" },
+            { 13, "Withdraw" },
+            { 22, "Surf" },
+        },
+        "tododile"
+    };
 
     s_Species["Pikachu"] = {
         25, "Pikachu",

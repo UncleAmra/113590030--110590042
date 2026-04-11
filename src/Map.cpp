@@ -35,6 +35,7 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_CONCRETE] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/Concrete.png"), 0.0f, 0.0f, true }; 
     m_TileRegistry[GameConfig::TILE_DOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; 
     m_TileRegistry[GameConfig::TILE_PC_FLOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_PM_FLOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PokeMartTile.png"), 0.0f, 0.0f, true }; 
     m_TileRegistry[GameConfig::TILE_PC_WALL] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"), 0.1f, 0.0f, false };
 }
 
@@ -42,6 +43,8 @@ void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
     m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt"};
     m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
+    m_NPCRegistry[GameConfig::SHOP_KEEPER] = NPCProperties{ NPC_DIR + "ShopKeeper", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
+
 }
 
 void Map::InitPropRegistry() {
@@ -50,6 +53,7 @@ void Map::InitPropRegistry() {
     // 1. INVISIBLE TRIGGERS (Empty list of textures)
     m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR] = { {}, 0.0f, false, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { {}, 0.0f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_INTERACTABLE_WALL] = { {}, 0.0f, false, false, 0.0f, 0.0f }; 
 
     // 2. BUILDINGS (1 Texture)
     m_PropRegistry[GameConfig::PROP_POKECENTER] = { {PROP_DIR + "/PokeCentre.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
@@ -63,6 +67,7 @@ void Map::InitPropRegistry() {
     // 4. INTERIORS (1 Texture)
     m_PropRegistry[GameConfig::PROP_DOORMAT] =       { {PROP_DIR + "/PC_doormat.png"}, 0.1f, false, true,  0.0f, -20.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_DESK] =       { {PROP_DIR + "/PCDesk1.png"},    0.4f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PM_DESK] =       { {PROP_DIR + "/PokeMartDesk.png"},    0.4f, false, false, 24.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { {PROP_DIR + "/PCWall2.png"},    0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { {PROP_DIR + "/PCWall3.png"},    0.3f, false, false, 0.0f, 0.0f }; 
 
@@ -84,7 +89,7 @@ void Map::InitPropRegistry() {
         16.0f,    // offsetX
         32.0f,    // offsetY
         PropAnimMode::LOOP,  // animMode
-        18        // frameDelay — lower = faster
+        45     // frameDelay — lower = faster
     };
 }
 

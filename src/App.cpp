@@ -230,8 +230,35 @@ void App::Update() {
                 if (facing == Character::Direction::LEFT)  checkX -= 1;
                 if (facing == Character::Direction::RIGHT) checkX += 1;
 
+// 1. Initial check directly in front of the player
                 auto targetNPC = m_Map->GetNPCAt(checkX, checkY);
                 
+                // 2. --- NEW: THE COUNTER LOGIC ---
+                if (!targetNPC) {
+                    // Get the ID of the tile from your props layer
+                    int propID = m_Map->GetPropType(checkX, checkY); // <-- Adjust this method name!
+                    
+                    // Is it the desk? (IDs 11 and 102 based on your CSV)
+                    if (propID == 24) {
+                        
+                        float extendedX = checkX;
+                        float extendedY = checkY;
+                        
+                        // Look one tile further in the same direction
+                        // Note: Change the + and - below if your grid's Y-axis is inverted!
+                        Character::Direction playerDir = m_Character->GetFacingDirection();
+                        if (playerDir == Character::Direction::UP)         extendedY -= 1.0f; 
+                        else if (playerDir == Character::Direction::DOWN)  extendedY += 1.0f;
+                        else if (playerDir == Character::Direction::LEFT)  extendedX -= 1.0f;
+                        else if (playerDir == Character::Direction::RIGHT) extendedX += 1.0f;
+
+                        // Try fetching the NPC again at this new extended coordinate!
+                        targetNPC = m_Map->GetNPCAt(extendedX, extendedY);
+                    }
+                }
+                // ---------------------------------
+
+                // 3. Your existing dialogue logic! (Executes if an NPC was found directly OR behind a desk)
                 if (targetNPC) {
                     m_Character->StopMoving();
                     m_CurrentState = State::DIALOGUE; // Replaces m_IsInDialogue

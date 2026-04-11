@@ -5,6 +5,14 @@
 #include <string>
 #include <vector> // Make sure vector is included
 
+
+enum class NPCAction {
+    NONE,           // Just standard dialogue
+    HEAL,           // Heals the player's party
+    SHOP,           // Opens the Pokemart UI
+    GIVE_ITEM,      // Gives the player an item
+    BATTLE          // Starts a Pokemon battle
+};
 class NPC : public Character {
 public:
     // 1. Updated constructor with default empty strings for the new features
@@ -17,6 +25,10 @@ public:
     void SetDynamicZ(bool dynamic) { m_UseDynamicZ = dynamic; }
     
     std::vector<std::string> Interact();
+    // Add these new methods!
+    void SetAction(NPCAction type, const std::string& data = "");
+    NPCAction GetActionType() const { return m_ActionType; }
+    std::string GetActionData() const { return m_ActionData; }
 
 protected:
     void LoadSprites() override;
@@ -28,7 +40,9 @@ private:
     // 2. Changed m_Dialogue to a vector called m_DialogueLines
     std::vector<std::string> m_DialogueLines;       
     std::vector<std::string> m_AltDialogueLines;    
-    std::string m_FlagCondition;                    
+    std::string m_FlagCondition;     
+    NPCAction m_ActionType = NPCAction::NONE;
+    std::string m_ActionData = ""; // Stores item names, shop inventory IDs, or Trainer IDs               
 };
 
 #endif
