@@ -5,64 +5,55 @@
 #include <unordered_set> 
 #include <unordered_map>
 
-//Check Map.cpp to find the IDs for items/tiles 
-
 namespace GameConfig {
-
-    
-    // --- TILE & GRID SETTINGS ---
-    constexpr float TILE_SIZE = 16.0f;
-    constexpr float SCALE = 3.0f;
-    constexpr float SCALED_TILE_SIZE = TILE_SIZE * SCALE; // 48.0f
-    
-    // THE FIX: Use this for all position/warp math to prevent drift!
+    constexpr float TILE_SIZE   = 16.0f;
+    constexpr float SCALE       = 3.0f;
+    constexpr float SCALED_TILE_SIZE    = TILE_SIZE * SCALE; // 48.0f
     constexpr float EFFECTIVE_TILE_SIZE = SCALED_TILE_SIZE - 0.1f; 
 
-    // --- CAMERA SETTINGS ---
+    //Camera
     constexpr float CAMERA_START_X = -288.0f; 
-    constexpr float CAMERA_START_Y = 288.0f;
+    constexpr float CAMERA_START_Y =  288.0f;
 
-    // --- TILE IDs ---
-    constexpr int TILE_GRASS = 0;
-    constexpr int TILE_WATER_SOLID = 1;
-    constexpr int TILE_DIRT = 2;
-    constexpr int TILE_CONCRETE = 4;
-    constexpr int TILE_DOOR = 6;      
-    constexpr int TILE_PC_FLOOR = 9;
-    constexpr int TILE_PC_WALL = 11;
-    constexpr int TILE_PM_FLOOR = 20;
-    constexpr int TILE_EXIT = 99;
+    // Tile IDs
+    constexpr int TILE_GRASS        = 0;
+    constexpr int TILE_WATER_SOLID  = 1;
+    constexpr int TILE_DIRT         = 2;
+    constexpr int TILE_SAND         = 10;
+    constexpr int TILE_CONCRETE     = 4;
+    constexpr int TILE_DOOR         = 6;      
+    constexpr int TILE_PC_FLOOR     = 9;
+    constexpr int TILE_PC_WALL      = 11;
+    constexpr int TILE_PM_FLOOR     = 20;
+    constexpr int TILE_EXIT         = 99;
+    constexpr int TILE_INSIDE_CHURCH    = 67;
 
-    // --- PROP IDs --- 
-    constexpr int PROP_POKECENTER = 3;
-    constexpr int PROP_CHURCH = 5;
-    constexpr int PROP_DOORMAT = 7;
-    constexpr int PROP_INVISIBLE_DOOR = 990;
-    constexpr int PROP_INVISIBLE_WALL = 999;
-    constexpr int PROP_PC_DESK = 10;
-    constexpr int PROP_PM_DESK = 11;
-    constexpr int PROP_PC_WALL_LEFT = 12;
-    constexpr int PROP_PC_WALL_RIGHT = 13;
-    constexpr int PROP_CHECKPOINT = 15;
-    constexpr int PROP_CHECKPOINT2 = 16;
-    constexpr int PROP_INTERACTABLE_WALL = 24;
-    constexpr int PROP_TREE = 60;
-    constexpr int PROP_TALLGRASS = 61;
-
-
-
-
-
-    // --- ITEM IDs ---
-    constexpr int ITEM_POTION = 50;
+    // Prop IDs 
+    constexpr int PROP_POKECENTER       = 3;
+    constexpr int PROP_CHURCH           = 5;
+    constexpr int PROP_DOORMAT          = 7;
+    constexpr int PROP_INVISIBLE_DOOR   = 990;
+    constexpr int PROP_INVISIBLE_WALL   = 999;
+    constexpr int PROP_PC_DESK          = 10;
+    constexpr int PROP_PM_DESK          = 11;
+    constexpr int PROP_PC_WALL_LEFT     = 12;
+    constexpr int PROP_PC_WALL_RIGHT    = 13;
+    constexpr int PROP_CHECKPOINT       = 15;
+    constexpr int PROP_CHECKPOINT2      = 16;
+    constexpr int PROP_INTERACTABLE_WALL= 24;
+    constexpr int PROP_TREE             = 60;
+    constexpr int PROP_TALLGRASS        = 61;
+    
+    // Item IDs
+    constexpr int ITEM_POTION   = 50;
     constexpr int ITEM_POKEBALL = 51;
-    constexpr int POKEMART = 52;
+    constexpr int POKEMART      = 52;
     constexpr int POKEMART_SIGN = 53;
 
     //NPC IDs
-    constexpr int NPC_NURSE = 100;
-    constexpr int NPC_TA1 = 101;
-    constexpr int SHOP_KEEPER = 102;
+    constexpr int NPC_NURSE     = 100;
+    constexpr int NPC_TA1       = 101;
+    constexpr int SHOP_KEEPER   = 102;
 
 
     struct WarpDestination {
@@ -71,42 +62,37 @@ namespace GameConfig {
         int spawnY;
     };
 
-    //registry for items that have already been looted so they don't respawn
-    inline std::unordered_set<std::string> LootedItems;
-// Define our destinations (Where the player SPAWNS after teleporting)
+    inline std::unordered_set<std::string> LootedItems; //registry for items that have already been looted so they don't respawn
 
-    //Level MAP
-    inline const WarpDestination WARP_TOWN_OUTSIDE = { RESOURCE_DIR "/maps/level", 15, 7 };
-    inline const WarpDestination WARP_TOWN_FROM_NTUT = { RESOURCE_DIR "/maps/level", 4, 3 };
-    inline const WarpDestination WARP_TOWN_FROM_MAZE = { RESOURCE_DIR "/maps/level", 24, 15};
-    inline const WarpDestination WARP_TOWN_FROM_POKEMART = { RESOURCE_DIR "/maps/level", 23, 7};
-
-
-    //Test Maze
-    inline const WarpDestination WARP_MAZE = { RESOURCE_DIR "/maps/maze", 2, 5 };
-
-    //inside PokeCenter/PokeMart
-    inline const WarpDestination WARP_PC_INSIDE = { RESOURCE_DIR "/maps/inside", 7, 8 };
-    inline const WarpDestination WARP_POKEMART_INSIDE = { RESOURCE_DIR "/maps/PokeMart", 5, 9};
+    //Teleporting coordinates of the main map on level_props 990
+    inline const WarpDestination WARP_TOWN_OUTSIDE =         { RESOURCE_DIR "/maps/level", 12, 8 };
+    inline const WarpDestination WARP_TOWN_FROM_NTUT =       { RESOURCE_DIR "/maps/level", 4, 4 };
+    inline const WarpDestination WARP_TOWN_FROM_MAZE =       { RESOURCE_DIR "/maps/level", 51, 14};
+    inline const WarpDestination WARP_TOWN_FROM_POKEMART =   { RESOURCE_DIR "/maps/level", 28, 8};
+    inline const WarpDestination WARP_TOWN_FROM_CHURCH =     { RESOURCE_DIR "/maps/level", 21, 8};
 
 
-    //NTUT
-    inline const WarpDestination WARP_NTUT = { RESOURCE_DIR "/maps/NTUT",9,3 };
+   
+    inline const WarpDestination WARP_MAZE =            { RESOURCE_DIR "/maps/maze",        2, 5 };     //inside Maze cordinate 
+    inline const WarpDestination WARP_PC_INSIDE =       { RESOURCE_DIR "/maps/inside",      7, 8 };     //inside MRT
+    inline const WarpDestination WARP_POKEMART_INSIDE = { RESOURCE_DIR "/maps/PokeMart",    5, 9};      //inside mart
+    inline const WarpDestination WARP_NTUT =            { RESOURCE_DIR "/maps/NTUT",        9,3 };
+    inline const WarpDestination WARP_CHURCH_INSIDE =   { RESOURCE_DIR "/maps/church",      5,14};
 
-    // A dictionary that maps: "CurrentMap_DoorX_DoorY" -> "Where the door goes"
+
+    //coordinates x and y
     inline std::unordered_map<std::string, WarpDestination> DoorRouting = {
         
-        { RESOURCE_DIR "/maps/level_15_7", WARP_PC_INSIDE },
-        { RESOURCE_DIR "/maps/inside_7_8", WARP_TOWN_OUTSIDE },
-        { RESOURCE_DIR "/maps/level_4_3", WARP_NTUT },
-        { RESOURCE_DIR "/maps/NTUT_9_3", WARP_TOWN_FROM_NTUT},
-        { RESOURCE_DIR "/maps/maze_3_2", WARP_TOWN_FROM_MAZE },
-        { RESOURCE_DIR "/maps/level_24_15", WARP_MAZE },
-        { RESOURCE_DIR "/maps/level_23_7", WARP_POKEMART_INSIDE },
-        { RESOURCE_DIR "/maps/PokeMart_5_8", WARP_TOWN_FROM_POKEMART},
-
-
-        
+        { RESOURCE_DIR "/maps/level_12_8",  WARP_PC_INSIDE },
+        { RESOURCE_DIR "/maps/inside_7_8",  WARP_TOWN_OUTSIDE },
+        { RESOURCE_DIR "/maps/level_4_4",   WARP_NTUT },
+        { RESOURCE_DIR "/maps/NTUT_9_3",    WARP_TOWN_FROM_NTUT},
+        { RESOURCE_DIR "/maps/maze_3_2",    WARP_TOWN_FROM_MAZE },
+        { RESOURCE_DIR "/maps/level_50_14", WARP_MAZE },
+        { RESOURCE_DIR "/maps/level_28_8",  WARP_POKEMART_INSIDE },
+        { RESOURCE_DIR "/maps/PokeMart_5_8",WARP_TOWN_FROM_POKEMART},
+        { RESOURCE_DIR "/maps/church_5_14", WARP_TOWN_FROM_CHURCH},
+        { RESOURCE_DIR "/maps/level_21_8",  WARP_CHURCH_INSIDE},
     };
     inline std::unordered_map<std::string, int> MapBorders = {
         { RESOURCE_DIR "/maps/level", PROP_TREE }, // Town gets surrounded by trees

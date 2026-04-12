@@ -7,23 +7,12 @@ NPC::NPC(float x, float y, const std::string& spritePath,
      const std::string& dialoguePath, 
      const std::string& altDialoguePath, 
      const std::string& flagCondition) 
-    // REMOVED m_UseDynamicZ from here!
-    : Character(x, y), m_SpritePath(spritePath), m_FlagCondition(flagCondition) {
-    
-    // 1. Set the BASE class variable inside the body!
-    m_UseDynamicZ = false; 
-    
-    // Load the text file if the path isn't empty!
-    if (!dialoguePath.empty()) {
-        m_DialogueLines = Util::LoadDialogueFile(dialoguePath);
-    } else {
-        m_DialogueLines.push_back("...");
-    }
-    // Load Alternative Dialogue (if provided)
-    if (!altDialoguePath.empty()) {
-        m_AltDialogueLines = Util::LoadDialogueFile(altDialoguePath);
-    }
 
+    : Character(x, y), m_SpritePath(spritePath), m_FlagCondition(flagCondition) {
+    m_UseDynamicZ = false;                                                                      // Set the BASE class variable inside the body!
+    if (!dialoguePath.empty())    {m_DialogueLines    = Util::LoadDialogueFile(dialoguePath);}  // Load the text file if the path isn't empty!
+         else {m_DialogueLines.push_back("...");}
+    if (!altDialoguePath.empty()) {m_AltDialogueLines = Util::LoadDialogueFile(altDialoguePath);}// Load Alternative Dialogue (if provided)
     LoadSprites();
     UpdateSprite();
 }

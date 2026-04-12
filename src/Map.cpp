@@ -17,63 +17,47 @@ const std::string NPC_DIR  = RES + "/npcs/";
 const std::string DIALOGUE_DIR = RES + "/dialogue/";
 
 Map::Map() { 
-    //SETUP THE DICTIONARY
     InitTileRegistry();
     InitNPCRegistry();
     InitPropRegistry();
     InitItemRegistry();
-
-    
 }
 
-//Check GameCofig to find IDs for each dictionary
 void Map::InitTileRegistry() {
     // ID = { texture, zIndex, yOffset, isWalkable }
-    m_TileRegistry[GameConfig::TILE_GRASS] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
-    m_TileRegistry[GameConfig::TILE_WATER_SOLID] = { nullptr, 0.0f, 0.0f, false };
-    m_TileRegistry[GameConfig::TILE_DIRT] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, true };
-    m_TileRegistry[GameConfig::TILE_CONCRETE] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/Concrete.png"), 0.0f, 0.0f, true }; 
-    m_TileRegistry[GameConfig::TILE_DOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"), 0.0f, 0.0f, false }; 
-    m_TileRegistry[GameConfig::TILE_PC_FLOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; 
-    m_TileRegistry[GameConfig::TILE_PM_FLOOR] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PokeMartTile.png"), 0.0f, 0.0f, true }; 
-    m_TileRegistry[GameConfig::TILE_PC_WALL] = { ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"), 0.1f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_GRASS]          ={ ResourceManager::GetImageStore().Get(TILE_DIR + "/Grass1.png"), 0.0f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_WATER_SOLID]    ={ nullptr, 0.0f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_DIRT]           ={ ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"),     0.0f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_SAND]           ={ ResourceManager::GetImageStore().Get(TILE_DIR + "/Sand.png"),      0.0f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_CONCRETE]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/Concrete.png"),   0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_DOOR]           ={ ResourceManager::GetImageStore().Get(TILE_DIR + "/Dirt1.png"),     0.0f, 0.0f, false }; 
+    m_TileRegistry[GameConfig::TILE_PC_FLOOR]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_PM_FLOOR]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PokeMartTile.png"), 0.0f, 0.0f, true }; 
+    m_TileRegistry[GameConfig::TILE_PC_WALL]        ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"),      0.1f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, false };
 }
-
 void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
-    m_NPCRegistry[GameConfig::NPC_NURSE] = NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt"};
-    m_NPCRegistry[GameConfig::NPC_TA1] = NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
-    m_NPCRegistry[GameConfig::SHOP_KEEPER] = NPCProperties{ NPC_DIR + "ShopKeeper", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
-
+    m_NPCRegistry[GameConfig::NPC_NURSE]        =NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt"};
+    m_NPCRegistry[GameConfig::NPC_TA1]          =NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
+    m_NPCRegistry[GameConfig::SHOP_KEEPER]      =NPCProperties{ NPC_DIR + "ShopKeeper", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
 }
-
 void Map::InitPropRegistry() {
     // FORMAT: { {"Frame1", "Frame2", ...}, zIndex, dynamicZ, isWalkable, offsetX, offsetY }
-
-    // 1. INVISIBLE TRIGGERS (Empty list of textures)
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR] = { {}, 0.0f, false, false,  0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL] = { {}, 0.0f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_INTERACTABLE_WALL] = { {}, 0.0f, false, false, 0.0f, 0.0f }; 
-
-    // 2. BUILDINGS (1 Texture)
-    m_PropRegistry[GameConfig::PROP_POKECENTER] = { {PROP_DIR + "/PokeCentre.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_CHURCH] =     { {PROP_DIR + "/Church.png"},     0.8f, true, false, 0.0f, 0.0f };
-    m_PropRegistry[GameConfig::POKEMART] =     { {PROP_DIR + "/PokeMart.png"},     0.8f, true, false, 24.0f, 0.0f };
-
-    // 3. CHECKPOINTS (1 Texture)
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT] =  { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT2] = { {PROP_DIR + "/Checkpoint3.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
-
-    // 4. INTERIORS (1 Texture)
-    m_PropRegistry[GameConfig::PROP_DOORMAT] =       { {PROP_DIR + "/PC_doormat.png"}, 0.1f, false, true,  0.0f, -20.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_DESK] =       { {PROP_DIR + "/PCDesk1.png"},    0.4f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_PM_DESK] =       { {PROP_DIR + "/PokeMartDesk.png"},    0.4f, false, false, 24.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT] =  { {PROP_DIR + "/PCWall2.png"},    0.3f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT] = { {PROP_DIR + "/PCWall3.png"},    0.3f, false, false, 0.0f, 0.0f }; 
-
-    // 5. NATURE & SCENERY (1 Texture)
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR]    ={ {}, 0.0f, false, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL]    ={ {}, 0.0f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_INTERACTABLE_WALL] ={ {}, 0.0f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_POKECENTER]        ={ {PROP_DIR + "/PokeCentre.png"},   0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHURCH]            ={ {PROP_DIR + "/Church.png"},       0.8f, true, false, 0.0f, 0.0f };
+    m_PropRegistry[GameConfig::POKEMART]               ={ {PROP_DIR + "/PokeMart.png"},     0.8f, true, false, 24.0f, 0.0f };
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT]        = { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT2]       = { {PROP_DIR + "/Checkpoint3.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_DOORMAT]           ={ {PROP_DIR + "/PC_doormat.png"},   0.1f, false, true,  0.0f, -20.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_DESK]           ={ {PROP_DIR + "/PCDesk1.png"},      0.4f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PM_DESK]           ={ {PROP_DIR + "/PokeMartDesk.png"}, 0.4f, false, false, 24.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT]      ={ {PROP_DIR + "/PCWall2.png"},      0.3f, false, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT]     ={ {PROP_DIR + "/PCWall3.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_TREE] = { {PROP_DIR + "/Tree.png"}, 0.8f, true, false, 20.0f, -16.0f }; 
-    
     // 6. INTERACTIVE PROPS (2 Textures)
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = { 
         { PROP_DIR + "/TallGrass2.png" , PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" }, // Normal, then Flattened!
@@ -95,29 +79,27 @@ void Map::InitPropRegistry() {
 
 void Map::InitItemRegistry() {
     // Item ID = texturePath, name, category, zIndex
-    m_ItemRegistry[GameConfig::ITEM_POTION] = { PROP_DIR + "/PokeBall.png", "Potion", ItemCategory::GENERAL, 0.5f }; 
-    m_ItemRegistry[GameConfig::ITEM_POKEBALL] = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::POKEBALLS, 0.5f }; 
+    m_ItemRegistry[GameConfig::ITEM_POTION]     = { PROP_DIR + "/PokeBall.png", "Potion", ItemCategory::GENERAL, 0.5f }; 
+    m_ItemRegistry[GameConfig::ITEM_POKEBALL]   = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::POKEBALLS, 0.5f }; 
 }
 
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
     std::vector<std::vector<int>> data;
     std::ifstream file(filepath);
-    if (!file.is_open()) {
-        std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
+    if (!file.is_open()) { std::cerr << "ERROR: Could not open map file at " << filepath << "!\n";
         return data; // Return empty data if it fails
     }
 
     
     std::string line;
     while (std::getline(file, line)) {
-        std::vector<int> row;
+        std::vector      <int> row;
         std::stringstream ss(line);
-        std::string cell;
+        std::string       cell;
         while (std::getline(ss, cell, ',')) {
             try {
                 row.push_back(std::stoi(cell)); 
             } catch (const std::exception& e) {
-                // If it hits a stray space or a \r, it catches the error and defaults to 0
                 std::cerr << "Bad CSV value '" << cell << "' at row " 
                           << data.size() << ": " << e.what() << "\n";
                 row.push_back(0); 
@@ -131,25 +113,23 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
 // RESTORED ORIGINAL SIGNATURE
 void Map::LoadLevel(const std::string& mapName) {
     ClearMap(); 
-    
     m_CurrentLevelPath = mapName;
-
-    // 1. Load the two layers
-    m_LevelData = LoadCSV(mapName + "_ground.csv");
-    m_PropData = LoadCSV(mapName + "_props.csv");
+    m_LevelData = LoadCSV(mapName + "_ground.csv");// 1. Load the two layers
+    m_PropData  = LoadCSV(mapName + "_props.csv");
 
     if (m_LevelData.empty()) {
         std::cout << "Map Ground is EMPTY!" << std::endl;
         return;
     }
 
-    std::vector<std::string> waterPaths = {TILE_DIR + "/Water1.png", TILE_DIR + "/Water2.png", TILE_DIR + "/Water3.png"};
-    m_LeaderWater = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
+    std::vector<std::string> 
+    waterPaths      = {TILE_DIR + "/Water1.png", TILE_DIR + "/Water2.png", TILE_DIR + "/Water3.png"};
+    m_LeaderWater   = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
     m_FollowerWater = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
     bool leaderAssigned = false;
     
     // 3. PHASE 1: Build the Ground Tiles
-    for (size_t y = 0; y < m_LevelData.size(); y++) {
+    for     (size_t y = 0; y < m_LevelData.size(); y++) {
         for (size_t x = 0; x < m_LevelData[y].size(); x++) {
             int tileID = m_LevelData[y][x];
             
@@ -158,25 +138,20 @@ void Map::LoadLevel(const std::string& mapName) {
                 const TileProperties& props = m_TileRegistry[tileID];
 
                 // Use the config scale and EFFECTIVE_TILE_SIZE
-                newTile->m_Transform.scale = {GameConfig::SCALE, GameConfig::SCALE};
-                newTile->m_Transform.translation.x = GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
-                newTile->m_Transform.translation.y = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE) + props.yOffset;
+                newTile->m_Transform.scale          = {GameConfig::SCALE, GameConfig::SCALE};
+                newTile->m_Transform.translation.x  =  GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
+                newTile->m_Transform.translation.y  =  GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE) + props.yOffset;
                 newTile->SetZIndex(props.zIndex);
                 
                 // Assign the correct image/animation
                 if (tileID == 1) { 
                     if (!leaderAssigned) {
-                        newTile->SetDrawable(m_LeaderWater); // First tile gets the Leader
-                        leaderAssigned = true;
-                    } else {
-                        newTile->SetDrawable(m_FollowerWater); // The rest follow
-                    }
-                } else {
-                    newTile->SetDrawable(props.texture); // Normal ground tiles
-                }
-
-                m_Tiles.push_back(newTile);   // Keep for gameplay/collision
-                AddToRenderer(newTile);       // USES NEW WEAK_PTR LOGIC
+                        newTile->SetDrawable(m_LeaderWater);        // First tile gets the Leader
+                        leaderAssigned = true;}
+                    else {newTile->SetDrawable(m_FollowerWater);} } // The rest follow   
+                else {newTile->SetDrawable(props.texture);}         // Normal ground tiles
+                m_Tiles.push_back(newTile);                         // Keep for gameplay/collision
+                AddToRenderer(newTile);                             // USES NEW WEAK_PTR LOGIC
             }
         }
     }
@@ -185,35 +160,25 @@ void Map::LoadLevel(const std::string& mapName) {
     if (!m_PropData.empty()) {
         for (size_t y = 0; y < m_PropData.size(); y++) {
             for (size_t x = 0; x < m_PropData[y].size(); x++) {
-                int propID = m_PropData[y][x];
-                
-                // Calculate position using EFFECTIVE_TILE_SIZE
+                int propID = m_PropData[y][x];                      // Calculate position using EFFECTIVE_TILE_SIZE
                 float worldX = GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
                 float worldY = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE);
-
-                // --- 1. SPAWN NPCs ---
+                                                                    //  NPC
                 if (m_NPCRegistry.count(propID) > 0) {
-                    const NPCProperties& npcProps = m_NPCRegistry[propID];
-            
-                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath, npcProps.dialogueFilePath);                  
-                    
-                    // Use the registry for Z-sorting!
+                    const NPCProperties& npcProps = m_NPCRegistry[propID];          
+                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath, npcProps.dialogueFilePath);            
                     npc->SetGridPosition(x, y);
                     npc->SetZIndex(npcProps.zIndex);
                     npc->SetBaseZIndex(npcProps.zIndex);
                     npc->SetDynamicZ(npcProps.dynamicZ); 
-                    
                     m_NPCs.push_back(npc);     
-                    AddToRenderer(npc);        // USES NEW WEAK_PTR LOGIC
+                    AddToRenderer(npc);        
                 }
                 
-                // --- 2. SPAWN PROPS ---
+                //Props
                 if (m_PropRegistry.count(propID) > 0) {
                     const PropProperties& props = m_PropRegistry[propID];
-                    
                     glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
-                    
-                    // 1. ALWAYS create the prop so collisions, doors, and grid math work!
                     auto prop = std::make_shared<Prop>(
                         props.texturePaths, 
                         spawnPos, 
@@ -222,30 +187,21 @@ void Map::LoadLevel(const std::string& mapName) {
                         x,                  
                         y                   
                     );
-                    
-                    prop->SetDynamicZ(props.dynamicZ);
-                    prop->SetZIndex(props.zIndex);      // <-- ADD THIS!
-                    prop->SetAnimMode(props.animMode, props.animFrameDelay); 
-                    m_Props.push_back(prop);   
 
-                    // 2. ONLY add it to the visual engine if it actually has images!
-                    if (!props.texturePaths.empty()) {
-                        AddToRenderer(prop);       
-                    }
+                    prop->SetDynamicZ   (props.dynamicZ);
+                    prop->SetZIndex     (props.zIndex);     
+                    prop->SetAnimMode   (props.animMode, props.animFrameDelay); 
+                    m_Props.push_back   (prop);   
+                    if (!props.texturePaths.empty()) {AddToRenderer(prop);} //ONLY add it to the visual engine if it actually has images!
                 }
                 
-                // --- 3. SPAWN ITEMS ---
+                // spawn items
                 if (m_ItemRegistry.count(propID) > 0) {
-                    // Create a unique ID for this specific tile
                     std::string uniqueID = m_CurrentLevelPath + "_" + std::to_string(x) + "_" + std::to_string(y);
-
-                    // Check if we already looted this spot!
-                    if (GameConfig::LootedItems.count(uniqueID) > 0) {
-                        m_PropData[y][x] = 0; // Remove it from grid data so we can walk here!
-                    } 
+                    if (GameConfig::LootedItems.count(uniqueID) > 0) {      // Check if we already looted this spot!
+                        m_PropData[y][x] = 0;}                               // Remove it from grid data so we can walk here! 
                     else {
                         const ItemProperties& itemProps = m_ItemRegistry[propID];
-                        
                         if (!itemProps.texturePath.empty()) {
                             auto item = std::make_shared<Item>(itemProps.texturePath, glm::vec2(worldX, worldY), itemProps.name, itemProps.category, x, y);                        
                             m_Items.push_back(item);   
