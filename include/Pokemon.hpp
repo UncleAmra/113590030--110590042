@@ -52,6 +52,7 @@ public:
     static std::string GetTypeName(PokemonType type); 
     std::string GetTypeString() const;
     std::string GetSummary() const;
+    void ClearMoves();  
 
 private:
     std::string m_Name;
@@ -79,4 +80,5 @@ private:
     
     // Helper method for leveling up (Moved to Pokemon.cpp)
     void LevelUp();
+   
 };

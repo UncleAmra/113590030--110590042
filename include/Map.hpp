@@ -46,6 +46,8 @@ struct NPCProperties {
     float zIndex = 0.8f;    
     bool dynamicZ = true;
     std::string dialogueFilePath;
+    NPCAction actionType = NPCAction::NONE; 
+    std::string actionData = "";
 };
 
 struct ItemProperties {

@@ -2,8 +2,12 @@
 #include "Map.hpp"
 #include "Player.hpp"
 #include "Character.hpp"
+#include "TrainerDatabase.hpp"
 #include "MoveDatabase.hpp"
 #include "Item.hpp"
+#include "NPC.hpp"
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include "GameConfig.hpp"
 #include "Prop.hpp"
 #include "SaveSystem.hpp"
@@ -30,6 +34,7 @@ void App::Start() {
     // ==========================================
     MoveDatabase::Init();
     PokemonDatabase::Init();
+    TrainerDatabase::Init();
     srand(static_cast<unsigned int>(time(nullptr)));
     m_Renderer = std::make_shared<Util::Renderer>();
     m_Map = std::make_shared<Map>();
@@ -140,10 +145,14 @@ void App::Update() {
     // 4. MAIN STATE MACHINE
     // ==========================================
     switch (m_CurrentState) {
-        
+        case State::START:
+            // Do nothing for now
+            break;
+
         case State::DIALOGUE: {
             if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
                 if (!m_CurrentDialogueLines.empty() && m_CurrentDialogueIndex < m_CurrentDialogueLines.size() - 1) {
+                    // Still reading text, go to next line
                     m_CurrentDialogueIndex++;
                     m_DialogueText->SetText(m_CurrentDialogueLines[m_CurrentDialogueIndex]);
                     
@@ -152,10 +161,51 @@ void App::Update() {
                     m_DialogueUI->m_Transform.translation.x = -600.0f + textHalfWidth; 
                 } 
                 else {
-                    // End Dialogue -> Return to game
-                    m_CurrentState = State::UPDATE;
+                    // --- DIALOGUE HAS ENDED ---
+                    // 1. Hide the UI
                     m_DialogueBoxUI->SetVisible(false);
                     m_DialogueUI->SetVisible(false);
+
+                    // 2. Determine what happens next based on the Active NPC
+                    if (m_ActiveNPC) {
+                        NPCAction action = m_ActiveNPC->GetActionType();
+                        std::string data = m_ActiveNPC->GetActionData();
+
+                        if (action == NPCAction::SHOP) {
+                            //LOG_INFO("TEST SUCCESS: Opening Shop with data: {}", data);
+                          
+                            m_CurrentState = State::UPDATE; // Switch to State::SHOP later!
+                            // m_ShopUI->Show(data);
+                        }
+                        else if (action == NPCAction::HEAL) {
+                            //LOG_INFO("TEST SUCCESS: Healing");
+                          
+                            // Trigger your heal logic here
+                            m_CurrentState = State::UPDATE;
+                        }
+                        else if (action == NPCAction::BATTLE) {
+                            
+                            m_Character->SetVisible(false);
+                            m_Map->SetVisible(false);
+                            m_BattleUI->StartTrainerBattle(
+                                m_Character->GetParty(), 
+                                m_ActiveNPC->GetParty()
+                            );
+                            m_CurrentState = State::BATTLE;
+                            // Setup your battle here using the 'data' string
+                        }
+                        else {
+                            // NONE or GIVE_ITEM falls back to the overworld
+                            m_CurrentState = State::UPDATE;
+                        }
+
+                        // We are done with the NPC, clear the pointer!
+                        m_ActiveNPC = nullptr;
+                    } 
+                    else {
+                        // Fallback: This was just a sign or an item on the ground
+                        m_CurrentState = State::UPDATE;
+                    }
                 }
             }
             break;
@@ -260,6 +310,7 @@ void App::Update() {
 
                 // 3. Your existing dialogue logic! (Executes if an NPC was found directly OR behind a desk)
                 if (targetNPC) {
+                    m_ActiveNPC = targetNPC;
                     m_Character->StopMoving();
                     m_CurrentState = State::DIALOGUE; // Replaces m_IsInDialogue
                     m_DialogueBoxUI->SetVisible(true);

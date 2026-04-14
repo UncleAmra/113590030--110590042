@@ -20,8 +20,7 @@ public:
     void Hide();
     bool Update();
     bool IsBattleOver() const { return m_BattleOver; }
-
-private:
+    void StartTrainerBattle(std::vector<std::shared_ptr<Pokemon>> playerParty, std::vector<std::shared_ptr<Pokemon>> enemyParty);private:
 
     enum class UIState {
             ANIMATING,
@@ -38,12 +37,21 @@ private:
     int m_CursorIndex = 0;
     void UpdateCursorPosition();
     void UpdateMenuVisibility();    
-    void SetDialogue(const std::string& text);    
+    void SetDialogue(const std::string& text);  
+    void HandleEnemyFaint();  
+    void AttemptRun();
     std::shared_ptr<Util::Renderer> m_Renderer;
     std::unique_ptr<BattleManager> m_BattleLogic;
     std::shared_ptr<Util::GameObject> m_PlayerBase;
     std::shared_ptr<Util::GameObject> m_EnemyBase;
     bool m_IsVisible = false;
+
+    //ENEMY NPCs
+    std::vector<std::shared_ptr<Pokemon>> m_EnemyTeam;
+    int m_CurrentEnemyIndex = 0;
+    
+    // A flag to change battle rules (block Pokéballs, block running)
+    bool m_IsTrainerBattle = false;
 
     // ==========================================
     // 1. BACKGROUND & SPRITES

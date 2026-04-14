@@ -414,7 +414,7 @@ bool BattleUI::Update() {
                 UpdateCursorPosition();
             }
             else if (m_CursorIndex == 3) {
-                bool isWildBattle = true; 
+                bool isWildBattle = !m_IsTrainerBattle;
                 
                 // 1. Clear out any old text first
                 while(!m_DialogueQueue.empty()) m_DialogueQueue.pop();
@@ -526,14 +526,56 @@ bool BattleUI::Update() {
                 // The queue is empty AND the bars are done moving. The full turn is officially over.
                 auto state = m_BattleLogic->GetState();
                 
-                if (state == BattleManager::BattleState::BATTLE_WON ||
-                    state == BattleManager::BattleState::BATTLE_LOST ||
-                    state == BattleManager::BattleState::BATTLE_ESCAPED) { 
+                if (state == BattleManager::BattleState::BATTLE_WON) {
                     
+                    // --- NEW: TRAINER TEAM LOGIC ---
+                    if (m_IsTrainerBattle) {
+                        m_CurrentEnemyIndex++;
+                        
+                        // Are there still Pokémon left in the trainer's team?
+                        if (m_CurrentEnemyIndex < static_cast<int>(m_EnemyTeam.size())){
+                            
+                            // 1. Get the next Pokémon
+                            m_EnemyPokemon = m_EnemyTeam[m_CurrentEnemyIndex];
+                            
+                            // 2. Load new sprites
+                            std::string enemyName = m_EnemyPokemon->GetName();
+                            std::transform(enemyName.begin(), enemyName.end(), enemyName.begin(), ::tolower);
+                            m_EnemyFrame1 = ResourceManager::GetImageStore().Get(POKEMON_RES + enemyName + "_front_1.png");
+                            m_EnemyFrame2 = ResourceManager::GetImageStore().Get(POKEMON_RES + enemyName + "_front_2.png");
+                            m_EnemySprite->SetDrawable(m_EnemyFrame1);
+                            
+                            // 3. Reset the internal BattleManager for the new opponent
+                            m_BattleLogic = std::make_unique<BattleManager>(m_PlayerPokemon, m_EnemyPokemon, true);
+                            
+                            // 4. Reset Enemy UI values
+                            m_DisplayEnemyHPPercent = 1.0f;
+                            m_EnemyLevelTextDrawable->SetText(std::to_string(m_EnemyPokemon->GetLevel()));
+                            
+                            // 5. Queue text and start the next turn!
+                            m_DialogueQueue.push("Trainer sent out " + m_EnemyPokemon->GetName() + "!");
+                            m_UIState = UIState::WAITING_TEXT;
+                            m_TextWaitTimer = 15;
+                            ProcessNextMessage();
+                            
+                            return true; // Keep the battle going!
+                        }
+                    }
+                    
+                    // If not trainer battle, or the whole team is defeated, you officially win!
                     m_BattleOver = true;
+                    m_IsTrainerBattle = false; // Reset the flag
                     Hide(); 
                     return true;
                 } 
+                else if (state == BattleManager::BattleState::BATTLE_LOST ||
+                         state == BattleManager::BattleState::BATTLE_ESCAPED) { 
+                    
+                    m_BattleOver = true;
+                    m_IsTrainerBattle = false; // Reset the flag
+                    Hide(); 
+                    return true;
+                }
                 else {
                     SetDialogue("What will you do?"); 
                     m_UIState = UIState::MAIN_MENU;
@@ -738,3 +780,52 @@ void BattleUI::ProcessNextMessage() {
         }
     }
 }
+
+// In BattleUI.hpp
+void BattleUI::StartTrainerBattle(std::vector<std::shared_ptr<Pokemon>> playerParty, 
+                                  std::vector<std::shared_ptr<Pokemon>> enemyParty) {
+    // 1. Reset battle state
+    m_IsTrainerBattle = true; // Flips the rules for this fight!
+    
+    // 2. Assign the dynamically loaded enemy team
+    m_EnemyTeam = enemyParty;
+    m_CurrentEnemyIndex = 0;
+
+    // Safety check just in case the JSON data was empty or failed to load
+    if (m_EnemyTeam.empty()) {
+        LOG_ERROR("Enemy team is empty! Aborting battle setup.");
+        return;
+    }
+
+    // 3. Set the active enemy to the first Pokemon in the team
+    m_EnemyPokemon = m_EnemyTeam[m_CurrentEnemyIndex];
+
+    // 4. Trigger your visual setup by reusing your existing Show() function!
+    Show(playerParty, m_EnemyPokemon); 
+}
+
+/* void BattleUI::HandleEnemyFaint() {
+    if (m_IsTrainerBattle) {
+        m_CurrentEnemyIndex++;
+        
+        if (m_CurrentEnemyIndex < m_EnemyTeam.size()) {
+            // Send out the next Pokemon!
+            m_EnemyPokemon = m_EnemyTeam[m_CurrentEnemyIndex];
+            // -> Play "Trainer sent out X!" text and animation
+        } else {
+            // The whole team is defeated!
+            EndBattle(true); // Player wins
+        }
+    } else {
+        // Normal wild battle finish
+        EndBattle(true);
+    }
+}
+
+void BattleUI::AttemptRun() {
+    if (m_IsTrainerBattle) {
+        ShowMessage("No! There's no running from a Trainer battle!");
+        return;
+    }
+    // Normal run logic...
+} */

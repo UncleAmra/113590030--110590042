@@ -1,0 +1,11 @@
+{
+  "trainers": {
+    "Trainer_TA": {
+      "name": "Teaching Assistant",
+      "party": [
+        { "species": "Starly", "level": 5 },
+        { "species": "Rattata", "level": 6 }
+      ]
+    }
+  }
+}

@@ -6,6 +6,7 @@
 #include <fstream>  
 #include <sstream>  
 #include <iostream> 
+#include "TrainerDatabase.hpp"
 #include "ResourceManager.hpp"
 
 //paths to assests
@@ -37,10 +38,10 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, false };
 }
 void Map::InitNPCRegistry() {
-    // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
-    m_NPCRegistry[GameConfig::NPC_NURSE]        =NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt"};
-    m_NPCRegistry[GameConfig::NPC_TA1]          =NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
-    m_NPCRegistry[GameConfig::SHOP_KEEPER]      =NPCProperties{ NPC_DIR + "ShopKeeper", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt"};
+    // ID = { spritePath, visualOffsetY, zIndex, dynamicZ, NPCActionType, ActionData }
+    m_NPCRegistry[GameConfig::NPC_NURSE]        =NPCProperties{ NPC_DIR + "Nurse", 12.0f, 0.2f, false, DIALOGUE_DIR + "nurse.txt", NPCAction::HEAL, ""};
+    m_NPCRegistry[GameConfig::NPC_TA1]          =NPCProperties{ NPC_DIR + "TA0", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt", NPCAction::BATTLE, "Trainer_TA"};
+    m_NPCRegistry[GameConfig::SHOP_KEEPER]      =NPCProperties{ NPC_DIR + "ShopKeeper", -12.0f, 0.5f, true, DIALOGUE_DIR + "ta.txt", NPCAction::SHOP, "Mart_Potions"};
 }
 void Map::InitPropRegistry() {
     // FORMAT: { {"Frame1", "Frame2", ...}, zIndex, dynamicZ, isWalkable, offsetX, offsetY }
@@ -66,14 +67,15 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::POKEMART_SIGN] = {
         { PROP_DIR + "/PokeMartSign1.png",
         PROP_DIR + "/PokeMartSign2.png",
-        PROP_DIR + "/PokeMartSign3.png" },
+        PROP_DIR + "/PokeMartSign3.png",
+        PROP_DIR + "/PokeMartSign4.png" },
         0.9f,    // zIndex
         true,    // dynamicZ
         false,   // isWalkable
         16.0f,    // offsetX
         32.0f,    // offsetY
         PropAnimMode::LOOP,  // animMode
-        45     // frameDelay — lower = faster
+        30     // frameDelay — lower = faster
     };
 }
 
@@ -165,15 +167,25 @@ void Map::LoadLevel(const std::string& mapName) {
                 float worldY = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE);
                                                                     //  NPC
                 if (m_NPCRegistry.count(propID) > 0) {
-                    const NPCProperties& npcProps = m_NPCRegistry[propID];          
-                    auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath, npcProps.dialogueFilePath);            
-                    npc->SetGridPosition(x, y);
-                    npc->SetZIndex(npcProps.zIndex);
-                    npc->SetBaseZIndex(npcProps.zIndex);
-                    npc->SetDynamicZ(npcProps.dynamicZ); 
-                    m_NPCs.push_back(npc);     
-                    AddToRenderer(npc);        
-                }
+                        const NPCProperties& npcProps = m_NPCRegistry[propID];          
+                        auto npc = std::make_shared<NPC>(worldX, worldY + npcProps.visualOffsetY, npcProps.texturePath, npcProps.dialogueFilePath,"","");            
+                        npc->SetGridPosition(x, y);
+                        npc->SetZIndex(npcProps.zIndex);
+                        npc->SetBaseZIndex(npcProps.zIndex);
+                        npc->SetDynamicZ(npcProps.dynamicZ);
+                        npc->SetAction(npcProps.actionType, npcProps.actionData); 
+                        
+                        // Assign Pokemon team if they are a trainer
+                        if (npcProps.actionType == NPCAction::BATTLE) {
+                            auto loadedParty = TrainerDatabase::CreateTrainerParty(npcProps.actionData);
+                            for (const auto& p : loadedParty) {
+                                npc->GetParty().push_back(p);
+                            }
+                        }
+
+                        m_NPCs.push_back(npc);     
+                        AddToRenderer(npc);        
+                    }
                 
                 //Props
                 if (m_PropRegistry.count(propID) > 0) {

@@ -15,6 +15,8 @@ set(SRC_FILES
     BattleUI.cpp
     MoveDatabase.cpp
     PokemonDatabase.cpp
+    TrainerDatabase.cpp
+
 
 
 
@@ -41,6 +43,8 @@ set(INCLUDE_FILES
     BattleUI.hpp
     MoveDatabase.hpp
     PokemonDatabase.hpp
+    TrainerDatabase.hpp
+
 )
 
 set(TEST_FILES

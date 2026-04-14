@@ -31,7 +31,7 @@ Prop::Prop(const std::vector<std::string>& imagePaths, const glm::vec2& startPos
 
 // NEW FUNCTION: Switches the current sprite based on the state index
 void Prop::SetState(int stateIndex) {
-    if (stateIndex >= 0 && stateIndex < m_Images.size()) {
+    if (stateIndex >= 0 && stateIndex < static_cast<int>(m_Images.size())) {
         m_CurrentState = stateIndex;
         SetDrawable(m_Images[stateIndex]);
     }

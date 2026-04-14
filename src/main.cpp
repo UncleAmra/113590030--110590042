@@ -3,6 +3,8 @@
 
 int main(int, char**) {
     auto context = Core::Context::GetInstance();
+    Util::Logger::Init();
+    Util::Logger::SetLevel(Util::Logger::Level::INFO);
     App app;
 
     while (!context->GetExit()) {

@@ -90,3 +90,8 @@ std::string Pokemon::GetSummary() const {
         + "/" + std::to_string(m_ExpToNextLevel);
     return summary;
 }
+
+void Pokemon::ClearMoves() {
+    // Assuming you store moves in a vector called m_Moves
+    m_Moves.clear(); 
+}

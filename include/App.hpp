@@ -57,7 +57,8 @@ private:
     State m_CurrentState = State::START; // This is now valid again!
     bool m_JustFinishedMoving = false;
     std::shared_ptr<Player> m_Character;
-    
+    std::shared_ptr<NPC> m_ActiveNPC = nullptr;
+
     // Your UI components
     std::shared_ptr<Util::GameObject> m_DialogueUI;
     std::shared_ptr<Util::Text> m_DialogueText;
@@ -66,6 +67,7 @@ private:
     std::shared_ptr<InventoryMenu> m_InventoryMenu;
     std::shared_ptr<PokemonMenu> m_PokemonMenu;
     std::shared_ptr<BattleUI> m_BattleUI;
+    
 
     std::shared_ptr<Pokemon> GenerateWildPokemon(const std::string& mapPath);
     
