@@ -34,7 +34,7 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_PC_FLOOR]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PCFloorTile.png"), 0.0f, 0.0f, true }; 
     m_TileRegistry[GameConfig::TILE_PM_FLOOR]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PokeMartTile.png"), 0.0f, 0.0f, true }; 
     m_TileRegistry[GameConfig::TILE_PC_WALL]        ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"),      0.1f, 0.0f, false };
-    m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, true };
 }
 void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ }
@@ -49,9 +49,10 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_INTERACTABLE_WALL] ={ {}, 0.0f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_POKECENTER]        ={ {PROP_DIR + "/PokeCentre.png"},   0.8f, true, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_CHURCH]            ={ {PROP_DIR + "/Church.png"},       0.8f, true, false, 0.0f, 0.0f };
+    m_PropRegistry[GameConfig::WOODEN_HOUSE]           ={ {PROP_DIR + "/wood_house.png"},  0.8f, true, false, 0.0f, 0.0f };
     m_PropRegistry[GameConfig::POKEMART]               ={ {PROP_DIR + "/PokeMart.png"},     0.8f, true, false, 24.0f, 0.0f };
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT]        = { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
-    m_PropRegistry[GameConfig::PROP_CHECKPOINT2]       = { {PROP_DIR + "/Checkpoint3.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT]        ={ {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
+    m_PropRegistry[GameConfig::PROP_CHECKPOINT2]       ={ {PROP_DIR + "/Checkpoint3.png"}, 0.8f, true, false, 0.0f, 96.0f }; 
     m_PropRegistry[GameConfig::PROP_DOORMAT]           ={ {PROP_DIR + "/PC_doormat.png"},   0.1f, false, true,  0.0f, -20.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_DESK]           ={ {PROP_DIR + "/PCDesk1.png"},      0.4f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PM_DESK]           ={ {PROP_DIR + "/PokeMartDesk.png"}, 0.4f, false, false, 24.0f, 0.0f }; 

@@ -49,6 +49,7 @@ namespace GameConfig {
     constexpr int ITEM_POKEBALL = 51;
     constexpr int POKEMART      = 52;
     constexpr int POKEMART_SIGN = 53;
+    constexpr int WOODEN_HOUSE  = 54;
 
     //NPC IDs
     constexpr int NPC_NURSE     = 100;
@@ -70,14 +71,14 @@ namespace GameConfig {
     inline const WarpDestination WARP_TOWN_FROM_MAZE =       { RESOURCE_DIR "/maps/level", 51, 14};
     inline const WarpDestination WARP_TOWN_FROM_POKEMART =   { RESOURCE_DIR "/maps/level", 28, 8};
     inline const WarpDestination WARP_TOWN_FROM_CHURCH =     { RESOURCE_DIR "/maps/level", 21, 8};
-
-
-   
+  //  inline const WarpDestination WARP_TOWN_FROM_WOODEN =     { RESOURCE_DIR "/maps/level", 21, 8};
+    //======================================================================================================
     inline const WarpDestination WARP_MAZE =            { RESOURCE_DIR "/maps/maze",        2, 5 };     //inside Maze cordinate 
     inline const WarpDestination WARP_PC_INSIDE =       { RESOURCE_DIR "/maps/inside",      7, 8 };     //inside MRT
     inline const WarpDestination WARP_POKEMART_INSIDE = { RESOURCE_DIR "/maps/PokeMart",    5, 9};      //inside mart
     inline const WarpDestination WARP_NTUT =            { RESOURCE_DIR "/maps/NTUT",        9,3 };
     inline const WarpDestination WARP_CHURCH_INSIDE =   { RESOURCE_DIR "/maps/church",      5,14};
+ //   inline const WarpDestination WARP_WOODEN_HOUSE =    { RESOURCE_DIR "/maps/wood",      5,14};
 
 
     //coordinates x and y
