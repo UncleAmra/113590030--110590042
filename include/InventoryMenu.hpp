@@ -20,6 +20,19 @@ public:
     void Hide();
     bool Update(); 
 
+    // Returns the name of the currently highlighted item (or "" if empty)
+    std::string GetSelectedItem() const {
+        if (m_CategorizedItems.count(m_CurrentTab) == 0) return "";
+        const auto& list = m_CategorizedItems.at(m_CurrentTab);
+        if (list.empty() || m_SelectedIndex >= static_cast<int>(list.size())) return "";
+        return list[m_SelectedIndex].first;
+    }
+
+    // Returns the current tab so we can prevent players from throwing bicycles at Pokemon
+    ItemCategory GetCurrentTab() const { 
+        return m_CurrentTab; 
+    }
+
 private:
     void UpdateText();
 

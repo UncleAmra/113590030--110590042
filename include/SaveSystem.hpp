@@ -1,16 +1,23 @@
 #pragma once
 #include "GameFlags.hpp"
 #include "Item.hpp"
-#include "Pokemon.hpp" // <-- Must include this now!
+#include "Pokemon.hpp" 
 #include "Util/Logger.hpp"
 #include <fstream>
 #include <string>
 #include <filesystem>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
+#include <nlohmann/json.hpp>
+
+
+using json = nlohmann::json;
 
 namespace SaveSystem {
-    const std::string SAVE_PATH = "savegame.txt";
+    // Let's update the extension to .json!
+    const std::string SAVE_PATH = "savegame.json";
 
     struct GameState {
         std::string mapPath;
@@ -19,107 +26,136 @@ namespace SaveSystem {
         int direction; 
         std::unordered_map<std::string, InventoryData> inventory;
         std::unordered_set<std::string> lootedItems;
-        
-        // ---> NEW: Store the party! <---
         std::vector<std::shared_ptr<Pokemon>> party; 
     };
 
     inline void SaveGame(const GameState& state) {
-        std::ofstream outFile(SAVE_PATH);
-        if (!outFile.is_open()) return;
+        json j;
 
-        outFile << "MAP " << state.mapPath << "\n";
-        outFile << "POS " << state.gridX << " " << state.gridY << "\n";
-        outFile << "DIR " << state.direction << "\n";
+        // 1. Core Player Data
+        j["mapPath"] = state.mapPath;
+        j["gridX"] = state.gridX;
+        j["gridY"] = state.gridY;
+        j["direction"] = state.direction;
 
+        // 2. Flags
+        j["flags"] = json::object();
         for (const auto& [name, value] : GameFlags::Flags) {
-            outFile << "FLAG " << name << " " << (value ? "1" : "0") << "\n";
+            j["flags"][name] = value;
         }
 
-        for (const auto& itemID : state.lootedItems) {
-            outFile << "LOOTED " << itemID << "\n";
+        // 3. Looted Items (nlohmann can serialize unordered_set directly!)
+        j["lootedItems"] = state.lootedItems;
+
+        // 4. Inventory
+        j["inventory"] = json::object();
+        for (const auto& [itemName, data] : state.inventory) {
+            j["inventory"][itemName] = data.quantity;
         }
 
-        for (const auto& [itemName, qty] : state.inventory) {
-            outFile << "INV " << itemName << " " << qty.quantity << "\n";
-        }
-
-        // ---> NEW: Save the Pokemon Party <---
+        // 5. Pokemon Party
+        j["party"] = json::array();
         for (const auto& p : state.party) {
-            // Save core stats
-            outFile << "PKMN " << p->GetName() << " " << p->GetLevel() << " " 
-                    << static_cast<int>(p->GetType1()) << " " << static_cast<int>(p->GetType2()) << " "
-                    << p->GetMaxHP() << " " << p->GetCurrentHP() << " "
-                    << p->GetAttack() << " " << p->GetDefense() << " "
-                    << p->GetSpecialAttack() << " " << p->GetSpecialDefense() << " "
-                    << p->GetSpeed() << " " << p->GetCurrentExp();
+            json pkmnJson;
+            pkmnJson["name"] = p->GetName();
+            pkmnJson["level"] = p->GetLevel();
+            pkmnJson["type1"] = static_cast<int>(p->GetType1());
+            pkmnJson["type2"] = static_cast<int>(p->GetType2());
+            pkmnJson["maxHp"] = p->GetMaxHP();
+            pkmnJson["currentHp"] = p->GetCurrentHP();
+            pkmnJson["atk"] = p->GetAttack();
+            pkmnJson["def"] = p->GetDefense();
+            pkmnJson["spa"] = p->GetSpecialAttack();
+            pkmnJson["spd"] = p->GetSpecialDefense();
+            pkmnJson["spe"] = p->GetSpeed();
+            pkmnJson["exp"] = p->GetCurrentExp();
+            pkmnJson["catchRate"] = p->GetCatchRate(); // Good idea to save this!
             
-            // Save moves
-            auto moves = p->GetMoves();
-            outFile << " " << moves.size();
-            for (const auto& move : moves) {
-                outFile << " " << move;
-            }
-            outFile << "\n";
+            // Moves vector can be dumped straight in
+            pkmnJson["moves"] = p->GetMoves(); 
+
+            j["party"].push_back(pkmnJson);
         }
 
-        outFile.close();
-        LOG_INFO("Game Saved: Map={}, Pos={},{}", state.mapPath, state.gridX, state.gridY);
+        // Write to file with pretty-printing (4 spaces indent)
+        std::ofstream outFile(SAVE_PATH);
+        if (outFile.is_open()) {
+            outFile << j.dump(4);
+            outFile.close();
+            LOG_INFO("Game Saved as JSON: Map={}, Pos={},{}", state.mapPath, state.gridX, state.gridY);
+        }
     }
 
     inline bool LoadGame(GameState& outState) {
         if (!std::filesystem::exists(SAVE_PATH)) return false;
 
         std::ifstream inFile(SAVE_PATH);
-        std::string type;
-        
-        while (inFile >> type) {
-            if (type == "MAP")  inFile >> outState.mapPath;
-            else if (type == "POS")  inFile >> outState.gridX >> outState.gridY;
-            else if (type == "DIR")  inFile >> outState.direction;
-            else if (type == "FLAG") {
-                std::string name;
-                bool val;
-                inFile >> name >> val;
-                GameFlags::Set(name, val);
+        if (!inFile.is_open()) return false;
+
+        json j;
+        inFile >> j; // Parse the entire JSON file in one line!
+
+        // 1. Core Player Data (Using .value() provides safe defaults if data is missing)
+        outState.mapPath = j.value("mapPath", "");
+        outState.gridX = j.value("gridX", 0);
+        outState.gridY = j.value("gridY", 0);
+        outState.direction = j.value("direction", 0);
+
+        // 2. Flags
+        if (j.contains("flags")) {
+            for (auto& [key, value] : j["flags"].items()) {
+                GameFlags::Set(key, value.get<bool>());
             }
-            else if (type == "LOOTED") {
-                std::string itemID;
-                inFile >> itemID;
-                outState.lootedItems.insert(itemID);
+        }
+
+        // 3. Looted Items
+        if (j.contains("lootedItems")) {
+            outState.lootedItems = j["lootedItems"].get<std::unordered_set<std::string>>();
+        }
+
+        // 4. Inventory
+        if (j.contains("inventory")) {
+            for (auto& [key, value] : j["inventory"].items()) {
+                outState.inventory[key].quantity = value.get<int>();
             }
-            else if (type == "INV") {
-                std::string itemName;
-                int qty;
-                inFile >> itemName >> qty;
-                outState.inventory[itemName].quantity = qty;
-            }
-            // ---> NEW: Read the Pokemon Party <---
-            else if (type == "PKMN") {
-                std::string name;
-                int lvl, t1, t2, mhp, chp, atk, def, spa, spd, spe, exp, moveCount;
+        }
+
+        // 5. Pokemon Party
+        if (j.contains("party")) {
+            for (const auto& pkmnJson : j["party"]) {
+                std::string name = pkmnJson.value("name", "Unknown");
+                int lvl = pkmnJson.value("level", 1);
+                auto t1 = static_cast<PokemonType>(pkmnJson.value("type1", 0));
+                auto t2 = static_cast<PokemonType>(pkmnJson.value("type2", 0));
+                int mhp = pkmnJson.value("maxHp", 10);
+                int atk = pkmnJson.value("atk", 5);
+                int def = pkmnJson.value("def", 5);
+                int spa = pkmnJson.value("spa", 5);
+                int spd = pkmnJson.value("spd", 5);
+                int spe = pkmnJson.value("spe", 5);
                 
-                inFile >> name >> lvl >> t1 >> t2 >> mhp >> chp >> atk >> def >> spa >> spd >> spe >> exp >> moveCount;
-                
+                // Added the 11th argument here to satisfy your constructor!
+                int catchRate = pkmnJson.value("catchRate", 45); 
+
                 auto pkmn = std::make_shared<Pokemon>(
-                    name, lvl, static_cast<PokemonType>(t1), static_cast<PokemonType>(t2),
-                    mhp, atk, def, spa, spd, spe
+                    name, lvl, t1, t2, mhp, atk, def, spa, spd, spe, catchRate
                 );
                 
-                // Override the default HP and EXP so they don't accidentally level up or heal
-                pkmn->SetCurrentHP(chp);
-                pkmn->SetCurrentExp(exp);
+                // Set the volatile stats
+                pkmn->SetCurrentHP(pkmnJson.value("currentHp", mhp));
+                pkmn->SetCurrentExp(pkmnJson.value("exp", 0));
 
                 // Read all moves
-                for(int i = 0; i < moveCount; i++) {
-                    std::string moveName;
-                    inFile >> moveName;
-                    pkmn->LearnMove(moveName);
+                if (pkmnJson.contains("moves")) {
+                    for (const auto& move : pkmnJson["moves"]) {
+                        pkmn->LearnMove(move.get<std::string>());
+                    }
                 }
                 
                 outState.party.push_back(pkmn);
             }
         }
+
         return true;
     }
 }

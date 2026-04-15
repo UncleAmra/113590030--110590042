@@ -83,7 +83,7 @@ void Map::InitPropRegistry() {
 void Map::InitItemRegistry() {
     // Item ID = texturePath, name, category, zIndex
     m_ItemRegistry[GameConfig::ITEM_POTION]     = { PROP_DIR + "/PokeBall.png", "Potion", ItemCategory::GENERAL, 0.5f }; 
-    m_ItemRegistry[GameConfig::ITEM_POKEBALL]   = { PROP_DIR + "/PokeBall.png", "PokeBall", ItemCategory::POKEBALLS, 0.5f }; 
+    m_ItemRegistry[GameConfig::ITEM_POKEBALL]   = { PROP_DIR + "/PokeBall.png", "Pokeball", ItemCategory::POKEBALLS, 0.5f }; 
 }
 
 std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {

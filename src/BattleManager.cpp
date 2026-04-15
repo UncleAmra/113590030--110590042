@@ -5,12 +5,10 @@
 #include <cmath>
 #include <algorithm>
 
-BattleManager::BattleManager(std::shared_ptr<Pokemon> playerPokemon,
-                             std::shared_ptr<Pokemon> enemyPokemon,
-                             bool isWildBattle)
+BattleManager::BattleManager(std::shared_ptr<Pokemon> playerPokemon, std::shared_ptr<Pokemon> enemyPokemon, bool isWild)
     : m_PlayerPokemon(playerPokemon)
     , m_EnemyPokemon(enemyPokemon)
-    , m_IsWildBattle(isWildBattle)
+    , m_IsWildBattle(isWild)
     , m_State(BattleState::SELECTING_ACTION) {
 }
 
@@ -428,4 +426,84 @@ int BattleManager::CalculateCatchRate() {
 
     int catchValue = (maxHP * 255 * 4) / (currentHP * baseCatchRate);
     return std::min(catchValue, 255); // Cap at 255
+}
+
+bool BattleManager::TryCatchPokemon(std::shared_ptr<Pokemon> target, float ballMultiplier) {
+    float maxHP = target->GetMaxHP();
+    float currentHP = target->GetCurrentHP();
+    int catchRate = target->GetCatchRate(); 
+
+    // The Gen 3/4 Catch Formula
+    float hpFactor = ((3.0f * maxHP) - (2.0f * currentHP)) / (3.0f * maxHP);
+    int finalCatchValue = static_cast<int>(hpFactor * catchRate * ballMultiplier);
+
+    if (finalCatchValue >= 255) return true;
+
+    int randomRoll = std::rand() % 256;
+    return randomRoll <= finalCatchValue;
+}
+
+void BattleManager::UseItem(std::shared_ptr<Character> player, const std::string& itemName) {
+    // 1. Verify the player has the item
+    if (player->GetItemCount(itemName) <= 0) {
+        LOG_INFO("Player does not have any %s left!", itemName.c_str());
+        return;
+    }
+
+    // 2. Consume the item
+    player->RemoveItem(itemName, 1);
+
+    // ==========================================
+    // POKEBALL LOGIC
+    // ==========================================
+    if (itemName == "Pokeball" || itemName == "Great Ball" || itemName == "Ultra Ball") {
+        if (!m_IsWildBattle) {
+            LOG_INFO("The trainer blocked the ball! Don't be a thief!");
+            m_State = BattleState::EXECUTING_ENEMY_TURN; // You lose your turn!
+            return;
+        }
+
+        // Determine multiplier based on name
+        float multiplier = 1.0f;
+        if (itemName == "Great Ball") multiplier = 1.5f;
+        if (itemName == "Ultra Ball") multiplier = 2.0f;
+
+        LOG_INFO("You threw a %s!", itemName.c_str());
+        bool caught = TryCatchPokemon(m_EnemyPokemon, multiplier);
+
+        if (caught) {
+            LOG_INFO("Gotcha! %s was caught!", m_EnemyPokemon->GetName().c_str());
+            
+            // Stamp the Pokemon with its new home
+            m_EnemyPokemon->SetCaughtBall(itemName);
+
+            // Add to party
+            if (player->AddPokemon(m_EnemyPokemon)) {
+                LOG_INFO("Added %s to your party!", m_EnemyPokemon->GetName().c_str());
+            } else {
+                LOG_INFO("Party full! %s was sent to the PC!", m_EnemyPokemon->GetName().c_str());
+            }
+            
+            m_State = BattleState::BATTLE_WON; // End the battle!
+        } else {
+            LOG_INFO("Oh no! The Pokemon broke free!");
+            m_State = BattleState::EXECUTING_ENEMY_TURN; // Enemy gets to attack
+        }
+        return;
+    }
+
+    // ==========================================
+    // HEALING ITEM LOGIC (Example)
+    // ==========================================
+    if (itemName == "Potion") {
+        m_PlayerPokemon->Heal(20);
+        LOG_INFO("You used a Potion! %s recovered 20 HP.", m_PlayerPokemon->GetName().c_str());
+        m_State = BattleState::EXECUTING_ENEMY_TURN;
+        return;
+    }
+}
+
+
+BattleManager::TurnResult BattleManager::ProcessEnemyTurn() {
+    return ExecuteEnemyMove();
 }

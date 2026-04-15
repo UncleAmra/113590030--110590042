@@ -29,7 +29,7 @@ struct PokemonSpecies {
 
     // Base EXP yield when defeated
     int baseExpYield;
-
+    
     // Moves learned by level up
     std::vector<LevelUpMove> levelUpMoves;
 

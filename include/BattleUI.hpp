@@ -1,7 +1,10 @@
 #pragma once
 #include "pch.hpp"
 #include "Pokemon.hpp"
+#include "Player.hpp"
 #include "BattleManager.hpp"
+#include "InventoryMenu.hpp"
+#include "PokemonMenu.hpp"
 #include "Util/GameObject.hpp"
 #include "Util/Renderer.hpp"
 #include "ResourceManager.hpp"
@@ -16,17 +19,27 @@
 class BattleUI {
 public:
     BattleUI(std::shared_ptr<Util::Renderer> renderer);
+    void SetInventoryMenu(std::shared_ptr<InventoryMenu> invMenu) { 
+        m_InventoryMenu = invMenu; 
+    }
+    void SetPlayer(std::shared_ptr<Player> player) { 
+        m_Player = player; 
+    }
+   
     void Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shared_ptr<Pokemon> wildPokemon);
     void Hide();
     bool Update();
     bool IsBattleOver() const { return m_BattleOver; }
     void StartTrainerBattle(std::vector<std::shared_ptr<Pokemon>> playerParty, std::vector<std::shared_ptr<Pokemon>> enemyParty);private:
-
+    
+   
     enum class UIState {
             ANIMATING,
             MAIN_MENU,
             MOVE_MENU,
-            WAITING_TEXT
+            WAITING_TEXT,
+            POKEMON_MENU,
+            BAG_MENU
             //BATTLE_ESCAPED
         };
     std::shared_ptr<Pokemon> m_PlayerPokemon;
@@ -130,6 +143,9 @@ public:
     bool m_BattleOver = false;
     BattleManager::TurnResult m_LastResult;
 
+    std::shared_ptr<InventoryMenu> m_InventoryMenu;
+    std::shared_ptr<Player> m_Player;
+    std::shared_ptr<PokemonMenu> m_PokemonMenu;
 
     // Helper to scale bars cleanly from the left side
     void UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, bool isHPBar);

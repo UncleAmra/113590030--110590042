@@ -49,7 +49,7 @@ public:
     
 private:
     void ValidTask();
-
+    int m_SwapIndex = -1;
     std::shared_ptr<Util::Renderer> m_Renderer;
     std::shared_ptr<Map> m_Map;
     std::shared_ptr<Util::GameObject> m_DialogueBoxUI;

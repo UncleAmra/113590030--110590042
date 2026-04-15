@@ -13,6 +13,12 @@ public:
     bool JustFinishedMoving()   const { return m_JustFinishedMoving; }
     bool HasWildEncounter()     const { return m_WildEncounterTriggered; }
     void ClearEncounterFlag()         { m_WildEncounterTriggered = false; }
+    void SwapPokemon(int index1, int index2) {
+        if (index1 >= 0 && index1 < static_cast<int>(m_PokemonParty.size()) && 
+            index2 >= 0 && index2 < static_cast<int>(m_PokemonParty.size())) {
+            std::swap(m_PokemonParty[index1], m_PokemonParty[index2]);
+        }
+    }
 
 protected:
     void LoadSprites() override; // Loads the Red character sprites

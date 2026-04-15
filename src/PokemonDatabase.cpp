@@ -35,7 +35,7 @@ std::shared_ptr<Pokemon> PokemonDatabase::CreatePokemon(
     auto pokemon = std::make_shared<Pokemon>(
         name, level,
         species.type1, species.type2,
-        hp, atk, def, spa, spd, spe);
+        hp, atk, def, spa, spd, spe, species.catchRate);
 
     // Give all moves learnable at or below this level
     for (const auto& lm : species.levelUpMoves) {

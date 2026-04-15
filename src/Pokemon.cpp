@@ -87,7 +87,18 @@ std::string Pokemon::GetSummary() const {
         + " DEF:" + std::to_string(m_Defense)
         + " SPD:" + std::to_string(m_Speed) + "\n"
         + "EXP: " + std::to_string(m_CurrentExp)
-        + "/" + std::to_string(m_ExpToNextLevel);
+        + "/" + std::to_string(m_ExpToNextLevel) + "\n";
+
+    // --- NEW: Append the item and ball info to the summary! ---
+    if (!m_HeldItem.empty()) {
+        summary += "Held Item: " + m_HeldItem + "\n";
+    }
+    if (!m_CaughtBall.empty()) {
+        summary += "Caught in: " + m_CaughtBall;
+    } else {
+        summary += "Status: Wild";
+    }
+
     return summary;
 }
 

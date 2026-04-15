@@ -17,6 +17,7 @@ public:
     
     // Returns true when the player presses back
     bool Update();
+    int GetSelectedIndex() const { return m_CursorIndex; }
 
 private:
     std::shared_ptr<Util::GameObject> m_BoxUI;

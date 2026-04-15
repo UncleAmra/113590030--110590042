@@ -1,7 +1,6 @@
 #include "App.hpp"
 #include "Map.hpp"
 #include "Player.hpp"
-#include "Character.hpp"
 #include "TrainerDatabase.hpp"
 #include "MoveDatabase.hpp"
 #include "Item.hpp"
@@ -42,7 +41,15 @@ void App::Start() {
     m_PokemonMenu = std::make_shared<PokemonMenu>(m_Renderer);
     m_Character = std::make_shared<Player>(0.0f, 0.0f);
     m_Renderer->AddChild(m_Character); 
-    m_BattleUI = std::make_shared<BattleUI>(m_Renderer);
+
+    m_BattleUI = std::make_shared<BattleUI>(m_Renderer);   
+    m_InventoryMenu = std::make_shared<InventoryMenu>(m_Renderer);
+    m_BattleUI->SetInventoryMenu(m_InventoryMenu);
+
+    m_BattleUI->SetPlayer(m_Character);
+ 
+
+    
 
     // ==========================================
     // 2. LOAD GAME OR START FRESH
@@ -70,7 +77,7 @@ void App::Start() {
         auto starter = std::make_shared<Pokemon>(
         "Charmander", 5,
         PokemonType::FIRE, PokemonType::NONE,
-        39, 52, 43, 60, 50, 65
+        39, 52, 43, 60, 50, 65, 45
         );
         starter->LearnMove("Scratch");
         starter->LearnMove("Growl");
@@ -264,8 +271,42 @@ void App::Update() {
         }
 
         case State::POKEMON_MENU: {
-            m_PokemonMenu->Update();
-            break; // Input mapping handles going back now!
+            // 1. Let the menu handle UP/DOWN scrolling
+            // If Update() returns true, the player pressed 'X' or 'Escape' to back out
+            if (m_PokemonMenu->Update()) {
+                LOG_TRACE("Exited POKEMON menu");
+                m_PokemonMenu->Hide();
+                m_StartMenu->SetVisible(true);
+                m_CurrentState = State::START_MENU;
+                m_SwapIndex = -1; // Reset the swap tracker just in case!
+                break;
+            }
+
+            // 2. Handle 'Z' to select and swap Pokemon
+            if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
+                int selectedIdx = m_PokemonMenu->GetSelectedIndex();
+                
+                if (m_SwapIndex == -1) {
+                    // FIRST CLICK: Remember this index!
+                    m_SwapIndex = selectedIdx; 
+                    LOG_TRACE("Selected Pokemon at index %d to swap.", m_SwapIndex);
+                    
+                    // (Optional: You could change the text color or add a little arrow graphic 
+                    // in PokemonMenu.cpp here to visually show it's selected!)
+                    
+                } else {
+                    // SECOND CLICK: Swap them!
+                    LOG_TRACE("Swapping index %d with index %d.", m_SwapIndex, selectedIdx);
+                    m_Character->SwapPokemon(m_SwapIndex, selectedIdx);
+                    
+                    // Reset the tracker so they can swap again
+                    m_SwapIndex = -1; 
+                    
+                    // Refresh the visual text so the new order shows up immediately
+                    m_PokemonMenu->Show(m_Character->GetParty()); 
+                }
+            }
+            break;
         }
 
         case State::UPDATE: {
