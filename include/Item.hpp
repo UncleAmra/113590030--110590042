@@ -7,12 +7,12 @@
 #include <string>
 #include <memory>
 
-enum class ItemCategory {
-    GENERAL = 0,
-    POKEBALLS = 1,
-    KEY_ITEMS = 2,
-    COUNT = 3 
-};
+    enum class ItemCategory {
+        GENERAL = 0,
+        POKEBALLS = 1,
+        KEY_ITEMS = 2,
+        COUNT = 3 
+    };
 
 class Item : public Util::GameObject {
 public:

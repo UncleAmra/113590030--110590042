@@ -50,7 +50,10 @@ namespace SaveSystem {
         // 4. Inventory
         j["inventory"] = json::object();
         for (const auto& [itemName, data] : state.inventory) {
-            j["inventory"][itemName] = data.quantity;
+            j["inventory"][itemName] = {
+                {"quantity", data.quantity},
+                {"category", static_cast<int>(data.category)}
+            };
         }
 
         // 5. Pokemon Party
@@ -116,7 +119,8 @@ namespace SaveSystem {
         // 4. Inventory
         if (j.contains("inventory")) {
             for (auto& [key, value] : j["inventory"].items()) {
-                outState.inventory[key].quantity = value.get<int>();
+                outState.inventory[key].quantity = value["quantity"].get<int>();
+                outState.inventory[key].category = static_cast<ItemCategory>(value["category"].get<int>());
             }
         }
 

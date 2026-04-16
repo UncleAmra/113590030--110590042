@@ -15,7 +15,7 @@ class Map;
 
 struct InventoryData {
     int quantity;
-    ItemCategory category;
+    ItemCategory category = ItemCategory::GENERAL;;
 };
 
 class Character : public Util::GameObject {

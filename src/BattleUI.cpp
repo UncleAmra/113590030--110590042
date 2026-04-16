@@ -123,7 +123,36 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
     m_DialogueTextObj->SetDrawable(m_DialogueText);
     m_DialogueTextObj->SetZIndex(100); 
     m_DialogueTextObj->m_Transform.translation = {-460.0f, -120.0f}; 
+        // levels
+
+    // --- ENEMY LEVEL TEXT ---
+    //m_EnemyLevelText = std::make_shared<Util::GameObject>();
+    m_EnemyLevelTextDrawable = std::make_shared<Util::Text>(
+    FONT_PATH, 26, "Lv99", Util::Color::FromName(Util::Colors::BLACK));
     
+    // 2. Assign it to the GameObject
+    m_EnemyLevelText = std::make_shared<Util::GameObject>();
+    m_EnemyLevelText->SetDrawable(m_EnemyLevelTextDrawable);
+    
+    m_EnemyLevelText->SetZIndex(16);
+    m_EnemyLevelText->m_Transform.translation = {-195.0f, 295.0f}; 
+    
+
+
+    // --- PLAYER LEVEL TEXT ---
+    //m_PlayerLevelText = std::make_shared<Util::GameObject>();    
+    m_PlayerLevelTextDrawable = std::make_shared<Util::Text>(
+    FONT_PATH, 26, "Lv99", Util::Color::FromName(Util::Colors::BLACK));
+    
+    // 2. Assign it to the GameObject
+    m_PlayerLevelText = std::make_shared<Util::GameObject>();
+    m_PlayerLevelText->SetDrawable(m_PlayerLevelTextDrawable);
+    
+    m_PlayerLevelText->SetZIndex(16);
+    m_PlayerLevelText->m_Transform.translation = {582.0f, -13.0f}; 
+
+    m_Renderer->AddChild(m_EnemyLevelText);
+    m_Renderer->AddChild(m_PlayerLevelText);
     // ADD MAIN GAMEOBJECTS TO RENDERER
     m_Renderer->AddChild(m_MoveBox);
     m_Renderer->AddChild(m_DialogueTextObj);
@@ -145,34 +174,7 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
     m_Renderer->AddChild(m_CommandBox);
     m_Renderer->AddChild(m_MenuCursor);
 
-    // levels
 
-    // --- ENEMY LEVEL TEXT ---
-    //m_EnemyLevelText = std::make_shared<Util::GameObject>();
-    m_EnemyLevelTextDrawable = std::make_shared<Util::Text>(
-    FONT_PATH, 26, "Lv99", Util::Color::FromName(Util::Colors::BLACK));
-    
-    // 2. Assign it to the GameObject
-    m_EnemyLevelText = std::make_shared<Util::GameObject>();
-    m_EnemyLevelText->SetDrawable(m_EnemyLevelTextDrawable);
-    
-    m_EnemyLevelText->SetZIndex(55.0f);
-    m_EnemyLevelText->m_Transform.translation = {-195.0f, 295.0f}; 
-    m_Renderer->AddChild(m_EnemyLevelText);
-
-
-    // --- PLAYER LEVEL TEXT ---
-    //m_PlayerLevelText = std::make_shared<Util::GameObject>();    
-    m_PlayerLevelTextDrawable = std::make_shared<Util::Text>(
-    FONT_PATH, 26, "Lv99", Util::Color::FromName(Util::Colors::BLACK));
-    
-    // 2. Assign it to the GameObject
-    m_PlayerLevelText = std::make_shared<Util::GameObject>();
-    m_PlayerLevelText->SetDrawable(m_PlayerLevelTextDrawable);
-    
-    m_PlayerLevelText->SetZIndex(55.0f);
-    m_PlayerLevelText->m_Transform.translation = {582.0f, -13.0f}; 
-    m_Renderer->AddChild(m_PlayerLevelText);
 
     // ==========================================
     // 5. MOVE TEXTS
@@ -824,6 +826,8 @@ void BattleUI::Hide() {
     m_PlayerSprite->SetVisible(false);
     m_EnemyPanel->SetVisible(false);
     m_PlayerPanel->SetVisible(false);
+    m_PlayerLevelText->SetVisible(false);
+    m_EnemyLevelText->SetVisible(false);
     if (m_EnemyHPBar) m_EnemyHPBar->SetVisible(false);
     if (m_PlayerHPBar) m_PlayerHPBar->SetVisible(false);
     if (m_PlayerEXPBar) m_PlayerEXPBar->SetVisible(false);
