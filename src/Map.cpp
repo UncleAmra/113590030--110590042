@@ -60,7 +60,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_PM_DESK]           ={ {PROP_DIR + "/PokeMartDesk.png"}, 0.4f, false, false, 24.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT]      ={ {PROP_DIR + "/PCWall2.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT]     ={ {PROP_DIR + "/PCWall3.png"},      0.3f, false, false, 0.0f, 0.0f }; 
-    m_PropRegistry[GameConfig::PROP_TREE] = { {PROP_DIR + "/Tree.png"}, 0.8f, true, false, 20.0f, -16.0f }; 
+    m_PropRegistry[GameConfig::PROP_TREE]              ={ {PROP_DIR + "/Tree.png"}, 0.8f, true, true, 20.0f, -16.0f }; 
     // 6. INTERACTIVE PROPS (2 Textures)
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = { 
         { PROP_DIR + "/TallGrass2.png" , PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" }, // Normal, then Flattened!
@@ -188,7 +188,7 @@ void Map::LoadLevel(const std::string& mapName) {
                         m_NPCs.push_back(npc);     
                         AddToRenderer(npc);        
                     }
-                
+
                 //Props
                 if (m_PropRegistry.count(propID) > 0) {
                     const PropProperties& props = m_PropRegistry[propID];

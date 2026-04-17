@@ -92,7 +92,7 @@ namespace GameConfig {
         
         { RESOURCE_DIR "/maps/level_12_8",  WARP_PC_INSIDE },
         { RESOURCE_DIR "/maps/inside_7_8",  WARP_TOWN_OUTSIDE },
-        { RESOURCE_DIR "/maps/level_4_4",   WARP_NTUT },
+        { RESOURCE_DIR "/maps/level_4_4",   WARP_NTUT},
         { RESOURCE_DIR "/maps/NTUT_9_3",    WARP_TOWN_FROM_NTUT},
         { RESOURCE_DIR "/maps/maze_3_2",    WARP_TOWN_FROM_MAZE },
         { RESOURCE_DIR "/maps/level_50_14", WARP_MAZE },
@@ -103,6 +103,8 @@ namespace GameConfig {
         { RESOURCE_DIR "/maps/maze_2_15",  WARP_TOWN_FROM_POKEMONGYM1},
         { RESOURCE_DIR "/maps/level_47_7",  WARP_POKEMONGYM1},
 
+        { RESOURCE_DIR "/maps/wood_7_9",    WARP_TOWN_FROM_WOODEN},
+        { RESOURCE_DIR "/maps/level_39_12", WARP_WOODEN_HOUSE},
     };
     inline std::unordered_map<std::string, int> MapBorders = {
         { RESOURCE_DIR "/maps/level", PROP_TREE }, // Town gets surrounded by trees
