@@ -23,7 +23,7 @@ namespace RandomEncounters {
             { "Starly", 2, 4, 50 },    // Very common
             { "Rattata", 2, 4, 40 },   // Common
             { "Pikachu", 3, 5, 10 },
-            { "Tododile", 3, 5, 50 }   // Rare
+            { "PaldeanWooper", 3, 5, 50 }   // Rare
         }},
 
         // Forest Maze Encounters

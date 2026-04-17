@@ -186,7 +186,21 @@ void App::Update() {
                         }
                         else if (action == NPCAction::HEAL) {
                             //LOG_INFO("TEST SUCCESS: Healing");
-                          
+                            auto party = m_Character->GetParty();
+                            
+                            // 2. Loop through every Pokemon in the party
+                            for (auto& pokemon : party) {
+                                if (pokemon) { // Safety null-check
+                                    // Restore HP to maximum
+                                    pokemon->SetCurrentHP(pokemon->GetMaxHP());
+                                    
+                                    // --- FUTURE PROOFING ---
+                                    // If you eventually add Status Conditions (Paralysis, Poison) 
+                                    // or Move PP (Power Points), you should reset them here too!
+                                    // pokemon->SetStatus("NONE"); 
+                                    // pokemon->RestoreAllPP();
+                                }
+                            }
                             // Trigger your heal logic here
                             m_CurrentState = State::UPDATE;
                         }

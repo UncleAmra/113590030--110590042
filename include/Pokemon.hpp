@@ -7,7 +7,7 @@
 enum class PokemonType {
     NONE, // Used if a Pokemon only has one type
     NORMAL, FIRE, WATER, GRASS, ELECTRIC, ICE, FIGHTING, 
-    POISON, GROUND, FLYING, PSYCHIC, BUG, ROCK, GHOST, DRAGON
+    POISON, GROUND, FLYING, PSYCHIC, BUG, ROCK, GHOST, DRAGON, DARK, FAIRY, STEEL
 };
 
 class Pokemon {

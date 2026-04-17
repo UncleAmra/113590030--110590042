@@ -43,7 +43,9 @@ namespace GameConfig {
     constexpr int PROP_INTERACTABLE_WALL= 24;
     constexpr int PROP_TREE             = 60;
     constexpr int PROP_TALLGRASS        = 61;
-    
+    constexpr int PROP_POKEMONGYM       = 62;
+
+
     // Item IDs
     constexpr int ITEM_POTION   = 50;
     constexpr int ITEM_POKEBALL = 51;
@@ -71,6 +73,8 @@ namespace GameConfig {
     inline const WarpDestination WARP_TOWN_FROM_MAZE =       { RESOURCE_DIR "/maps/level", 51, 14};
     inline const WarpDestination WARP_TOWN_FROM_POKEMART =   { RESOURCE_DIR "/maps/level", 28, 8};
     inline const WarpDestination WARP_TOWN_FROM_CHURCH =     { RESOURCE_DIR "/maps/level", 21, 8};
+    inline const WarpDestination WARP_TOWN_FROM_POKEMONGYM1 =     { RESOURCE_DIR "/maps/level", 47, 8};
+
   //  inline const WarpDestination WARP_TOWN_FROM_WOODEN =     { RESOURCE_DIR "/maps/level", 21, 8};
     //======================================================================================================
     inline const WarpDestination WARP_MAZE =            { RESOURCE_DIR "/maps/maze",        2, 5 };     //inside Maze cordinate 
@@ -78,7 +82,9 @@ namespace GameConfig {
     inline const WarpDestination WARP_POKEMART_INSIDE = { RESOURCE_DIR "/maps/PokeMart",    5, 9};      //inside mart
     inline const WarpDestination WARP_NTUT =            { RESOURCE_DIR "/maps/NTUT",        9,3 };
     inline const WarpDestination WARP_CHURCH_INSIDE =   { RESOURCE_DIR "/maps/church",      5,14};
- //   inline const WarpDestination WARP_WOODEN_HOUSE =    { RESOURCE_DIR "/maps/wood",      5,14};
+    inline const WarpDestination WARP_POKEMONGYM1 =     { RESOURCE_DIR "/maps/maze",2,15};
+
+    //   inline const WarpDestination WARP_WOODEN_HOUSE =    { RESOURCE_DIR "/maps/wood",      5,14};
 
 
     //coordinates x and y
@@ -94,6 +100,9 @@ namespace GameConfig {
         { RESOURCE_DIR "/maps/PokeMart_5_8",WARP_TOWN_FROM_POKEMART},
         { RESOURCE_DIR "/maps/church_5_14", WARP_TOWN_FROM_CHURCH},
         { RESOURCE_DIR "/maps/level_21_8",  WARP_CHURCH_INSIDE},
+        { RESOURCE_DIR "/maps/maze_2_15",  WARP_TOWN_FROM_POKEMONGYM1},
+        { RESOURCE_DIR "/maps/level_47_7",  WARP_POKEMONGYM1},
+
     };
     inline std::unordered_map<std::string, int> MapBorders = {
         { RESOURCE_DIR "/maps/level", PROP_TREE }, // Town gets surrounded by trees

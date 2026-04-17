@@ -6,6 +6,7 @@
 #include "InventoryMenu.hpp"
 #include "PokemonMenu.hpp"
 #include "Util/GameObject.hpp"
+#include "PokeballAnimator.hpp"
 #include "Util/Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "Util/Text.hpp"
@@ -39,7 +40,8 @@ public:
             MOVE_MENU,
             WAITING_TEXT,
             POKEMON_MENU,
-            BAG_MENU
+            BAG_MENU,
+            CATCH_ANIMATION
             //BATTLE_ESCAPED
         };
     std::shared_ptr<Pokemon> m_PlayerPokemon;
@@ -146,6 +148,17 @@ public:
     std::shared_ptr<InventoryMenu> m_InventoryMenu;
     std::shared_ptr<Player> m_Player;
     std::shared_ptr<PokemonMenu> m_PokemonMenu;
+
+    std::shared_ptr<Util::GameObject> m_PokeballSprite;
+    int m_CatchPhaseTimer = 0;
+    int m_CatchShakes = 0;         // How many times it has wobbled
+    int m_TargetShakes = 3;        // How many times it SHOULD wobble based on catch rate
+    bool m_CatchWillSucceed = false;
+    std::shared_ptr<PokeballAnimator> m_PokeballAnimator;
+
+    // Starting and ending points for the throw arc
+    glm::vec2 m_ThrowStart = {-270.0f, -50.0f}; // Player position
+    glm::vec2 m_ThrowEnd = {400.0f, 150.0f};    // Enemy position
 
     // Helper to scale bars cleanly from the left side
     void UpdateBar(std::shared_ptr<Util::GameObject> bar, float percent, float leftEdgeX, float fixedY, float maxScale, bool isHPBar);

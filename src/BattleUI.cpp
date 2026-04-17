@@ -150,7 +150,8 @@ BattleUI::BattleUI(std::shared_ptr<Util::Renderer> renderer) : m_Renderer(render
     
     m_PlayerLevelText->SetZIndex(16);
     m_PlayerLevelText->m_Transform.translation = {582.0f, -13.0f}; 
-
+    m_PokeballAnimator = std::make_shared<PokeballAnimator>(m_Renderer);
+    
     m_Renderer->AddChild(m_EnemyLevelText);
     m_Renderer->AddChild(m_PlayerLevelText);
     // ADD MAIN GAMEOBJECTS TO RENDERER
@@ -206,7 +207,15 @@ void BattleUI::Show(std::vector<std::shared_ptr<Pokemon>> playerParty, std::shar
     m_MoveBox->SetVisible(false);
     
     // --- CACHE POKEMON FOR UI UPDATES ---
-    m_PlayerPokemon = playerParty[0];
+    //m_PlayerPokemon = playerParty[0];
+    std::shared_ptr<Pokemon> startingPokemon = playerParty[0]; 
+    for (auto p : playerParty) {
+        if (p->GetCurrentHP() > 0) {
+            startingPokemon = p;
+            break;
+        }
+    }
+    m_PlayerPokemon = startingPokemon;
     m_EnemyPokemon = wildPokemon;
     m_EscapeSuccessful = false;
 
@@ -534,12 +543,27 @@ bool BattleUI::Update() {
     // ==========================================
     // STATE 4: WAITING FOR PLAYER TO READ TEXT
     // ==========================================
+    // ==========================================
+    // STATE 4: WAITING FOR PLAYER TO READ TEXT
+    // ==========================================
     else if (m_UIState == UIState::WAITING_TEXT) {
         if (m_TextWaitTimer > 0) {
             m_TextWaitTimer--;
         }
         else if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
             
+            // --- FIX 1: BLOCK INPUT WHILE BARS ARE MOVING ---
+            bool barsAnimating = (m_DisplayPlayerHPPercent != targetPlayerHPPercent) || 
+                                 (m_DisplayEnemyHPPercent  != targetEnemyHPPercent)  || 
+                                 (m_DisplayPlayerEXPPercent != targetEXPPercent);
+
+            if (barsAnimating) {
+                // Ignore the Z press! The player MUST wait for the HP bar 
+                // to finish draining before they can clear the damage text!
+                return true; 
+            }
+
+            // NOW we handle the text advancing!
             if (m_EscapeSuccessful) {
                 m_BattleOver = true;
                 Hide(); 
@@ -551,17 +575,6 @@ bool BattleUI::Update() {
                 m_TextWaitTimer = 15; 
             }
             else {
-                // --- NEW: CHECK IF BARS ARE STILL ANIMATING ---
-                bool barsAnimating = (m_DisplayPlayerHPPercent != targetPlayerHPPercent) || 
-                                     (m_DisplayEnemyHPPercent  != targetEnemyHPPercent)  || 
-                                     (m_DisplayPlayerEXPPercent != targetEXPPercent);
-
-                if (barsAnimating) {
-                    // Do nothing! Force the player to wait for the bars to finish draining/filling!
-                    // This is authentic Pokémon behavior!
-                    return true;
-                }
-
                 // The queue is empty AND the bars are done moving. The full turn is officially over.
                 auto state = m_BattleLogic->GetState();
                 
@@ -607,8 +620,31 @@ bool BattleUI::Update() {
                     Hide(); 
                     return true;
                 } 
-                else if (state == BattleManager::BattleState::BATTLE_LOST ||
-                         state == BattleManager::BattleState::BATTLE_ESCAPED) { 
+                else if (state == BattleManager::BattleState::BATTLE_LOST){
+                    bool hasSurvivingPokemon = false;
+                    for (auto p : m_Player->GetParty()) {
+                        if (p->GetCurrentHP() > 0) {
+                            hasSurvivingPokemon = true;
+                            break;
+                        }
+                    }
+
+                    if (hasSurvivingPokemon) {
+                        // Force the player into the Pokemon Menu!
+                        m_UIState = UIState::POKEMON_MENU; 
+                        m_PokemonMenu->Show(m_Player->GetParty());
+                        return true;
+                    } else {
+                        // Fully wiped out. The battle is officially over.
+                        m_BattleOver = true;
+                        m_IsTrainerBattle = false; 
+                        Hide(); 
+                        return true;
+                    }
+                }
+                
+
+                else if (state == BattleManager::BattleState::BATTLE_ESCAPED) { 
                     
                     m_BattleOver = true;
                     m_IsTrainerBattle = false; // Reset the flag
@@ -640,77 +676,66 @@ bool BattleUI::Update() {
         }
 
         // 2. Handle Item Confirmation (Z)
-        if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
-            std::string selectedItem = m_InventoryMenu->GetSelectedItem();
-            ItemCategory currentTab = m_InventoryMenu->GetCurrentTab();
-            
-            // If the slot is empty, do nothing
-            if (selectedItem.empty()) return true; 
+if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
+    std::string selectedItem = m_InventoryMenu->GetSelectedItem();
+    ItemCategory currentTab = m_InventoryMenu->GetCurrentTab();
+    
+    // If the slot is empty, do nothing
+    if (selectedItem.empty()) return true; 
 
-            // Prevent them from using Key Items or general items in a wild battle catch phase
-            if (currentTab != ItemCategory::POKEBALLS) {
-                // (Optional: You could play an error 'boop' sound here!)
+    // Prevent them from using Key Items or general items in a wild battle catch phase
+    if (currentTab != ItemCategory::POKEBALLS) {
+        return true; 
+    }
+
+    // --- WE HAVE A VALID POKEBALL! ---
+    m_InventoryMenu->Hide();
+
+    // Clear old text 
+    while(!m_DialogueQueue.empty()) m_DialogueQueue.pop();
+
+    // 1. FIRE THE BACKEND LOGIC!
+    m_BattleLogic->UseItem(m_Player, selectedItem); 
+    bool willSucceed = (m_BattleLogic->GetState() == BattleManager::BattleState::BATTLE_WON);
+
+    // 2. START THE ANIMATOR!
+    glm::vec2 throwStart = {-270.0f, -50.0f}; 
+    glm::vec2 throwEnd = {400.0f, 150.0f};    
+
+    m_PokeballAnimator->StartCatch(throwStart, throwEnd, willSucceed, m_EnemySprite);
+
+    // 3. Queue ONLY the initial throw text for now
+    m_DialogueQueue.push("You threw a " + selectedItem + "!");
+    ProcessNextMessage();
+
+    // 4. CHANGE TO THE ANIMATION STATE 
+    m_UIState = UIState::CATCH_ANIMATION; 
+    
+    // STOP HERE! Do not add any WAITING_TEXT or Enemy turn logic here.
+    // The CATCH_ANIMATION state block will handle all of that when the animation finishes!
+    }
+    }
+
+    // ==========================================
+    // STATE: POKEMON MENU (PARTY SWITCHING)
+    // ==========================================
+    else if (m_UIState == UIState::POKEMON_MENU) {
+        
+        if (m_PokemonMenu->Update()) {
+            // --- FIX 3A: BLOCK CANCELING IF POKEMON IS FAINTED ---
+            if (m_PlayerPokemon->GetCurrentHP() <= 0) {
+                // Ignore the cancel input! They MUST choose a new Pokemon.
                 return true; 
             }
 
-            // --- WE HAVE A VALID POKEBALL! ---
-            m_InventoryMenu->Hide();
-            
-            // Clear old text 
-            while(!m_DialogueQueue.empty()) m_DialogueQueue.pop();
-
-            // 1. FIRE THE BACKEND LOGIC!
-            // This single line deducts the inventory, rolls the catch, 
-            // and adds the Pokemon to your party if successful!
-            m_BattleLogic->UseItem(m_Player, selectedItem); 
-            
-            // Queue the throw text
-            m_DialogueQueue.push("You threw a " + selectedItem + "!");
-            
-            // 2. READ THE RESULT FROM THE MANAGER
-            if (m_BattleLogic->GetState() == BattleManager::BattleState::BATTLE_WON) {
-                // Catch succeeded! 
-                m_DialogueQueue.push("Gotcha! " + m_EnemyPokemon->GetName() + " was caught!");
-                
-                // IMPORTANT: Do NOT set m_BattleOver = true here!
-                // Let your WAITING_TEXT state handle closing the battle 
-                // so the player actually gets to read the "Gotcha!" text.
-                
-            } else {
-                // Catch failed! Manager changed state to EXECUTING_ENEMY_TURN
-                m_DialogueQueue.push("Oh no! The wild Pokemon broke free!");
-                
-                // Since the item failed, it's the enemy's turn to attack
-                BattleManager::TurnResult enemyResult = m_BattleLogic->ExecuteEnemyMove(); 
-                
-                std::stringstream ss(enemyResult.message);
-                std::string line;
-                while(std::getline(ss, line, '\n')) {
-                    if(!line.empty()) m_DialogueQueue.push(line);
-                }
-            }
-            
-            // 3. Trigger the text reading state
-            m_UIState = UIState::WAITING_TEXT;
-            m_TextWaitTimer = 15;
-            ProcessNextMessage();
-        }
-    }
-
-    else if (m_UIState == UIState::POKEMON_MENU) {
-        
-        // 1. Let the menu handle UP/DOWN scrolling
-        // If it returns true, the player pressed 'X' or 'Escape' to back out
-        if (m_PokemonMenu->Update()) {
             m_PokemonMenu->Hide();
             m_UIState = UIState::MAIN_MENU;
-            m_CursorIndex = 2; // Put cursor back on 'Pokemon'
+            m_CursorIndex = 2; 
             UpdateCursorPosition();
-            SetDialogue("What will you do?"); // Restore standard battle text
+            SetDialogue("What will you do?"); 
             return true;
         }
 
-        // 2. Handle choosing a Pokemon to switch in (Z key)
         if (Util::Input::IsKeyDown(Util::Keycode::Z)) {
             int selectedIdx = m_PokemonMenu->GetSelectedIndex();
             auto party = m_Player->GetParty();
@@ -718,7 +743,6 @@ bool BattleUI::Update() {
             if (selectedIdx >= 0 && selectedIdx < static_cast<int>(party.size())) {
                 auto selectedPokemon = party[selectedIdx];
                 
-                // --- SAFETY CHECKS ---
                 if (selectedPokemon->GetCurrentHP() <= 0) {
                     LOG_INFO("Cannot switch to fainted Pokemon!");
                     return true;
@@ -728,50 +752,80 @@ bool BattleUI::Update() {
                     return true; 
                 }
 
-                // --- VALID SWITCH! ---
                 m_PokemonMenu->Hide();
-                
-                // Clear old text and queue the switch messages
                 while(!m_DialogueQueue.empty()) m_DialogueQueue.pop();
-                m_DialogueQueue.push("Come back, " + m_PlayerPokemon->GetName() + "!");
-                m_DialogueQueue.push("Go! " + selectedPokemon->GetName() + "!");
                 
-                // 1. Update the UI's active Pokemon
+                // --- FIX 3B: FORCED SWITCH LOGIC ---
+                bool wasFainted = (m_PlayerPokemon->GetCurrentHP() <= 0);
+
+                if (wasFainted) {
+                    m_DialogueQueue.push("Go! " + selectedPokemon->GetName() + "!");
+                } else {
+                    m_DialogueQueue.push("Come back, " + m_PlayerPokemon->GetName() + "!");
+                    m_DialogueQueue.push("Go! " + selectedPokemon->GetName() + "!");
+                }
+                
                 m_PlayerPokemon = selectedPokemon;
                 
-                // 2. Tell your backend BattleManager about the new Pokemon!
-                // (Make sure you have this setter in BattleManager.hpp)
-                m_BattleLogic->SetPlayerPokemon(m_PlayerPokemon); 
-                
-                // 3. Load the new back sprites based on the new Pokemon's name
                 std::string pName = m_PlayerPokemon->GetName();
-                // Ensure name is lowercase to match your file paths if needed:
                 std::transform(pName.begin(), pName.end(), pName.begin(), ::tolower);
                 
                 m_PlayerFrame1 = ResourceManager::GetImageStore().Get(RESOURCE_DIR "/Pokemon/" + pName + "_back_1.png");
                 m_PlayerFrame2 = ResourceManager::GetImageStore().Get(RESOURCE_DIR "/Pokemon/" + pName + "_back_2.png");
                 m_PlayerSprite->SetDrawable(m_PlayerFrame1);
                 
-                // 4. Update the visual HP bar and Level text
                 m_DisplayPlayerHPPercent = (float)m_PlayerPokemon->GetCurrentHP() / m_PlayerPokemon->GetMaxHP();
                 m_PlayerLevelTextDrawable->SetText(std::to_string(m_PlayerPokemon->GetLevel()));
                 
-                // 5. Switching takes your turn! Execute the enemy's attack.
-                BattleManager::TurnResult enemyResult = m_BattleLogic->ExecuteEnemyMove(); 
-                std::stringstream ss(enemyResult.message);
-                std::string line;
-                while(std::getline(ss, line, '\n')) {
-                    if(!line.empty()) m_DialogueQueue.push(line);
+                if (wasFainted) {
+                    // Recreate BattleManager to clear the "BATTLE_LOST" state flag
+                    m_BattleLogic = std::make_unique<BattleManager>(m_PlayerPokemon, m_EnemyPokemon, true);
+                } else {
+                    // Standard switch taking a turn - trigger the enemy attack!
+                    m_BattleLogic->SetPlayerPokemon(m_PlayerPokemon); 
+                    BattleManager::TurnResult enemyResult = m_BattleLogic->ExecuteEnemyMove(); 
+                    std::stringstream ss(enemyResult.message);
+                    std::string line;
+                    while(std::getline(ss, line, '\n')) {
+                        if(!line.empty()) m_DialogueQueue.push(line);
+                    }
                 }
                 
-                // 6. Trigger the text reading state
                 m_UIState = UIState::WAITING_TEXT;
                 m_TextWaitTimer = 15;
                 ProcessNextMessage();
             }
         }
     }
-    
+    else if (m_UIState == UIState::CATCH_ANIMATION) {
+        // We just let the animator do its thing. 
+        // If it returns true, the animation is over!
+        if (m_PokeballAnimator->Update()) {
+            
+            // The animation finished! Queue up the final text based on the result.
+            if (m_PokeballAnimator->CatchSucceeded()) {
+                // You can optionally use m_EnemyPokemon->GetName() here to be specific!
+                m_DialogueQueue.push("Gotcha! " + m_EnemyPokemon->GetName() + " was caught!");
+            } else {
+                m_EnemySprite->SetVisible(true); 
+                m_DialogueQueue.push("Oh no! The wild Pokémon broke free!");
+                
+                // --- ADD THIS TO EXECUTE THE ENEMY COUNTER-ATTACK ---
+                BattleManager::TurnResult enemyResult = m_BattleLogic->ExecuteEnemyMove(); 
+                std::stringstream ss(enemyResult.message);
+                std::string line;
+                while(std::getline(ss, line, '\n')) {
+                    if(!line.empty()) m_DialogueQueue.push(line);
+                }
+                // ----------------------------------------------------
+            }
+
+            m_UIState = UIState::WAITING_TEXT;
+            m_TextWaitTimer = 15;
+            ProcessNextMessage();
+        }
+    }
+        
     // Procedural Animations
     if (!m_IsSlidingIn && !m_IsIntroAnimating) {
         m_AnimTime++;

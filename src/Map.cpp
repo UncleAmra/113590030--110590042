@@ -49,6 +49,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL]    ={ {}, 0.0f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_INTERACTABLE_WALL] ={ {}, 0.0f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_POKECENTER]        ={ {PROP_DIR + "/PokeCentre.png"},   0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_POKEMONGYM]        ={ {PROP_DIR + "/PokemonGym.png"},   0.8f, true, false, 0.0f, 12.0f }; 
     m_PropRegistry[GameConfig::PROP_CHURCH]            ={ {PROP_DIR + "/Church.png"},       0.8f, true, false, 0.0f, 0.0f };
     m_PropRegistry[GameConfig::WOODEN_HOUSE]           ={ {PROP_DIR + "/wood_house.png"},  0.8f, true, false, 0.0f, 0.0f };
     m_PropRegistry[GameConfig::POKEMART]               ={ {PROP_DIR + "/PokeMart.png"},     0.8f, true, false, 24.0f, 0.0f };
