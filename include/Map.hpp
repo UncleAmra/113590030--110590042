@@ -51,8 +51,8 @@ struct NPCProperties {
 };
 
 struct ItemProperties {
-    std::string texturePath;
-    std::string name;
+    std::string  texturePath;
+    std::string  name;
     ItemCategory category;
     float zIndex;
 };
