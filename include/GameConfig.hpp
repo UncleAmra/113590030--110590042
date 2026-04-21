@@ -75,7 +75,7 @@ namespace GameConfig {
     inline const WarpDestination WARP_TOWN_FROM_CHURCH =     { RESOURCE_DIR "/maps/level", 21, 8};
     inline const WarpDestination WARP_TOWN_FROM_POKEMONGYM1 =     { RESOURCE_DIR "/maps/level", 47, 8};
 
-  //  inline const WarpDestination WARP_TOWN_FROM_WOODEN =     { RESOURCE_DIR "/maps/level", 21, 8};
+    inline const WarpDestination WARP_TOWN_FROM_WOODEN =     { RESOURCE_DIR "/maps/level", 21, 8};
     //======================================================================================================
     inline const WarpDestination WARP_MAZE =            { RESOURCE_DIR "/maps/maze",        2, 5 };     //inside Maze cordinate 
     inline const WarpDestination WARP_PC_INSIDE =       { RESOURCE_DIR "/maps/inside",      7, 8 };     //inside MRT
@@ -84,7 +84,7 @@ namespace GameConfig {
     inline const WarpDestination WARP_CHURCH_INSIDE =   { RESOURCE_DIR "/maps/church",      5,14};
     inline const WarpDestination WARP_POKEMONGYM1 =     { RESOURCE_DIR "/maps/maze",2,15};
 
-    //   inline const WarpDestination WARP_WOODEN_HOUSE =    { RESOURCE_DIR "/maps/wood",      5,14};
+    inline const WarpDestination WARP_WOODEN_HOUSE =    { RESOURCE_DIR "/maps/wood",      5,14};
 
 
     //coordinates x and y
