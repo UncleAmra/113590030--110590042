@@ -235,20 +235,31 @@ BattleManager::TurnResult BattleManager::SelectMove(int moveIndex) {
 
     if (playerGoesFirst) {
         result = ExecutePlayerMove(moveIndex);
+        // INJECT TAG: Tell the UI what the enemy's HP is AFTER the player's attack!
+        result.message += "\n[SYNC_ENEMY]" + std::to_string(m_EnemyPokemon->GetCurrentHP());
+
         if (!result.enemyFainted && !m_EnemyPokemon->IsFainted()) {
             TurnResult enemyResult = ExecuteEnemyMove();
-            // Append enemy message
             result.message += "\n" + enemyResult.message;
+            // INJECT TAG: Tell the UI what the player's HP is AFTER the enemy's attack!
+            result.message += "\n[SYNC_PLAYER]" + std::to_string(m_PlayerPokemon->GetCurrentHP());
+            
             result.playerFainted = enemyResult.playerFainted;
         }
     } else {
         TurnResult enemyResult = ExecuteEnemyMove();
         result.message = enemyResult.message;
+        // INJECT TAG: Tell the UI what the player's HP is AFTER the enemy's attack!
+        result.message += "\n[SYNC_PLAYER]" + std::to_string(m_PlayerPokemon->GetCurrentHP());
+        
         result.playerFainted = enemyResult.playerFainted;
 
         if (!result.playerFainted && !m_PlayerPokemon->IsFainted()) {
             TurnResult playerResult = ExecutePlayerMove(moveIndex);
             result.message += "\n" + playerResult.message;
+            // INJECT TAG: Tell the UI what the enemy's HP is AFTER the player's attack!
+            result.message += "\n[SYNC_ENEMY]" + std::to_string(m_EnemyPokemon->GetCurrentHP());
+            
             result.enemyFainted = playerResult.enemyFainted;
             result.expGained = playerResult.expGained;
         }

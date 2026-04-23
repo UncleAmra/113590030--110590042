@@ -101,7 +101,7 @@ namespace GameConfig {
         { RESOURCE_DIR "/maps/maze_2_15",   WARP_TOWN_FROM_POKEMONGYM1},
         { RESOURCE_DIR "/maps/level_47_7",  WARP_POKEMONGYM1},
         { RESOURCE_DIR "/maps/wood_7_9",    WARP_TOWN_FROM_WOODEN},
-        { RESOURCE_DIR "/maps/level_39_12", WARP_WOODEN_HOUSE},
+        { RESOURCE_DIR "/maps/level_38_12", WARP_WOODEN_HOUSE},
     };
     inline std::unordered_map<std::string, int> MapBorders = {
         { RESOURCE_DIR "/maps/level", PROP_TREE }, // Town gets surrounded by trees

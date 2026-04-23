@@ -7,6 +7,8 @@ Player::Player(float x, float y) : Character(x, y) {
     // 1. Load our specific Red sprites
     m_BaseZIndex = 0.5f;
     LoadSprites();
+    //m_FootOffsetY += 8.0f;
+    m_Transform.translation.y -= 14.0f;
     // 2. Snap to the first frame
     UpdateSprite(); 
     
@@ -43,6 +45,40 @@ void Player::LoadSprites() {
         CHAR_DIR + "character_011.png"
     };
 
+        std::vector<std::string> RundownFrames  = {
+        CHAR_DIR + "run1.png",
+        CHAR_DIR + "run2.png",
+        CHAR_DIR + "run1.png",
+        CHAR_DIR + "run3.png"
+    };
+
+    std::vector<std::string> RunupFrames = {
+        CHAR_DIR + "run4.png",
+        CHAR_DIR + "run5.png",
+        CHAR_DIR + "run4.png",
+        CHAR_DIR + "run6.png"
+    };
+
+    std::vector<std::string> RunleftFrames = {
+        CHAR_DIR + "run7.png",
+        CHAR_DIR + "run8.png",
+        CHAR_DIR + "run7.png",
+        CHAR_DIR + "run9.png"
+    };
+
+    std::vector<std::string> RunrightFrames = {
+        CHAR_DIR + "run10.png",
+        CHAR_DIR + "run11.png",
+        CHAR_DIR + "run10.png",
+        CHAR_DIR + "run12.png"
+    };
+
+        // Fast version of walk anims (80ms vs 150ms = noticeably snappier)
+    m_AnimRunDown  = std::make_shared<Util::Animation>(RundownFrames,  false, 80, true, 0);
+    m_AnimRunUp    = std::make_shared<Util::Animation>(RunupFrames,    false, 80, true, 0);
+    m_AnimRunLeft  = std::make_shared<Util::Animation>(RunleftFrames,  false, 80, true, 0);
+    m_AnimRunRight = std::make_shared<Util::Animation>(RunrightFrames, false, 80, true, 0);
+
     m_AnimDown  = std::make_shared<Util::Animation>(downFrames, false, 150, true, 0);
     m_AnimUp    = std::make_shared<Util::Animation>(upFrames, false, 150, true, 0);
     m_AnimLeft  = std::make_shared<Util::Animation>(leftFrames, false, 150, true, 0);
@@ -53,55 +89,35 @@ void Player::LoadSprites() {
 }
 
 void Player::HandleInput(std::shared_ptr<Map> map) {
-    // 1. INPUT LOCK: This MUST be at the very top!
-    if (IsMoving()) {
-        return; 
-    }
+    if (IsMoving()) return;
 
-    int dx = 0;
-    int dy = 0;
+    // Read shift state before anything else
+    m_IsRunning = Util::Input::IsKeyPressed(Util::Keycode::LSHIFT) ||
+                  Util::Input::IsKeyPressed(Util::Keycode::RSHIFT);
 
-    // Set Sprite Animation Directions
-    if (Util::Input::IsKeyPressed(Util::Keycode::W) || Util::Input::IsKeyPressed(Util::Keycode::UP)) {
-        dy = -1; 
-        m_Direction = Direction::UP;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::S) || Util::Input::IsKeyPressed(Util::Keycode::DOWN)) {
-        dy = 1;
-        m_Direction = Direction::DOWN;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::A) || Util::Input::IsKeyPressed(Util::Keycode::LEFT)) {
-        dx = -1;
-        m_Direction = Direction::LEFT;
-    } else if (Util::Input::IsKeyPressed(Util::Keycode::D) || Util::Input::IsKeyPressed(Util::Keycode::RIGHT)) {
-        dx = 1;
-        m_Direction = Direction::RIGHT;
-    }
+    int dx = 0, dy = 0;
+
+    if      (Util::Input::IsKeyPressed(Util::Keycode::W)   || Util::Input::IsKeyPressed(Util::Keycode::UP))    { dy = -1; m_Direction = Direction::UP; }
+    else if (Util::Input::IsKeyPressed(Util::Keycode::S)   || Util::Input::IsKeyPressed(Util::Keycode::DOWN))  { dy =  1; m_Direction = Direction::DOWN; }
+    else if (Util::Input::IsKeyPressed(Util::Keycode::A)   || Util::Input::IsKeyPressed(Util::Keycode::LEFT))  { dx = -1; m_Direction = Direction::LEFT; }
+    else if (Util::Input::IsKeyPressed(Util::Keycode::D)   || Util::Input::IsKeyPressed(Util::Keycode::RIGHT)) { dx =  1; m_Direction = Direction::RIGHT; }
 
     if (dx != 0 || dy != 0) {
         int targetX = m_GridX + dx;
         int targetY = m_GridY + dy;
 
-        // DOOR LOGIC
-        if (!map->IsWalkable(targetX, targetY)) {
-            //int groundTile = map->GetTileType(targetX, targetY);
-            //if (groundTile == GameConfig::TILE_DOOR || groundTile == GameConfig::TILE_EXIT || Prop == GameConfig::PROP_INVISIBLE_DOOR) {
-            //    m_HitDoor = true; 
-            //}
-            int Prop = map->GetPropType(targetX, targetY);
-            if (Prop == GameConfig::PROP_INVISIBLE_DOOR) {
-                m_HitDoor = true; 
-            }
+        int Prop = map->GetPropType(targetX, targetY);
+        if (!map->IsWalkable(targetX, targetY) && Prop == GameConfig::PROP_INVISIBLE_DOOR) {
+            m_HitDoor = true;
         }
 
-        // 2. THE MISSING MATH FIX: 
-        // We MUST update the movement vector so the camera knows which way to pan!
-        m_CurrentDirection = {dx, dy}; 
-
+        m_SpeedMultiplier = m_IsRunning ? 2.0f : 1.0f;  // <-- speed injected here
+        m_CurrentDirection = {dx, dy};
         TryMove(dx, dy, map);
+    } else {
+        m_State    = State::IDLE;
+        m_IsRunning = false;
     }
-    else {
-    // No key pressed — explicitly go idle
-    m_State = State::IDLE;
-}
 }
 
 glm::vec2 Player::Update(std::shared_ptr<Map> map) {
@@ -128,4 +144,28 @@ glm::vec2 Player::Update(std::shared_ptr<Map> map) {
     }
     
     return movement;
+}
+
+void Player::UpdateSprite() {
+    // Pick run or walk set based on shift state
+    auto& animDown  = m_IsRunning ? m_AnimRunDown  : m_AnimDown;
+    auto& animUp    = m_IsRunning ? m_AnimRunUp    : m_AnimUp;
+    auto& animLeft  = m_IsRunning ? m_AnimRunLeft  : m_AnimLeft;
+    auto& animRight = m_IsRunning ? m_AnimRunRight : m_AnimRight;
+
+    switch (m_Direction) {
+        case Direction::DOWN:  m_CurrentAnimation = animDown;  break;
+        case Direction::UP:    m_CurrentAnimation = animUp;    break;
+        case Direction::LEFT:  m_CurrentAnimation = animLeft;  break;
+        case Direction::RIGHT: m_CurrentAnimation = animRight; break;
+    }
+    m_Drawable = m_CurrentAnimation;
+
+    // Preserve the exact play/pause logic from the base class
+    if (m_State == State::MOVING) {
+        m_CurrentAnimation->Play();
+    } else {
+        m_CurrentAnimation->Pause();
+        m_CurrentAnimation->SetCurrentFrame(0);
+    }
 }

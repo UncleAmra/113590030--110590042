@@ -127,7 +127,13 @@ void Map::LoadLevel(const std::string& mapName) {
     }
 
     std::vector<std::string> 
-    waterPaths      = {TILE_DIR + "/Water1.png", TILE_DIR + "/Water2.png", TILE_DIR + "/Water3.png"};
+    waterPaths      = {TILE_DIR + "/Water1.png",
+                       TILE_DIR + "/Water2.png", 
+                       TILE_DIR + "/Water3.png",
+                       TILE_DIR + "/Water4.png", 
+                       TILE_DIR + "/Water5.png", 
+                       TILE_DIR + "/Water6.png",
+                       TILE_DIR + "/Water7.png"};
     m_LeaderWater   = std::make_shared<Util::Animation>(waterPaths, true, 500, true, 0);
     m_FollowerWater = std::make_shared<Util::Animation>(waterPaths, false, 500, true, 0);
     bool leaderAssigned = false;

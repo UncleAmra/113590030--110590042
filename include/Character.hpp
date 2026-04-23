@@ -75,7 +75,7 @@ protected:
     virtual void LoadSprites() = 0; 
     //bool m_UseDynamicZ = true;
     bool m_UseDynamicZ = true;
-    void UpdateSprite();
+    virtual void UpdateSprite();
     float m_BaseZIndex = 0.8f;
     float m_FootOffsetY = 0.0f;
     
@@ -97,6 +97,7 @@ protected:
     std::shared_ptr<Util::Animation> m_AnimLeft;
     std::shared_ptr<Util::Animation> m_AnimRight;
     std::shared_ptr<Util::Animation> m_CurrentAnimation;
+    float m_SpeedMultiplier = 1.0f;
 };
 
 #endif

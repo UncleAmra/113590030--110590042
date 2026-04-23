@@ -139,6 +139,10 @@ public:
     float m_DisplayEnemyHPPercent = 1.0f;
     float m_DisplayPlayerEXPPercent = 0.0f;
     bool m_AllowEXPAnimation = false;
+    int m_TargetPlayerHP = 0;
+    int m_TargetEnemyHP = 0;
+    float m_VisualPlayerHP = 0.0f; // Float for smooth draining
+    float m_VisualEnemyHP = 0.0f;
     // Add this under your private/protected functions:
     void ProcessNextMessage();
 

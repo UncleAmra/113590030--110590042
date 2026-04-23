@@ -78,7 +78,8 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
 
     if (m_IsMoving) {
         // --- NEW: Multiply speed by Delta Time ---
-        float step = m_Speed * dt; 
+        //float step = m_Speed * dt; 
+        float step = m_Speed * m_SpeedMultiplier * dt;
         
         if (m_PixelsMoved + step > GameConfig::EFFECTIVE_TILE_SIZE) { 
             step = GameConfig::EFFECTIVE_TILE_SIZE - m_PixelsMoved; 
