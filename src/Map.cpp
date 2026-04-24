@@ -36,6 +36,9 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_PM_FLOOR]       ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PokeMartTile.png"), 0.0f, 0.0f, true }; 
     m_TileRegistry[GameConfig::TILE_PC_WALL]        ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/PCWall1.png"),      0.1f, 0.0f, false };
     m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_GRAVEL]         ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/Gravel.png"), 0.1f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_ROAD]           ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/Road.png"), 0.1f, 0.0f, true };
+
 }
 void Map::InitNPCRegistry() {
     // ID = { spritePath, visualOffsetY, zIndex, dynamicZ, NPCActionType, ActionData }
@@ -61,16 +64,17 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT]      ={ {PROP_DIR + "/PCWall2.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT]     ={ {PROP_DIR + "/PCWall3.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_TREE]              ={ {PROP_DIR + "/Tree.png"}, 0.8f, true, true, 20.0f, -16.0f }; 
-    m_PropRegistry[GameConfig::PROP_SMALL_TREE]              ={ {PROP_DIR + "/SmallTree.png"}, 0.8f, true, true, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_SMALL_TREE]              ={ {PROP_DIR + "/SmallTree.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
 
 
     m_PropRegistry[GameConfig::PROP_GATE_TOP]           ={ {PROP_DIR + "/GateTopEnd.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_GATE_MIDDLE]           ={ {PROP_DIR + "/GateMiddle.png"},   0.1f, true, false,  0.0f, 0.0f }; 
-        m_PropRegistry[GameConfig::PROP_GATE_MIDDLE2]           ={ {PROP_DIR + "/GateMiddle2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_GATE_MIDDLE2]           ={ {PROP_DIR + "/GateMiddle2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_GATE_END]           ={ {PROP_DIR + "/GateBotEnd.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_GATE_TOP2]           ={ {PROP_DIR + "/GateTopEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_GATE_END2]          ={ {PROP_DIR + "/GateBotEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
-    
+    m_PropRegistry[GameConfig::PROP_LAMP_POST]              ={ {PROP_DIR + "/LampPost.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+   
     // 6. INTERACTIVE PROPS (2 Textures)
 
     m_PropRegistry[GameConfig::DOOR_OPENING_GYM] = { 

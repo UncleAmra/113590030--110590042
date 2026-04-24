@@ -6,8 +6,8 @@ level    12  8   ->  inside   7   8
 inside   7   8   ->  level    12  8
 
 // NTUT
-level    4   4   ->  NTUT     9   3
-NTUT     9   3   ->  level    4   4
+level    4   4   ->  NTUT     14   23
+NTUT     14   23   ->  level    4   4
 
 // Maze
 level    49  13  ->  maze     2   5
