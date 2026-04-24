@@ -29,6 +29,7 @@ namespace GameConfig {
     constexpr int TILE_PM_FLOOR     = 20;
     constexpr int TILE_EXIT         = 99;
     constexpr int TILE_INSIDE_CHURCH    = 67;
+    constexpr int TILE_CALM_WATER       = 14;
 
     // Prop IDs 
     constexpr int PROP_POKECENTER       = 3;
@@ -57,8 +58,14 @@ namespace GameConfig {
     constexpr int PROP_TREE             = 60;
     constexpr int PROP_TALLGRASS        = 61;
     constexpr int PROP_POKEMONGYM       = 62;
-
-
+    constexpr int PROP_LOG_DOWN1        = 63;
+    constexpr int PROP_LOG_DOWN2        = 64;
+    constexpr int PROP_LOG_DOWN3        = 65;
+    constexpr int PROP_LOG_LEFT1        = 66;
+    constexpr int PROP_LOG_LEFT2        = 68;
+    constexpr int PROP_LOG_LEFT3        = 69;
+    constexpr int PROP_FLOWER           = 70;
+    constexpr int PROP_PLANT            = 72;
     // Item IDs
     constexpr int ITEM_POTION   = 50;
     constexpr int ITEM_POKEBALL = 51;

@@ -38,6 +38,7 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_INSIDE_CHURCH]  ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/church_inside.png"), 0.1f, 0.0f, true };
     m_TileRegistry[GameConfig::TILE_GRAVEL]         ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/Gravel.png"), 0.1f, 0.0f, true };
     m_TileRegistry[GameConfig::TILE_ROAD]           ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/Road.png"), 0.1f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_CALM_WATER]      ={ ResourceManager::GetImageStore().Get(TILE_DIR +"/CalmWater.png"), 0.1f, 0.0f, false };  
 
 }
 void Map::InitNPCRegistry() {
@@ -74,7 +75,15 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_GATE_TOP2]           ={ {PROP_DIR + "/GateTopEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_GATE_END2]          ={ {PROP_DIR + "/GateBotEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_LAMP_POST]              ={ {PROP_DIR + "/LampPost.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
-   
+    
+    m_PropRegistry[GameConfig::PROP_LOG_DOWN1]              ={ {PROP_DIR + "/LogDown1.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_LOG_DOWN2]              ={ {PROP_DIR + "/LogDown2.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_LOG_DOWN3]              ={ {PROP_DIR + "/LogDown3.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_LOG_LEFT1]              ={ {PROP_DIR + "/LogLeft1.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_LOG_LEFT2]              ={ {PROP_DIR + "/LogLeft2.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_LOG_LEFT3]              ={ {PROP_DIR + "/LogLeft3.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_PLANT]              ={ {PROP_DIR + "/Plant1.png"}, 0.8f, true, false, 0.0f, 0.0f }; 
+
     // 6. INTERACTIVE PROPS (2 Textures)
 
     m_PropRegistry[GameConfig::DOOR_OPENING_GYM] = { 
@@ -106,6 +115,20 @@ void Map::InitPropRegistry() {
         32.0f,    // offsetY
         PropAnimMode::LOOP,  // animMode
         30     // frameDelay — lower = faster
+    };
+        m_PropRegistry[GameConfig::PROP_FLOWER] = {
+        { PROP_DIR + "/Flower1.png",
+        PROP_DIR + "/Flower2.png",
+        PROP_DIR + "/Flower3.png",
+        PROP_DIR + "/Flower4.png",
+        PROP_DIR + "/Flower5.png" },
+        0.9f,    // zIndex
+        true,    // dynamicZ
+        true,   // isWalkable
+        0.0f,    // offsetX
+        0.0f,    // offsetY
+        PropAnimMode::LOOP,  // animMode
+        45     // frameDelay — lower = faster
     };
 }
 
