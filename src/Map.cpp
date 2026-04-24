@@ -61,7 +61,31 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_PC_WALL_LEFT]      ={ {PROP_DIR + "/PCWall2.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_PC_WALL_RIGHT]     ={ {PROP_DIR + "/PCWall3.png"},      0.3f, false, false, 0.0f, 0.0f }; 
     m_PropRegistry[GameConfig::PROP_TREE]              ={ {PROP_DIR + "/Tree.png"}, 0.8f, true, true, 20.0f, -16.0f }; 
+    m_PropRegistry[GameConfig::PROP_SMALL_TREE]              ={ {PROP_DIR + "/SmallTree.png"}, 0.8f, true, true, 0.0f, 0.0f }; 
+
+
+    m_PropRegistry[GameConfig::PROP_GATE_TOP]           ={ {PROP_DIR + "/GateTopEnd.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_GATE_MIDDLE]           ={ {PROP_DIR + "/GateMiddle.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+        m_PropRegistry[GameConfig::PROP_GATE_MIDDLE2]           ={ {PROP_DIR + "/GateMiddle2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_GATE_END]           ={ {PROP_DIR + "/GateBotEnd.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_GATE_TOP2]           ={ {PROP_DIR + "/GateTopEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    m_PropRegistry[GameConfig::PROP_GATE_END2]          ={ {PROP_DIR + "/GateBotEnd2.png"},   0.1f, true, false,  0.0f, 0.0f }; 
+    
     // 6. INTERACTIVE PROPS (2 Textures)
+
+    m_PropRegistry[GameConfig::DOOR_OPENING_GYM] = { 
+        { PROP_DIR + "/door0.png",PROP_DIR + "/door1.png" , PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, // Normal, then Flattened!
+        0.0f, true, true, 2.0f, 10.0f 
+    }; 
+    m_PropRegistry[GameConfig::DOOR_OPENING_PC] = { 
+        { PROP_DIR + "/door0.png",PROP_DIR + "/door1.png" , PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, // Normal, then Flattened!
+        0.0f, true, true, 0.0f, 16.0f 
+    }; 
+    m_PropRegistry[GameConfig::DOOR_OPENING_PM] = { 
+        { PROP_DIR + "/door0.png",PROP_DIR + "/door1.png" , PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, // Normal, then Flattened!
+        0.0f, true, true, 2.0f, 32.0f 
+    }; 
+
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = { 
         { PROP_DIR + "/TallGrass2.png" , PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" }, // Normal, then Flattened!
         1.0f, true, true, 0.0f, 0.0f 
@@ -112,6 +136,31 @@ std::vector<std::vector<int>> Map::LoadCSV(const std::string& filepath) {
         data.push_back(row);
     }
     return data;
+}
+
+void Map::LoadConnections(const std::string& filepath) {
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        std::cerr << "ERROR: Could not open connections file at " << filepath << "!\n";
+        return;
+    }
+
+    const std::string BASE = std::string(RESOURCE_DIR) + "/maps/";
+    std::string line;
+
+    while (std::getline(file, line)) {
+        // Skip blank lines and comments (lines starting with //)
+        if (line.empty() || line.rfind("//", 0) == 0) continue;
+
+        std::istringstream ss(line);
+        std::string srcMap, arrow, destMap;
+        int srcX, srcY, dstX, dstY;
+
+        if (ss >> srcMap >> srcX >> srcY >> arrow >> destMap >> dstX >> dstY) {
+            std::string key = BASE + srcMap + "_" + std::to_string(srcX) + "_" + std::to_string(srcY);
+            GameConfig::DoorRouting[key] = { BASE + destMap, dstX, dstY };
+        }
+    }
 }
 
 // RESTORED ORIGINAL SIGNATURE

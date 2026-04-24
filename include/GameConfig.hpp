@@ -32,8 +32,18 @@ namespace GameConfig {
     constexpr int PROP_POKECENTER       = 3;
     constexpr int PROP_CHURCH           = 5;
     constexpr int PROP_DOORMAT          = 7;
+    constexpr int DOOR_OPENING_GYM      = 420;
+    constexpr int DOOR_OPENING_PC       = 421;
+    constexpr int DOOR_OPENING_PM       = 422;
     constexpr int PROP_INVISIBLE_DOOR   = 990;
     constexpr int PROP_INVISIBLE_WALL   = 999;
+    constexpr int PROP_GATE_TOP         = 500;
+    constexpr int PROP_GATE_MIDDLE      = 501;
+    constexpr int PROP_GATE_MIDDLE2      = 506;
+    constexpr int PROP_GATE_END         = 502;
+    constexpr int PROP_GATE_TOP2        = 503;
+    constexpr int PROP_GATE_END2        = 504;
+    constexpr int PROP_SMALL_TREE       = 505;
     constexpr int PROP_PC_DESK          = 10;
     constexpr int PROP_PM_DESK          = 11;
     constexpr int PROP_PC_WALL_LEFT     = 12;
@@ -67,6 +77,8 @@ namespace GameConfig {
 
     inline std::unordered_set<std::string> LootedItems; //registry for items that have already been looted so they don't respawn
 
+
+    /* 
     //Teleporting coordinates of the main map on level_props 990
     inline const WarpDestination WARP_TOWN_OUTSIDE =         { RESOURCE_DIR "/maps/level", 12, 8 };
     inline const WarpDestination WARP_TOWN_FROM_NTUT =       { RESOURCE_DIR "/maps/level", 4, 4 };
@@ -108,5 +120,8 @@ namespace GameConfig {
         { RESOURCE_DIR "/maps/NTUT", PROP_TREE }   // NTUT gets surrounded by trees
         // We leave "/maps/inside" out of this list so it defaults to the void!
     };
+    */
+
+    inline std::unordered_map<std::string, WarpDestination> DoorRouting;
 }
 #endif

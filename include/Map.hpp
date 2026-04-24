@@ -81,6 +81,7 @@ public:
     void SetRenderer(std::weak_ptr<Util::Renderer> renderer);
     void UpdateSteppedProps(int playerGridX, int playerGridY);
     void SetVisible(bool visible);
+    void LoadConnections(const std::string& filepath);
     
 private:
     // --- MAP DATA ---
@@ -111,6 +112,7 @@ private:
 
     // --- HELPER FUNCTIONS ---
     std::vector<std::vector<int>> LoadCSV(const std::string& filepath);
+    
     void ClearMap();
 
     int m_OutOfBoundsPropID = -1;

@@ -1,0 +1,30 @@
+// connections.txt
+// FORMAT: srcMap  srcX  srcY  ->  destMap  dstX  dstY
+
+// Pokecenter (inside = MRT)
+level    12  8   ->  inside   7   8
+inside   7   8   ->  level    12  8
+
+// NTUT
+level    4   4   ->  NTUT     9   3
+NTUT     9   3   ->  level    4   4
+
+// Maze
+level    49  13  ->  maze     2   5
+maze     3   2   ->  level    51  14
+
+// PokeMart
+level    28  8   ->  PokeMart 5   9
+PokeMart 5   8   ->  level    28  8
+
+// Church
+level    21  8   ->  church   5   14
+church   5   14  ->  level    21  8
+
+// Pokemon Gym
+level    47  7   ->  maze     2   15
+maze     2   15  ->  level    47  8
+
+// Wooden House
+level    39  12  ->  wood     7   9
+wood     7   9   ->  level    39  12

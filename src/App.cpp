@@ -55,7 +55,7 @@ void App::Start() {
     // 2. LOAD GAME OR START FRESH
     // ==========================================
     SaveSystem::GameState loadedState;
-    
+    m_Map->LoadConnections(RESOURCE_DIR "/maps/connections.txt");
     if (SaveSystem::LoadGame(loadedState)) {
         GameConfig::LootedItems = loadedState.lootedItems;
         m_Map->LoadLevel(loadedState.mapPath);

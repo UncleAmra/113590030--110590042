@@ -932,16 +932,17 @@ void BattleUI::ProcessNextMessage() {
     m_DialogueQueue.pop();
 
     // --- NEW: INTERCEPT HIDDEN HP TAGS ---
-    if (text.find("[SYNC_ENEMY]") != std::string::npos) {
-        // Extract the number after the tag
-        m_TargetEnemyHP = std::stoi(text.substr(12)); 
-        // Silently move to the next message (or wait for HP drain)
+    size_t enemySyncPos = text.find("[SYNC_ENEMY]");
+    if (enemySyncPos != std::string::npos) {
+        // Extract the number immediately following the tag, no matter where it is
+        m_TargetEnemyHP = std::stoi(text.substr(enemySyncPos + 12)); 
         ProcessNextMessage(); 
         return;
     }
-    else if (text.find("[SYNC_PLAYER]") != std::string::npos) {
-        // Extract the number after the tag
-        m_TargetPlayerHP = std::stoi(text.substr(13)); 
+    
+    size_t playerSyncPos = text.find("[SYNC_PLAYER]");
+    if (playerSyncPos != std::string::npos) {
+        m_TargetPlayerHP = std::stoi(text.substr(playerSyncPos + 13)); 
         ProcessNextMessage();
         return;
     }
@@ -953,13 +954,16 @@ void BattleUI::ProcessNextMessage() {
     }
     
     // 2. Figure out who is attacking to trigger the right animation!
+    // TIP: Consider adding [ANIM_PLAYER] or [ANIM_ENEMY] tags to your backend strings 
+    // instead of text-matching to avoid the "same species" bug completely!
     if (text.find("used") != std::string::npos) {
-        if (text.find(m_PlayerPokemon->GetName()) != std::string::npos) {
-            m_PlayerLungeTimer = 15;
-            m_EnemyShakeTimer = 30;
-        } else {
+        // Quick fix assuming your backend prefixes enemy attacks with "Enemy" or "Wild"
+        if (text.find("Enemy") != std::string::npos || text.find("Wild") != std::string::npos) {
             m_EnemyLungeTimer = 15;
             m_PlayerShakeTimer = 30;
+        } else {
+            m_PlayerLungeTimer = 15;
+            m_EnemyShakeTimer = 30;
         }
     }
 }
