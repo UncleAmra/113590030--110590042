@@ -62,19 +62,17 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
 
     // 1. Z-SORTING FIX
     if (m_UseDynamicZ) {
-        // Use world Y position of the character's feet, not grid index
-        // m_Transform.translation.y is the centre — subtract half 
-        // a scaled tile to get the foot
-        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
-        
+        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);        
         // Invert: lower footY (further down screen) = higher Z
         // Divide by a large number to keep Z in a sensible range
         //float tieBreaker = m_BaseZIndex * 0.0001f;
         float dynamicZ = m_BaseZIndex - (footY / 10000.0f);
         //float dynamicZ = 0.5f - (footY / 10000.0f);
-
         SetZIndex(dynamicZ);
     }
+    
+    map->UpdatePropOverlap(m_GridX, m_GridY, 
+    m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f));
 
     if (m_IsMoving) {
         // --- NEW: Multiply speed by Delta Time ---

@@ -27,6 +27,16 @@ public:
     
     void SetDynamicZ(bool useDynamic) { m_UseDynamicZ = useDynamic; }
     void SetAnimMode(PropAnimMode mode, int frameDelay = 8);
+
+        // Add alongside existing members:
+    bool m_CanFadeOnOverlap = false;
+    void Draw(); // now actually overrides
+    void SetOpacity(float opacity) { m_Opacity = opacity; }
+
+    // private:
+    float m_Opacity = 1.0f;
+    void SetCanFadeOnOverlap(bool val) { m_CanFadeOnOverlap = val; }
+    bool GetCanFadeOnOverlap() const   { return m_CanFadeOnOverlap; }
 private:
     // REPLACED: m_DefaultImage and m_AltImage are now a list!
     std::vector<std::shared_ptr<Util::Image>> m_Images;

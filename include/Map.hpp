@@ -37,7 +37,9 @@ struct PropProperties {
     float visualOffsetX = 0.0f; 
     float visualOffsetY = 0.0f; 
     PropAnimMode animMode = PropAnimMode::STATIC;  
-    int animFrameDelay = 8;     
+    int animFrameDelay = 8;
+    bool canFadeOnOverlap = false;     
+ 
 };
 
 struct NPCProperties {
@@ -80,6 +82,8 @@ public:
     std::string CollectItemAt(int gridX, int gridY, Character& player);
     void SetRenderer(std::weak_ptr<Util::Renderer> renderer);
     void UpdateSteppedProps(int playerGridX, int playerGridY);
+    void UpdatePropOverlap(int playerGridX, int playerGridY, float playerFootY);
+
     void SetVisible(bool visible);
     void LoadConnections(const std::string& filepath);
     

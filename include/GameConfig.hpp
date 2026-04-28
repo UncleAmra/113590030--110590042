@@ -66,9 +66,23 @@ namespace GameConfig {
     constexpr int PROP_LOG_LEFT3        = 69;
     constexpr int PROP_FLOWER           = 70;
     constexpr int PROP_PLANT            = 72;
+    constexpr int PROP_TRUCK1           = 73;
+    constexpr int PROP_TRUCK2           = 74;
+    constexpr int PROP_CAR              = 75;
+    constexpr int PROP_STAIRS_NORTH     = 76;
     constexpr int PROP_NTUT_BUILDING1  = 550;
     constexpr int PROP_NTUT_MOSS_BUILDING  = 551;
     constexpr int PROP_NTUT_BUILDING2  = 552;
+    constexpr int PROP_NTUT_BUILDING3  = 553;
+    constexpr int PROP_NTUT_TECH_BUILDING  = 554;
+    constexpr int PROP_NTUT_BUILDING4  = 555;
+    constexpr int PROP_NTUT_SCREEN  = 556;
+    constexpr int PROP_NTUT_BALL_STATUE  = 557;
+    constexpr int PROP_NTUT_BUILDING5  = 558;
+
+
+    
+
 
     // Item IDs
     constexpr int ITEM_POTION   = 50;

@@ -73,6 +73,12 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING1]      = { {PROP_DIR + "/NTUT_Building1.png"},     0.8f, true,  false, 0.0f,  0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_MOSS_BUILDING]  = { {PROP_DIR + "/NTUT_Building1Moss.png"}, 0.8f, true,  false, 0.0f,  0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING2]      = { {PROP_DIR + "/Building2.png"},          0.8f, true,  false, 0.0f,  0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BUILDING3]      = { {PROP_DIR + "/Building3.png"},          0.8f, true,  false, 0.0f,  0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BUILDING4]      = { {PROP_DIR + "/Building4.png"},          0.8f, true,  false, 0.0f,  0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BUILDING5]      = { {PROP_DIR + "/Building5.png"},          0.8f, true,  false, 0.0f,  0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING]      = { {PROP_DIR + "/TechBuilding.png"},          0.8f, true,  false, 0.0f,  0.0f, PropAnimMode::STATIC, 0, true};
+
+
 
     // Checkpoints / gates
     m_PropRegistry[GameConfig::PROP_CHECKPOINT]    = { {PROP_DIR + "/Checkpoint2.png"}, 0.8f, true,  false, 0.0f, 96.0f };
@@ -83,6 +89,14 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_GATE_END]      = { {PROP_DIR + "/GateBotEnd.png"},  0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_TOP2]     = { {PROP_DIR + "/GateTopEnd2.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_END2]     = { {PROP_DIR + "/GateBotEnd2.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_STAIRS_NORTH]     = { {PROP_DIR + "/Stairs_North.png"}, 0.4f, false,  true, 0.0f, 0.0f  };
+
+    //Decoration
+    m_PropRegistry[GameConfig::PROP_NTUT_SCREEN]     = { {PROP_DIR + "/NTUT_Screen.png"}, 0.7f, true,  true, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
+
+
 
     // Interior props
     m_PropRegistry[GameConfig::PROP_DOORMAT]       = { {PROP_DIR + "/PC_doormat.png"},   0.1f, false, true,  0.0f,  -20.0f };
@@ -285,6 +299,7 @@ void Map::LoadLevel(const std::string& mapName) {
                 prop->SetDynamicZ(props.dynamicZ);
                 prop->SetZIndex(props.zIndex);
                 prop->SetAnimMode(props.animMode, props.animFrameDelay);
+                prop->SetCanFadeOnOverlap(props.canFadeOnOverlap);
                 m_Props.push_back(prop);
                 if (!props.texturePaths.empty()) AddToRenderer(prop);
             }
@@ -479,4 +494,14 @@ void Map::SetVisible(bool visible) {
 
 void Map::Draw() {
     // Intentionally empty — the Renderer handles all drawing.
+}
+
+void Map::UpdatePropOverlap(int playerGridX, int playerGridY, float playerFootY) {
+    for (auto& prop : m_Props) {
+        if (!prop->GetCanFadeOnOverlap()) continue;
+
+        // Same condition as dynamicZ — player's foot is above the prop's base row
+        bool isBehind = playerGridY < prop->GetGridY();
+        prop->SetOpacity(isBehind ? 0.4f : 1.0f);
+    }
 }
