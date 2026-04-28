@@ -66,6 +66,10 @@ namespace GameConfig {
     constexpr int PROP_LOG_LEFT3        = 69;
     constexpr int PROP_FLOWER           = 70;
     constexpr int PROP_PLANT            = 72;
+    constexpr int PROP_NTUT_BUILDING1  = 550;
+    constexpr int PROP_NTUT_MOSS_BUILDING  = 551;
+    constexpr int PROP_NTUT_BUILDING2  = 552;
+
     // Item IDs
     constexpr int ITEM_POTION   = 50;
     constexpr int ITEM_POKEBALL = 51;

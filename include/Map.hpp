@@ -116,6 +116,11 @@ private:
     void ClearMap();
 
     int m_OutOfBoundsPropID = -1;
+
+    void UpdateVisibleTiles(float cameraX, float cameraY, int screenW, int screenH);
+
+    // Track which tiles are currently in the renderer
+    std::vector<bool> m_TileVisible; // parallel to m_Tiles
     
 };
 

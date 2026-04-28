@@ -315,7 +315,7 @@ BattleManager::TurnResult BattleManager::ExecutePlayerMove(int moveIndex) {
         moveName);
 
     m_EnemyPokemon->TakeDamage(damage);
-    result.message += "\nDealt " + std::to_string(damage) + " damage!";
+    //result.message += "\nDealt " + std::to_string(damage) + " damage!";
 
     std::string effMsg = EffectivenessMessage(move.type, m_EnemyPokemon.get());
     if (!effMsg.empty()) result.message += "\n" + effMsg;
@@ -380,7 +380,7 @@ BattleManager::TurnResult BattleManager::ExecuteEnemyMove() {
         moveName);
 
     m_PlayerPokemon->TakeDamage(damage);
-    result.message += "\nDealt " + std::to_string(damage) + " damage!";
+    //result.message += "\nDealt " + std::to_string(damage) + " damage!";
 
     std::string effMsg = EffectivenessMessage(move.type, m_PlayerPokemon.get());
     if (!effMsg.empty()) result.message += "\n" + effMsg;

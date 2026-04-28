@@ -2,6 +2,7 @@
 #include "pch.hpp"
 #include "Pokemon.hpp"
 #include "Player.hpp"
+#include "BattleAnimator.hpp"
 #include "BattleManager.hpp"
 #include "InventoryMenu.hpp"
 #include "PokemonMenu.hpp"
@@ -152,6 +153,7 @@ public:
     std::shared_ptr<InventoryMenu> m_InventoryMenu;
     std::shared_ptr<Player> m_Player;
     std::shared_ptr<PokemonMenu> m_PokemonMenu;
+    std::unique_ptr<BattleAnimator> m_Animator;
 
     std::shared_ptr<Util::GameObject> m_PokeballSprite;
     int m_CatchPhaseTimer = 0;

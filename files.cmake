@@ -17,6 +17,7 @@ set(SRC_FILES
     PokemonDatabase.cpp
     TrainerDatabase.cpp
     PokeballAnimator.cpp
+    BattleAnimator.cpp
 
 
 
@@ -46,6 +47,7 @@ set(INCLUDE_FILES
     PokemonDatabase.hpp
     TrainerDatabase.hpp
     PokeballAnimator.hpp
+    BattleAnimator.hpp
 
 )
 
