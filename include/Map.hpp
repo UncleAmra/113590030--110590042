@@ -37,8 +37,7 @@ struct PropProperties {
     float visualOffsetX = 0.0f; 
     float visualOffsetY = 0.0f; 
     PropAnimMode animMode = PropAnimMode::STATIC;  
-    int animFrameDelay = 8;
-    bool canFadeOnOverlap = false;     
+    int animFrameDelay = 8; 
  
 };
 

@@ -59,6 +59,14 @@ void Map::InitNPCRegistry() {
 void Map::InitPropRegistry() {
     // FORMAT: { {"Frame1", ...}, zIndex, dynamicZ, isWalkable, offsetX, offsetY }
 
+    auto generateFrames = [](const std::string& prefix, int frameCount) {
+        std::vector<std::string> frames;
+        for (int i = 1; i <= frameCount; ++i) {
+            frames.push_back(prefix + std::to_string(i) + ".png");
+        }
+        return frames;
+    };
+
     // Invisible/logic props (no textures)
     m_PropRegistry[GameConfig::PROP_INVISIBLE_DOOR]    = { {}, 0.0f, false, false, 0.0f,  0.0f };
     m_PropRegistry[GameConfig::PROP_INVISIBLE_WALL]    = { {}, 0.0f, false, false, 0.0f,  0.0f };
@@ -76,7 +84,8 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING3]      = { {PROP_DIR + "/Building3.png"},          0.8f, true,  false, 0.0f,  0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING4]      = { {PROP_DIR + "/Building4.png"},          0.8f, true,  false, 0.0f,  0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING5]      = { {PROP_DIR + "/Building5.png"},          0.8f, true,  false, 0.0f,  0.0f  };
-    m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING]      = { {PROP_DIR + "/TechBuilding.png"},          0.8f, true,  false, 0.0f,  0.0f, PropAnimMode::STATIC, 0, true};
+    m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING]      = { {PROP_DIR + "/TechBuilding.png"},          0.8f, true,  false, 0.0f,  -144.0f};
+    m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING2]      = { {PROP_DIR + "/TechBuilding12.png"},          0.8f, true,  false, 0.0f,  0.0f};
 
 
 
@@ -92,7 +101,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_STAIRS_NORTH]     = { {PROP_DIR + "/Stairs_North.png"}, 0.4f, false,  true, 0.0f, 0.0f  };
 
     //Decoration
-    m_PropRegistry[GameConfig::PROP_NTUT_SCREEN]     = { {PROP_DIR + "/NTUT_Screen.png"}, 0.7f, true,  true, 0.0f, 0.0f  };
+    //m_PropRegistry[GameConfig::PROP_NTUT_SCREEN]     = { {PROP_DIR + "/NTUT_Screen.png"}, 0.7f, true,  true, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
 
@@ -143,6 +152,14 @@ void Map::InitPropRegistry() {
         0.9f, true, true, 0.0f, 0.0f,
         PropAnimMode::LOOP, 45
     };
+
+    m_PropRegistry[GameConfig::PROP_NTUT_SCREEN] = { 
+        generateFrames(PROP_DIR + "NTUTScreen/NTUT_Screen-", 32), // Generates frames 1 through 32
+        0.7f, true, true, 0.0f, 0.0f,
+        PropAnimMode::LOOP, 10 // Added the animation mode and frame delay here!
+        
+    };
+
 }
 
 void Map::InitItemRegistry() {
@@ -299,7 +316,6 @@ void Map::LoadLevel(const std::string& mapName) {
                 prop->SetDynamicZ(props.dynamicZ);
                 prop->SetZIndex(props.zIndex);
                 prop->SetAnimMode(props.animMode, props.animFrameDelay);
-                prop->SetCanFadeOnOverlap(props.canFadeOnOverlap);
                 m_Props.push_back(prop);
                 if (!props.texturePaths.empty()) AddToRenderer(prop);
             }

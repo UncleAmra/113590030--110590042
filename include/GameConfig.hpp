@@ -79,6 +79,7 @@ namespace GameConfig {
     constexpr int PROP_NTUT_SCREEN  = 556;
     constexpr int PROP_NTUT_BALL_STATUE  = 557;
     constexpr int PROP_NTUT_BUILDING5  = 558;
+    constexpr int PROP_NTUT_TECH_BUILDING2  = 559;
 
 
     
