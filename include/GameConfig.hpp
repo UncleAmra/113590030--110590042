@@ -30,6 +30,8 @@ namespace GameConfig {
     constexpr int TILE_EXIT         = 99;
     constexpr int TILE_INSIDE_CHURCH    = 67;
     constexpr int TILE_CALM_WATER       = 14;
+    constexpr int TILE_RED_BRICK      = 15;
+    constexpr int TILE_GREY_BRICK      = 16;
 
     // Prop IDs 
     constexpr int PROP_POKECENTER       = 3;
@@ -70,6 +72,7 @@ namespace GameConfig {
     constexpr int PROP_TRUCK2           = 74;
     constexpr int PROP_CAR              = 75;
     constexpr int PROP_STAIRS_NORTH     = 76;
+    constexpr int PROP_PALM_TREE     = 77;
     constexpr int PROP_NTUT_BUILDING1  = 550;
     constexpr int PROP_NTUT_MOSS_BUILDING  = 551;
     constexpr int PROP_NTUT_BUILDING2  = 552;
@@ -80,6 +83,9 @@ namespace GameConfig {
     constexpr int PROP_NTUT_BALL_STATUE  = 557;
     constexpr int PROP_NTUT_BUILDING5  = 558;
     constexpr int PROP_NTUT_TECH_BUILDING2  = 559;
+    constexpr int PROP_NTUT_BUILDING6  = 560;
+    constexpr int PROP_NTUT_CAFETERIA_BUILDING  = 561;
+
 
 
     

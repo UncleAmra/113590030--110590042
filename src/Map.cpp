@@ -47,6 +47,9 @@ void Map::InitTileRegistry() {
     m_TileRegistry[GameConfig::TILE_GRAVEL]        = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Gravel.png"),        0.1f, 0.0f, true  };
     m_TileRegistry[GameConfig::TILE_ROAD]          = { ResourceManager::GetImageStore().Get(TILE_DIR + "/Road.png"),          0.1f, 0.0f, true  };
     m_TileRegistry[GameConfig::TILE_CALM_WATER]    = { ResourceManager::GetImageStore().Get(TILE_DIR + "/CalmWater.png"),     0.1f, 0.0f, false };
+    m_TileRegistry[GameConfig::TILE_RED_BRICK]    = { ResourceManager::GetImageStore().Get(TILE_DIR + "/RedBrick.png"),     0.1f, 0.0f, true };
+    m_TileRegistry[GameConfig::TILE_GREY_BRICK]    = { ResourceManager::GetImageStore().Get(TILE_DIR + "/GreyBrick.png"),     0.1f, 0.0f, true };
+
 }
 
 void Map::InitNPCRegistry() {
@@ -86,6 +89,8 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_NTUT_BUILDING5]      = { {PROP_DIR + "/Building5.png"},          0.8f, true,  false, 0.0f,  0.0f  };
     m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING]      = { {PROP_DIR + "/TechBuilding.png"},          0.8f, true,  false, 0.0f,  -144.0f};
     m_PropRegistry[GameConfig::PROP_NTUT_TECH_BUILDING2]      = { {PROP_DIR + "/TechBuilding12.png"},          0.8f, true,  false, 0.0f,  0.0f};
+    m_PropRegistry[GameConfig::PROP_NTUT_BUILDING6]      = { {PROP_DIR + "/Building6.png"},          0.8f, true,  false, 0.0f,  0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_CAFETERIA_BUILDING]      = { {PROP_DIR + "/CafeteriaBuilding.png"},          0.8f, true,  false, 0.0f,  0.0f  };
 
 
 
@@ -116,6 +121,7 @@ void Map::InitPropRegistry() {
 
     // Nature props
     m_PropRegistry[GameConfig::PROP_TREE]       = { {PROP_DIR + "/Tree.png"},      0.8f, true, true,  20.0f, -16.0f };
+    m_PropRegistry[GameConfig::PROP_PALM_TREE]       = { {PROP_DIR + "/PalmTree.png"},      0.8f, true, true,  20.0f, -16.0f };
     m_PropRegistry[GameConfig::PROP_SMALL_TREE] = { {PROP_DIR + "/SmallTree.png"}, 0.8f, true, false, 0.0f,  0.0f   };
     m_PropRegistry[GameConfig::PROP_LAMP_POST]  = { {PROP_DIR + "/LampPost.png"},  0.8f, true, false, 0.0f,  0.0f   };
 
