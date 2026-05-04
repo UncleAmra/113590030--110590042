@@ -107,8 +107,9 @@ void Map::InitPropRegistry() {
 
     //Decoration
     //m_PropRegistry[GameConfig::PROP_NTUT_SCREEN]     = { {PROP_DIR + "/NTUT_Screen.png"}, 0.7f, true,  true, 0.0f, 0.0f  };
-    m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
-    m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 1.0f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.8f, true,  false, 0.0f, 10.0f  };
+    m_PropRegistry[GameConfig::PROP_UMBRELLA_STAND]     = { {PROP_DIR + "/UmbrellaStand.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
 
 
 
@@ -123,6 +124,8 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_TREE]       = { {PROP_DIR + "/Tree.png"},      0.8f, true, true,  20.0f, -16.0f };
     m_PropRegistry[GameConfig::PROP_PALM_TREE]       = { {PROP_DIR + "/PalmTree.png"},      0.8f, true, true,  20.0f, -16.0f };
     m_PropRegistry[GameConfig::PROP_SMALL_TREE] = { {PROP_DIR + "/SmallTree.png"}, 0.8f, true, false, 0.0f,  0.0f   };
+    m_PropRegistry[GameConfig::PROP_TALL_TREE] = { {PROP_DIR + "/TallTree.png"}, 0.8f, true, false, 0.0f,  16.0f   };
+
     m_PropRegistry[GameConfig::PROP_LAMP_POST]  = { {PROP_DIR + "/LampPost.png"},  0.8f, true, false, 0.0f,  0.0f   };
 
     // Log obstacles
@@ -141,7 +144,7 @@ void Map::InitPropRegistry() {
     // Tall grass (interactive)
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = {
         { PROP_DIR + "/TallGrass2.png", PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" },
-        1.0f, true, true, 0.0f, 0.0f
+        0.5f, true, true, 0.0f, 0.0f
     };
 
     // Animated signs / decorations
@@ -283,10 +286,11 @@ void Map::LoadLevel(const std::string& mapName) {
 
     // ── PHASE 2: Props, NPCs, Items ───────────
     if (m_PropData.empty()) return;
-
+    
     for (size_t y = 0; y < m_PropData.size(); y++) {
         for (size_t x = 0; x < m_PropData[y].size(); x++) {
             int propID = m_PropData[y][x];
+            if (propID <= 0) continue;
             float worldX = GameConfig::CAMERA_START_X + (x * GameConfig::EFFECTIVE_TILE_SIZE);
             float worldY = GameConfig::CAMERA_START_Y - (y * GameConfig::EFFECTIVE_TILE_SIZE);
 
@@ -381,8 +385,29 @@ void Map::Update() {
         }
     }
 
+        // 3. Prop culling + update
+    // Props use a larger margin since large buildings extend well beyond
+    // their anchor tile — EFFECTIVE_TILE_SIZE * 6 covers the biggest sprites
+    const float propMargin = GameConfig::EFFECTIVE_TILE_SIZE * 6.0f;
+    const float propMinX   = -(HALF_W + propMargin);
+    const float propMaxX   =  (HALF_W + propMargin);
+    const float propMinY   = -(HALF_H + propMargin);
+    const float propMaxY   =  (HALF_H + propMargin);
+
+    for (auto& prop : m_Props) {
+        float px = prop->m_Transform.translation.x;
+        float py = prop->m_Transform.translation.y;
+        bool inView = px > propMinX && px < propMaxX &&
+                      py > propMinY && py < propMaxY;
+
+        prop->SetVisible(inView);
+
+        // Only run animation/Z-sort logic for visible props —
+        // invisible props don't need to animate or sort
+        if (inView) prop->Update();
+    }
+
     // 3. Props and NPCs (few enough to not need culling)
-    for (auto& prop : m_Props) prop->Update();
     for (auto& npc  : m_NPCs)  npc->Update(shared_from_this());
 }
 
