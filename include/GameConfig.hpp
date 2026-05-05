@@ -50,7 +50,8 @@ namespace GameConfig {
     constexpr int PROP_SMALL_TREE       = 505;
     constexpr int PROP_GATE_MIDDLE2     = 506;
     constexpr int PROP_LAMP_POST        = 507;
-    constexpr int PROP_TALL_TREE       = 508;
+    constexpr int PROP_TALL_TREE        = 508;
+    constexpr int PROP_GATE_MIDDLE3     = 509;
     constexpr int PROP_PC_DESK          = 10;
     constexpr int PROP_PM_DESK          = 11;
     constexpr int PROP_PC_WALL_LEFT     = 12;
@@ -75,6 +76,7 @@ namespace GameConfig {
     constexpr int PROP_STAIRS_NORTH     = 76;
     constexpr int PROP_PALM_TREE        = 77;
     constexpr int PROP_UMBRELLA_STAND   = 78;
+    constexpr int PROP_WHITE_PILLAR   = 79;
 
     constexpr int PROP_NTUT_BUILDING1  = 550;
     constexpr int PROP_NTUT_MOSS_BUILDING  = 551;

@@ -100,6 +100,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_GATE_TOP]      = { {PROP_DIR + "/GateTopEnd.png"},  0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_MIDDLE]   = { {PROP_DIR + "/GateMiddle.png"},  0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_MIDDLE2]  = { {PROP_DIR + "/GateMiddle2.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_GATE_MIDDLE3]  = { {PROP_DIR + "/GateMiddle3.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_END]      = { {PROP_DIR + "/GateBotEnd.png"},  0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_TOP2]     = { {PROP_DIR + "/GateTopEnd2.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_GATE_END2]     = { {PROP_DIR + "/GateBotEnd2.png"}, 0.1f, true,  false, 0.0f, 0.0f  };
@@ -110,6 +111,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 1.0f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.8f, true,  false, 0.0f, 10.0f  };
     m_PropRegistry[GameConfig::PROP_UMBRELLA_STAND]     = { {PROP_DIR + "/UmbrellaStand.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_WHITE_PILLAR]     = { {PROP_DIR + "/WhitePillar.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
 
 
 
@@ -158,7 +160,7 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_FLOWER] = {
         { PROP_DIR + "/Flower1.png", PROP_DIR + "/Flower2.png", PROP_DIR + "/Flower3.png",
           PROP_DIR + "/Flower4.png", PROP_DIR + "/Flower5.png" },
-        0.9f, true, true, 0.0f, 0.0f,
+        0.7f, true, true, 0.0f, 0.0f,
         PropAnimMode::LOOP, 45
     };
 
@@ -321,7 +323,7 @@ void Map::LoadLevel(const std::string& mapName) {
                 const PropProperties& props = m_PropRegistry[propID];
                 glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
                 auto prop = std::make_shared<Prop>(
-                    props.texturePaths, spawnPos, 3.0f, props.zIndex, x, y
+                    props.texturePaths, spawnPos, GameConfig::SCALE, props.zIndex, x, y
                 );
                 prop->SetDynamicZ(props.dynamicZ);
                 prop->SetZIndex(props.zIndex);

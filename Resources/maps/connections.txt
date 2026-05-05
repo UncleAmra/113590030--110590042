@@ -8,6 +8,10 @@ inside   7   8   ->  level    12  8
 // NTUT
 level    4   4   ->  NTUT     14   53
 NTUT     14   53   ->  level    4   4
+NTUT     34   11   ->  TechBuilding    3   9
+TechBuilding    3   9   ->  NTUT     34   11
+
+
 
 // Maze
 level    49  13  ->  maze     2   5
