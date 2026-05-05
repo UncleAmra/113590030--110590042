@@ -28,10 +28,10 @@ namespace GameConfig {
     constexpr int TILE_ROAD         = 12;
     constexpr int TILE_PM_FLOOR     = 20;
     constexpr int TILE_EXIT         = 99;
-    constexpr int TILE_INSIDE_CHURCH    = 67;
-    constexpr int TILE_CALM_WATER       = 14;
-    constexpr int TILE_RED_BRICK      = 15;
-    constexpr int TILE_GREY_BRICK      = 16;
+    constexpr int TILE_INSIDE_CHURCH= 67;
+    constexpr int TILE_CALM_WATER   = 14;
+    constexpr int TILE_RED_BRICK    = 15;
+    constexpr int TILE_GREY_BRICK   = 16;
 
     // Prop IDs 
     constexpr int PROP_POKECENTER       = 3;
@@ -90,10 +90,11 @@ namespace GameConfig {
     constexpr int PROP_NTUT_TECH_BUILDING2  = 559;
     constexpr int PROP_NTUT_BUILDING6  = 560;
     constexpr int PROP_NTUT_CAFETERIA_BUILDING  = 561;
+    constexpr int PROP_NTUT_BUILDING7  = 562;
 
 
 
-    
+    //
 
 
     // Item IDs
