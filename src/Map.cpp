@@ -300,7 +300,7 @@ void Map::LoadLevel(const std::string& mapName) {
             if (m_NPCRegistry.count(propID) > 0) {
                 const NPCProperties& npcProps = m_NPCRegistry[propID];
                 auto npc = std::make_shared<NPC>(
-                    worldX, worldY + npcProps.visualOffsetY,
+                    worldX, worldY + npcProps.visualOffsetY * GameConfig::SCALE/3.0f,
                     npcProps.texturePath, npcProps.dialogueFilePath, "", ""
                 );
                 npc->SetGridPosition(x, y);
@@ -321,7 +321,10 @@ void Map::LoadLevel(const std::string& mapName) {
             // Props
             if (m_PropRegistry.count(propID) > 0) {
                 const PropProperties& props = m_PropRegistry[propID];
-                glm::vec2 spawnPos(worldX + props.visualOffsetX, worldY + props.visualOffsetY);
+                glm::vec2 spawnPos(
+                worldX + (props.visualOffsetX * GameConfig::SCALE/3.0f), 
+                worldY + (props.visualOffsetY * GameConfig::SCALE/3.0f)
+                );
                 auto prop = std::make_shared<Prop>(
                     props.texturePaths, spawnPos, GameConfig::SCALE, props.zIndex, x, y
                 );
