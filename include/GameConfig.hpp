@@ -78,19 +78,19 @@ namespace GameConfig {
     constexpr int PROP_UMBRELLA_STAND   = 78;
     constexpr int PROP_WHITE_PILLAR   = 79;
 
-    constexpr int PROP_NTUT_BUILDING1  = 550;
-    constexpr int PROP_NTUT_MOSS_BUILDING  = 551;
-    constexpr int PROP_NTUT_BUILDING2  = 552;
-    constexpr int PROP_NTUT_BUILDING3  = 553;
-    constexpr int PROP_NTUT_TECH_BUILDING  = 554;
-    constexpr int PROP_NTUT_BUILDING4  = 555;
-    constexpr int PROP_NTUT_SCREEN  = 556;
-    constexpr int PROP_NTUT_BALL_STATUE  = 557;
-    constexpr int PROP_NTUT_BUILDING5  = 558;
+    constexpr int PROP_NTUT_BUILDING1       = 550;
+    constexpr int PROP_NTUT_MOSS_BUILDING   = 551;
+    constexpr int PROP_NTUT_BUILDING2       = 552;
+    constexpr int PROP_NTUT_BUILDING3       = 553;
+    constexpr int PROP_NTUT_TECH_BUILDING   = 554;
+    constexpr int PROP_NTUT_BUILDING4       = 555;
+    constexpr int PROP_NTUT_SCREEN          = 556;
+    constexpr int PROP_NTUT_BALL_STATUE     = 557;
+    constexpr int PROP_NTUT_BUILDING5       = 558;
     constexpr int PROP_NTUT_TECH_BUILDING2  = 559;
-    constexpr int PROP_NTUT_BUILDING6  = 560;
+    constexpr int PROP_NTUT_BUILDING6       = 560;
     constexpr int PROP_NTUT_CAFETERIA_BUILDING  = 561;
-    constexpr int PROP_NTUT_BUILDING7  = 562;
+    constexpr int PROP_NTUT_BUILDING7       = 562;
 
 
 
