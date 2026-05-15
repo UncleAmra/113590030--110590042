@@ -70,10 +70,16 @@ void Prop::Update() {
 
     // Cantor pairing — unique key per grid cell, scaled tiny enough
     // to only resolve same-row same-Y conflicts, never override layer or Y order
+    // Height contribution — taller sprites get higher Z since they extend
+// further down from their centre anchor, scaled tiny so it only affects
+// same-position same-baseZ conflicts
+    float spriteHeight = m_Drawable ? (m_Drawable->GetSize().y * GameConfig::SCALE) : 0.0f;
+    float heightWeight = spriteHeight * 0.00001f;
+
     int cantorKey = (m_GridX >= 0 && m_GridY >= 0)
-                  ? ((m_GridX + m_GridY) * (m_GridX + m_GridY + 1) / 2 + m_GridY)
-                  : (int)(m_Transform.translation.x + m_Transform.translation.y * 1000);
-    float tiebreak = cantorKey * 0.000001f;
+                ? ((m_GridX + m_GridY) * (m_GridX + m_GridY + 1) / 2 + m_GridY)
+                : (int)(m_Transform.translation.x + m_Transform.translation.y * 1000);
+    float tiebreak = cantorKey * 0.000001f + heightWeight;
 
     // Priority: m_BaseZIndex (layer) > yOffset (row) > tiebreak (cell)
     SetZIndex(m_BaseZIndex - yOffset + tiebreak);

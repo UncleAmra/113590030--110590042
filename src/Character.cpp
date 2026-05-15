@@ -62,14 +62,20 @@ glm::vec2 Character::Update(std::shared_ptr<Map> map) {
 
     // 1. Z-SORTING FIX
     if (m_UseDynamicZ) {
-        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);        
-        // Invert: lower footY (further down screen) = higher Z
-        // Divide by a large number to keep Z in a sensible range
-        //float tieBreaker = m_BaseZIndex * 0.0001f;
-        float dynamicZ = m_BaseZIndex - (footY / 10000.0f);
-        //float dynamicZ = 0.5f - (footY / 10000.0f);
-        SetZIndex(dynamicZ);
-    }
+    float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
+
+    float yOffset = footY / 10000.0f;
+
+    // Cantor pairing — same formula as Prop so characters sort
+    // consistently within the same Z space as props
+    int cantorKey = (m_GridX >= 0 && m_GridY >= 0)
+                  ? ((m_GridX + m_GridY) * (m_GridX + m_GridY + 1) / 2 + m_GridY)
+                  : (int)(m_Transform.translation.x + m_Transform.translation.y * 1000);
+    float tiebreak = cantorKey * 0.000001f;
+
+    // Priority: m_BaseZIndex (layer) > yOffset (row) > tiebreak (cell)
+    SetZIndex(m_BaseZIndex - yOffset);
+}
     
     //map->UpdatePropOverlap(m_GridX, m_GridY, m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f));
 

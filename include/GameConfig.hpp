@@ -32,6 +32,7 @@ namespace GameConfig {
     constexpr int TILE_CALM_WATER   = 14;
     constexpr int TILE_RED_BRICK    = 15;
     constexpr int TILE_GREY_BRICK   = 16;
+    constexpr int TILE_WALL_STONE1  = 17;
 
     // Prop IDs 
     constexpr int PROP_POKECENTER       = 3;

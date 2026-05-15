@@ -112,11 +112,11 @@ void Map::InitPropRegistry() {
 
     //Decoration
     //m_PropRegistry[GameConfig::PROP_NTUT_SCREEN]     = { {PROP_DIR + "/NTUT_Screen.png"}, 0.7f, true,  true, 0.0f, 0.0f  };
-    m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 1.0f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_NTUT_BALL_STATUE]     = { {PROP_DIR + "/NTUT_Ball.png"}, 0.8f, true,  false, 0.0f, 0.0f  };
     m_PropRegistry[GameConfig::PROP_TRUCK1]     = { {PROP_DIR + "/Truck.png"}, 0.8f, true,  false, 0.0f, 10.0f  };
     m_PropRegistry[GameConfig::PROP_UMBRELLA_STAND]     = { {PROP_DIR + "/UmbrellaStand.png"}, 0.8f, true,  false, 0.0f, 0.0f  };
-    m_PropRegistry[GameConfig::PROP_WHITE_PILLAR]     = { {PROP_DIR + "/WhitePillar.png"}, 0.5f, true,  false, 0.0f, 0.0f  };
-    m_PropRegistry[GameConfig:: STAIRS_LEFT1 ]     = { {PROP_DIR + "/stair_left.png"}, 0.4f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig::PROP_WHITE_PILLAR]     = { {PROP_DIR + "/WhitePillar.png"}, 0.8f, true,  false, 0.0f, 0.0f  };
+    m_PropRegistry[GameConfig:: STAIRS_LEFT1 ]     = { {PROP_DIR + "/stair_left.png"}, 0.5f, true,  false, 0.0f, 0.0f  };
 
 
 
@@ -146,21 +146,21 @@ void Map::InitPropRegistry() {
     m_PropRegistry[GameConfig::PROP_LOG_up2]    = { {PROP_DIR + "/wallstone_6.png"},  0.8f, true, false, 0.0f, 0.0f };
  
     // Animated doors
-    m_PropRegistry[GameConfig::DOOR_OPENING_GYM] = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.0f, true, true,  2.0f,  20.0f };
-    m_PropRegistry[GameConfig::DOOR_OPENING_PC]  = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.0f, true, true,  0.0f,  16.0f };
-    m_PropRegistry[GameConfig::DOOR_OPENING_PM]  = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.0f, true, true,  2.0f,  32.0f };
+    m_PropRegistry[GameConfig::DOOR_OPENING_GYM] = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.8f, true, true,  2.0f,  20.0f };
+    m_PropRegistry[GameConfig::DOOR_OPENING_PC]  = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.8f, true, true,  0.0f,  16.0f };
+    m_PropRegistry[GameConfig::DOOR_OPENING_PM]  = { { PROP_DIR + "/door0.png", PROP_DIR + "/door1.png", PROP_DIR + "/door2.png", PROP_DIR + "/door3.png" }, 0.8f, true, true,  2.0f,  32.0f };
 
     // Tall grass (interactive)
     m_PropRegistry[GameConfig::PROP_TALLGRASS] = {
         { PROP_DIR + "/TallGrass2.png", PROP_DIR + "/TallGrass3.png", PROP_DIR + "/TallGrass4.png" },
-        0.8001f, true, true, 0.0f, 0.0f
+        0.801f, true, true, 0.0f, 0.0f
     };
 
     // Animated signs / decorations
     m_PropRegistry[GameConfig::POKEMART_SIGN] = {
         { PROP_DIR + "/PokeMartSign1.png", PROP_DIR + "/PokeMartSign2.png",
           PROP_DIR + "/PokeMartSign3.png", PROP_DIR + "/PokeMartSign4.png" },
-        0.9f, true, false, 16.0f, 32.0f,
+        0.8f, true, false, 16.0f, 32.0f,
         PropAnimMode::LOOP, 30
     };
 
