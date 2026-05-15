@@ -48,13 +48,8 @@ void App::Start() {
     
     // Use the Singleton to load the JSON directly!
     try {
-        AnimationLibrary::Get().LoadFromJson(RES + "/data/pkmn_animations.json"); 
+        AnimationLibrary::Get().LoadFromJson(RES + "/data/TEST.json"); 
         
-        if (AnimationLibrary::Get().Find("Move:THUNDERSHOCK") != nullptr) {
-            LOG_INFO("SUCCESS! THUNDERSHOCK loaded into the library!");
-        } else {
-            LOG_WARN("File parsed, but THUNDERSHOCK is still missing.");
-        }
     } catch (const std::exception& e) {
         LOG_ERROR("JSON Error: {}", e.what());
     }

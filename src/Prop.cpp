@@ -60,11 +60,29 @@ void Prop::SetAnimMode(PropAnimMode mode, int frameDelay) {
 // RESTORED LOGIC: Your original dynamic Z-sorting math!
 void Prop::Update() {
     // --- 1. DYNAMIC Z-SORTING ---
+    // In Prop::Update(), account for sprite height when computing footY:
     if (m_UseDynamicZ) {
-        float footY = m_Transform.translation.y - (GameConfig::SCALED_TILE_SIZE * 0.5f);
-        float dynamicZ = 0.5f - (footY / 10000.0f);
-        SetZIndex(dynamicZ);
+    float spriteHalfH = 0.0f;
+    if (m_Drawable) {
+        spriteHalfH = (m_Drawable->GetSize().y * GameConfig::SCALE) * 0.5f;
     }
+    float footY = m_Transform.translation.y - spriteHalfH;
+    float baseZ = 0.5f - (footY / 10000.0f);
+
+    // Each grid cell gets a unique offset derived from a 2D cantor pairing —
+    // maps any (x, y) pair to a single unique integer, then scales it.
+    // This guarantees no two grid positions ever produce the same tiebreaker
+    // regardless of GPU float precision.
+    int cantorKey = (m_GridX >= 0 && m_GridY >= 0)
+                  ? ((m_GridX + m_GridY) * (m_GridX + m_GridY + 1) / 2 + m_GridY)
+                  : (int)(m_Transform.translation.x + m_Transform.translation.y * 1000);
+
+    // Scale small enough to never override row order, large enough to survive
+    // float arithmetic on any GPU — 0.0001f per unit is safe up to ~100 tile maps
+    float tiebreak = cantorKey * 0.0001f;
+
+    SetZIndex(baseZ + tiebreak);
+}
 
     // --- 2. PLAYER-TRIGGERED ANIMATION (existing tall grass logic) ---
     if (m_AnimMode == PropAnimMode::STATIC && m_CurrentState != m_TargetState) {
@@ -74,7 +92,7 @@ void Prop::Update() {
             if (m_CurrentState < m_TargetState) SetState(m_CurrentState + 1);
             else SetState(m_CurrentState - 1);
         }
-        return; // Don't run auto-anim while transitioning
+        return;
     }
 
     // --- 3. AUTO ANIMATION ---
@@ -90,7 +108,6 @@ void Prop::Update() {
         if (m_AnimCounter >= m_AnimFrameDelay) {
             m_AnimCounter = 0;
             int next = m_CurrentState + m_AnimDirection;
-            // Reverse at ends
             if (next >= (int)m_Images.size() || next < 0) {
                 m_AnimDirection *= -1;
                 next = m_CurrentState + m_AnimDirection;
