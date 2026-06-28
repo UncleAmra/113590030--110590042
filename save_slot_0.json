@@ -1,5 +1,5 @@
 {
-    "direction": 3,
+    "direction": 2,
     "flags": {
         "NTUT_battle_1": true,
         "NTUT_battle_1_rewarded": true,
@@ -20,8 +20,8 @@
         "treeblock1_cleared": true,
         "treeblock2_cleared": true
     },
-    "gridX": 28,
-    "gridY": 4,
+    "gridX": 39,
+    "gridY": 31,
     "inventory": {
         "Axe_Item": {
             "category": 2,
@@ -40,8 +40,8 @@
     "lastHealX": -1,
     "lastHealY": -1,
     "lootedItems": [
-        "C:/Users/User/Desktop/OOP_GAME/OOP202666/Resources/maps/FirstRoute_18_4",
-        "C:/Users/User/Desktop/OOP_GAME/OOP202666/Resources/maps/FirstRoute_12_8"
+        "C:/Users/User/Desktop/OOP_GAME/OOP202666/Resources/maps/FirstRoute_12_8",
+        "C:/Users/User/Desktop/OOP_GAME/OOP202666/Resources/maps/FirstRoute_18_4"
     ],
     "mapPath": "maps/NTUT",
     "money": 6700,

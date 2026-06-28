@@ -53,3 +53,8 @@ PlayerHouse  3 8 -> StartTown   9  11
 PlayerHouse  10 1 -> PlayerHouse2F  11  1  
 PlayerHouse2F  11 1 -> PlayerHouse  10  1  
 StartLab  4 11  -> StartTown   21  12
+
+// Art gallery 
+NTUT     41   33   ->  Art    2  5
+Art     2    5  ->    41    33 
+

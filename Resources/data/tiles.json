@@ -31,7 +31,12 @@
     { "id": 99, "texture": "caroad.png",       "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
     { "id": 300,"texture":"edge.png",          "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
     { "id": 301,"texture":"sand1.png",          "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
-    { "id": 302,"texture":"sand2.png",          "zIndex": 0.0, "yOffset": 0.0, "walkable": true  }
+    { "id": 302,"texture":"sand2.png",          "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
+    { "id": 303,"texture":"coll.png",          "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
+    { "id": 304,"texture":"door1.png",         "zIndex": 0.0, "yOffset": 0.0, "walkable": true  },
+    { "id": 305,"texture":"wall67.png",         "zIndex": 0.0, "yOffset": 0.0, "walkable": true  }
+    
+
     
   ]
 }
